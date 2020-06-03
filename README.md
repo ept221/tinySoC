@@ -1,1 +1,1 @@
-# microCOre
+# microCore
