@@ -82,13 +82,11 @@ module top(input wire clk);
     end
     //***************************************************************
     // Data Memory and I/O Address Mux
-    wire [1:0] dMemAddressSelect; //*
+    wire dMemAddressSelect; //*
     always @(*) begin
         case(dMemAddressSelect)
-            2'b00:   dMemAddress = {regFileOutC,regFileOutB};
-            2'b01:   dMemAddress = {12'b0,iMemOut[11:8]};
-            2'b10:   dMemAddress = {12'b0,iMemOut[15:12]};
-            2'b11:   dMemAddress = {regFileOutC,regFileOutB}; // default
+            1'b0:   dMemAddress = {regFileOutC,regFileOutB};
+            1'b1:   dMemAddress = {8'd0,iMemOut[11:4]};
         endcase
     end
     //***************************************************************
@@ -123,34 +121,29 @@ module top(input wire clk);
     reg zeroFlag;
     reg negativeFlag;
     reg interruptEnable;
+    wire flagEnable; //*
     wire [3:0] statusIn;
-    wire carryFlagEnable;       //*
-    wire zeroFlagEnable;        //*
-    wire negativeFlagEnable;    //*
-    wire interruptEnableEnable; //*
     wire [3:0] statusOut = {interruptEnable,negativeFlag,zeroFlag,carryFlag};
 
     always @(posedge clk) begin
-        if(carryFlagEnable)
+        if(flagEnable) begin
             carryFlag <= statusIn[0];
-        if(zeroFlagEnable)
             zeroFlag <= statusIn[1];
-        if(negativeFlagEnable)
             negativeFlag <= statusIn[2];
-        if(interruptEnableEnable)
             interruptEnable <= statusIn[3];
+        end
     end
     //***************************************************************
     // Instruction Memory Address Mux
-    wire [2:0] iMemAddressSelect; //*
+    wire [2:0] iMemAddrAndPcInSelect; //*
     always @(*) begin
-        case(iMemAddressSelect)
+        case(iMemAddrAndPcInSelect)
         3'b000:     iMemAddress = pcPlusOne;
         3'b001:     iMemAddress = pcOut;
         3'b010:     iMemAddress = interruptVector;
         3'b011:     iMemAddress = iMemOut;
         3'b100:     iMemAddress = {regFileOutC, regFileOutB};
-        
+
         default     iMemAddress = 16'd0;      
         endcase
     end
@@ -169,9 +162,8 @@ module top(input wire clk);
     );
     //***************************************************************
     // PC Input Mux
-    wire [2:0] pcInSelect; //*
     always @(*) begin
-        case (pcInputSelect)
+        case (iMemAddrAndPcInSelect)
         3'b000:     pcIn = pcOut + 2;
         3'b001:     pcIn = pcPlusOne;
         3'b010:     pcIn = interruptVector + 1;

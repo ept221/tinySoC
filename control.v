@@ -7,26 +7,19 @@ wire aluSrcASelect;
 wire [1:0] aluSrcBSelect;
 wire [3:0] aluMode;
 wire [1:0] dMemDataSelect;
-wire [1:0] dMemAddressSelect;
+wire dMemAddressSelect;
 wire dMemWriteEn;
 wire dMemReadEn;
 wire [1:0] statusRegSrcSelect;
-wire carryFlagEnable;
-wire zeroFlagEnable;
-wire negativeFlagEnable;
-wire interruptEnableEnable;
-wire [2:0] iMemAddressSelect;
+wire flagEnable;
+wire [2:0] iMemAddrAndPcInSelect;
 wire iMemReadEnable;
-wire [2:0] pcInSelect;
 wire pcWriteEn;
 
-
-reg [1:0] state;
-reg [1:0] nextState;
-reg [1:0] multi;
+reg [2:0] state;
+reg [2:0] nextState;
 always @(posedge clk) begin
     state <= nextState;
-    multi <= nextMulti;
 end
 
 always @(*) begin
@@ -43,44 +36,77 @@ always @(*) begin
 end
 
 always @(*) begin
-    if(multi == 2'b00) begin
-        // [Type R-I and IOA-I]
-        if(iMemOut[0] == 1'b1) begin
+    if(state[0] == 1'b0) begin
+        // [Type R-I]
+        if(iMemOut[0] == 1'b1 && (iMemOut[3:1] < 3'b111)) begin
             regFileSrc = 2'b00;                 // aluOut
             regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
+            regFileWriteEnable = 1'b1;
             regFileIncPair = 1'b0;
             regFileDecPair = 1'b0;
             aluSrcASelect = 1'b1;               // From the register file
             aluSrcBSelect = 2'b10;              // From immediate 8-bit data
+            aluMode = {0,iMemOut[3:1]};
             dMemDataSelect = 2'b10;             // aluOut
-            dMemAddressSelect = 2'b10;          // {12'b0,iMemOut[15:12]};
+            dMemAddressSelect = 1'b0;           // {12'b0,iMemOut[15:12]};
+            dMemWriteEn = 1'd0;
             dMemReadEn = 1'b0;
             statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-            if(iMemOut[3:1] > 3'b011)           // If-Else covers both IOA-I Type and R-I Type
-                carryFlagEnable = 1'b1;
-            else
-                carryFlagEnable = 1'b0;
-            interruptEnableEnable = 1'b0;
-            iMemAddressSelect = 3'b001;         // pcOut
+            flagEnable = 1'b1;
+            iMemAddrAndPcInSelect = 3'b001;
             iMemReadEnable = 1'b1;
-            pcInSelect = 3'b001;                // pcPlusOne
             pcWriteEn = 1'd1;
-            if(iMemOut[3:1] == 3'b111) begin    // If IOA-I Type
+            nextState = 3'b000;
+        end
+        // [Type R-L] : IN
+        else if(iMemOut[7:0] == 3'b010) begin
+            regFileSrc = 2'b00;                 // aluOut
+            regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
+            regFileIncPair = 1'b0;
+            regFileDecPair = 1'b0;
+            aluSrcASelect = 1'b1;               // From the register file. Doesnt really matter
+            aluSrcBSelect = 2'b00;              // regFileOutB
+            aluMode = 4'b0000;                  // Pass B
+            dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
+            dMemAddressSelect = 1'b1;           // {8'd0,iMemOut[11:4]};
+            dMemWriteEn = 1'b0;
+            dMemReadEn = 1'b1;
+            statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
+            flagEnable = 1'b0;
+            iMemAddrAndPcInSelect = 3'b001;     // pcOut, pcPlusOne
+            if(state[2:1] == 2'b00) begin
                 regFileWriteEnable = 1'b0;
-                aluMode = 4'b000;               // Pass B
-                dMemWriteEn = 1'd1;
-                zeroFlagEnable = 1'b0;
-                negativeFlagEnable = 1'b0;
+                iMemReadEnable = 1'b0;
+                pcWriteEn = 1'b0;
+                nextState = 3'b010;
             end
-            else begin                          // If R-I Type
+            else begin
                 regFileWriteEnable = 1'b1;
-                aluMode = {0,iMemOut[3:1]};
-                dMemWriteEn = 1'd0;
-                zeroFlagEnable = 1'b1;
-                negativeFlagEnable = 1'b1;
+                iMemReadEnable = 1'b1;
+                pcWriteEn = 1'b1;
+                nextState = 3'b000;
             end
-            nextState = 2'b00;
-            nextMulti = 2'b00;
+        end
+        // [Type R-L] : OUT
+        else if(iMemOut[7:0] == 3'b100) begin
+            regFileSrc = 2'b00;                 // aluOut, doesnt really matter
+            regFileOutBSelect = iMemOut[15:12]; // same as inSelect
+            regFileWriteEnable = 1'b0;
+            regFileIncPair = 1'b0;
+            regFileDecPair = 1'b0;
+            aluSrcASelect = 1'b1;               // From the register file
+            aluSrcBSelect = 2'b00;              // regFileOutB
+            aluMode = 4'b0000;                  // Pass B
+            dMemDataSelect = 2'b10;             // aluOut
+            dMemAddressSelect = 1'b1;           // {8'd0,iMemOut[11:4]};
+            dMemWriteEn = 1'b1;
+            dMemReadEn = 1'b1;
+            statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
+            flagEnable = 1'b0;
+            iMemAddrAndPcInSelect = 3'b001;     // pcOut, pcPlusOne
+            iMemReadEnable = 1'b1;
+            pcWriteEn = 1'b1;
+            nextState = 3'b000;
         end
         // [Type R-R]
         else if(iMemOut[7:0] > 8'b00000000 && iMemOut[7:0] < 8'b00010010) begin
@@ -91,58 +117,18 @@ always @(*) begin
             regFileDecPair = 1'b0;
             aluSrcASelect = 1'b1;               // regFileOutA
             aluSrcBSelect = 2'b00;              // regFileOutB
-            aluMode = iMemOut[4:1];
-            dMemDataSelect = 2'b10;             // aluOut
-            dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, but doesnt really matter
+            aluMode = iMemOut[6:3];
+            dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
+            dMemAddressSelect = 1'b0;          // {regFileOutC,regFileOutB}, but doesnt really matter
             dMemWriteEn = 1'b0;
             dMemReadEn = 1'b0;
             statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-            if(iMemOut[4:1] > 4'b0011)
-                carryFlagEnable = 1'b1;
-            else
-                carryFlagEnable = 1'b0;
-            interruptEnableEnable = 1'b0;
-            zeroFlagEnable = 1'b1;
-            negativeFlagEnable = 1'b1;
+            flagEnable = 1'b1;
             iMemAddressSelect = 3'b001;         // pcOut
             iMemReadEnable = 1'b1;
-            pcInSelect = 3'b001;                // pcPlusOne
+            iMemAddrAndPcInSelect = 3'b001;                // pcPlusOne
             pcWriteEn = 1'b1;
-            nextState = 2'b00;
-            nextMulti = 2'b00;
-        end
-        //[Type R-IOA]
-        else if(iMemOut[7:0] == 8'b00010010 || iMemOut[7:0] == 8'b00010100) begin
-            regFileSrc = 2'b00;                 // aluOut but doesnt really matter
-            regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
-            regFileIncPair = 1'b0;            
-            regFileDecPair = 1'b0;
-            aluSrcASelect = 1'b1;               // regFileOutA
-            aluSrcBSelect = 2'b00;              // regFileOutB
-            aluMode = 4'b1101;                  // Pass A
-            dMemDataSelect = 2'b10;             // aluOut
-            dMemAddressSelect = 2'b01;          // {12'b0,iMemOut[11:8]};
-            statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-            carryFlagEnable = 1'b0;
-            zeroFlagEnable = 1'b0;
-            negativeFlagEnable = 1'b0;
-            interruptEnableEnable = 1'b0;
-            iMemAddressSelect = 3'b001;         // pcOut
-            iMemReadEnable = 1'b1;
-            pcInSelect = 3'b001;                // pcPlusOne
-            pcWriteEn = 1'b1;
-            if(iMemOut[7:0] == 8'b00010010) begin   // SIO
-                regFileWriteEnable = 1'b0;
-                dMemWriteEn = 1'b1;
-                dMemReadEn = 1'b0;
-            end
-            else begin                              // LIO
-                regFileWriteEnable = 1'b1;
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b1;
-            end
-            nextState = 2'b00;
-            nextMulti = 2'b00;
+            nextState = 3'b000;
         end
         //[Type R-RP]
         else if(iMemOut[7:0] > 8'b00010100 && iMemOut[7:0] < 8'b00100010) begin
@@ -365,26 +351,3 @@ always @(*) begin
         end
     end
 end
-
-
-wire [1:0] regFileSrc;
-wire [3:0] regFileOutBSelect;
-wire regFileWriteEnable;       
-wire regFileIncPair;            
-wire regFileDecPair;            
-wire aluSrcASelect;
-wire [1:0] aluSrcBSelect;
-wire [3:0] aluMode;
-wire [1:0] dMemDataSelect;
-wire [1:0] dMemAddressSelect;
-wire dMemWriteEn;
-wire dMemReadEn;
-wire [1:0] statusRegSrcSelect;
-wire carryFlagEnable;
-wire zeroFlagEnable;
-wire negativeFlagEnable;
-wire interruptEnableEnable;
-wire [2:0] iMemAddressSelect;
-wire iMemReadEnable;
-wire [2:0] pcInSelect;
-wire pcWriteEn;
