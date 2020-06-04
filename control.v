@@ -48,7 +48,7 @@ always @(*) begin
             aluSrcBSelect = 2'b10;              // From immediate 8-bit data
             aluMode = {0,iMemOut[3:1]};
             dMemDataSelect = 2'b10;             // aluOut
-            dMemAddressSelect = 1'b0;           // {12'b0,iMemOut[15:12]};
+            dMemAddressSelect = 1'b0;           // {12'b0,iMemOut[15:12]}
             dMemWriteEn = 1'd0;
             dMemReadEn = 1'b0;
             statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
@@ -124,9 +124,8 @@ always @(*) begin
             dMemReadEn = 1'b0;
             statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
             flagEnable = 1'b1;
-            iMemAddressSelect = 3'b001;         // pcOut
             iMemReadEnable = 1'b1;
-            iMemAddrSelect = 3'b001;     // pcPlusOne
+            iMemAddrSelect = 3'b001;            // pcOut
             pcWriteEn = 1'b1;
             nextState = 3'b000;
         end
@@ -142,6 +141,26 @@ always @(*) begin
             dMemAddressSelect = 1'b0;           // {regFileOutC,regFileOutB}
             dMemWriteEn = ~iMemOut[7];
             dMemReadEn = iMemOut[7];
+            statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
+            flagEnable = 1'b0;
+            iMemAddrSelect = 3'b001;            // pcOut
+            if(~iMemOut[7]) begin
+                iMemReadEnable = 1'b1;
+                pcWriteEn = 1'b1;
+                nextState = 3'b000;
+            end
+            else begin
+                if(state = 3'b000) begin
+                    iMemReadEnable = 1'b0;
+                    pcWriteEn = 1'b0;
+                    nextState = 3'b001;
+                end
+                else begin
+                    iMemReadEnable = 1'b1;
+                    pcWriteEn = 1'b1;
+                    nextState = 3'b000;
+                end
+            end
             if(iMemOut[7:3] == 01101 || iMemOut[7:3] == 10000) begin
                 regFileIncPair = 1'b0;
                 regFileDecPair = 1'b0;
@@ -155,13 +174,39 @@ always @(*) begin
                 regFileDecPair = 1'b1;
             end
         end
-                  
-wire dMemReadEn;
-wire [1:0] statusRegSrcSelect;
-wire flagEnable;
-wire [2:0] iMemAddrSelect;
-wire iMemReadEnable;
-wire pcWriteEn;
+        // [Type RP]
+        else if(iMemOut[7:3] == 5'b10011 || iMemOut[7:3] == 5'b10100 || iMemOut[7:3] == 5'b10101 && iMemOut[2:0] == 3'b000) begin
+            regFileSrc = 2'b00;                         // aluOut, doesnt really matter
+            regFileOutBSelect = (iMemOut[11:9]*2);      // PPP
+            regFileWriteEnable = 1'b0;
+            aluSrcASelect = 1'b1;                       // regFileOutA, doesnt really matter
+            aluSrcBSelect = 2'b00;                      // regFileOutB, doesnt really matter
+            aluMode = 4'b1101;                          // Pass A, doesnt really matter
+            dMemDataSelect = 2'b10;                     // aluOut, doesnt really matter
+            dMemAddressSelect = 1'b0;                   // {regFileOutC,regFileOutB}, doesnt really matter
+            dMemWriteEn = 1'b0;
+            dMemReadEn = 1'b1;
+            statusRegSrcSelect = 2'b00;                 // ALU flags out and save interrupt enable status
+            flagEnable = 1'b0;
+            iMemReadEnable = 1'b1;
+            pcWriteEn = 1'b1;
+            if(iMemOut[7:3] == 5'b10011) begin
+                regFileIncPair = 1'b1;
+                regFileDecPair = 1'b0;
+                iMemAddrSelect = 3'b001;                    // pcOut
+            end
+            else if(iMemOut[7:3] == 5'b10100) begin
+                regFileIncPair = 1'b0;
+                regFileDecPair = 1'b1;
+                iMemAddrSelect = 3'b001;                    // pcOut
+            end
+            else begin
+                regFileIncPair = 1'b0;
+                regFileDecPair = 1'b0;
+                iMemAddrSelect = 3'b100;                    // {regFileOutC, regFileOutB};
+            end
+            nextState = 1'b000;
+        end
 
         // PUS
         else if(iMemOut[7:3] == 5'b11001 && iMemOut[2:0] == 3'b000) begin
