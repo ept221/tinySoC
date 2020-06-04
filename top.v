@@ -7,7 +7,7 @@ module top(input wire clk);
         2'b00:  regFileIn = aluOut;             // From the ALU output
         2'b01:  regFileIn = iMemOut[11:4];      // From the instruction memory output
         2'b10:  regFileIn = dMemOut;            // From the data memory output
-        2'b11:  regFileIn = {4'd0,statusOut};   // From the zero-extended status register
+        2'b11:  regFileIn = aluOut;             // From the ALU output, for default
         endcase
     end
     //***************************************************************
@@ -134,16 +134,22 @@ module top(input wire clk);
         end
     end
     //***************************************************************
+    // Return Register
+    reg [7:0] returnReg;
+    always(@posedge clk) begin
+        returnReg <= dMemOut;
+    end 
+    //***************************************************************
     // Instruction Memory Address Mux
-    wire [2:0] iMemAddrAndPcInSelect; //*
+    wire [2:0] iMemAddrSelect; //*
     always @(*) begin
-        case(iMemAddrAndPcInSelect)
+        case(iMemAddrSelect)
         3'b000:     iMemAddress = pcPlusOne;
         3'b001:     iMemAddress = pcOut;
         3'b010:     iMemAddress = interruptVector;
         3'b011:     iMemAddress = iMemOut;
         3'b100:     iMemAddress = {regFileOutC, regFileOutB};
-
+        3'b101:     iMemAddress = {returnReg,dMemOut};
         default     iMemAddress = 16'd0;      
         endcase
     end
@@ -161,21 +167,9 @@ module top(input wire clk);
                             .dout(iMemOut)
     );
     //***************************************************************
-    // PC Input Mux
-    always @(*) begin
-        case (iMemAddrAndPcInSelect)
-        3'b000:     pcIn = pcOut + 2;
-        3'b001:     pcIn = pcPlusOne;
-        3'b010:     pcIn = interruptVector + 1;
-        3'b011:     pcIn = iMemOut + 1;
-        3'b100:     pcIn = {regFileOutC, regFileOutB} + 1;
-        default     iMemAddress = 16'd1;
-        endcase
-    end
-    //***************************************************************
     // PC and pcPlusOne adder
     reg [15:0] pc;
-    wire [15:0] pcIn;
+    wire [15:0] pcIn = iMemAddress + 1;
     wire [15:0] pcOut = pc;
     wire [15:0] pcPlusOne = pcOut + 1;
     wire pcWriteEn;     //*
