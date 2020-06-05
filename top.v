@@ -1,7 +1,28 @@
 module top(input wire clk);
+	//***************************************************************
+	// Instantiate Control Logic
+	control cntrl(.clk(clk),
+               	  .regFileSrc(regFileSrc),
+               	  .regFileOutBSelect(regFileOutBSelect),
+               	  .regFileWriteEnable(regFileWriteEnable),
+               	  .regFileIncPair(regFileIncPair),
+               	  .regFileDecPair(regFileDecPair),
+               	  .aluSrcASelect(aluSrcASelect),
+               	  .aluSrcBSelect(aluSrcBSelect),
+               	  .aluMode(aluMode),
+               	  .dMemDataSelect(dMemDataSelect),
+               	  .dMemAddressSelect(dMemAddressSelect),
+               	  .dMemWriteEn(dMemWriteEn),
+               	  .dMemReadEn(dMemReadEn),
+               	  .statusRegSrcSelect(statusRegSrcSelect),
+               	  .flagEnable(flagEnable),
+               	  .iMemAddrSelect(iMemAddrSelect),
+               	  .iMemReadEnable(iMemReadEnable),
+               	  .pcWriteEn(pcWriteEn)
+	);
     //***************************************************************
     // Register File Source Mux
-    wire [1:0] regFileSrc;  //*
+    wire [1:0] regFileSrc;  					//*
     always @(*) begin
         case(regFileSrc)
         2'b00:  regFileIn = aluOut;             // From the ALU output
@@ -33,7 +54,7 @@ module top(input wire clk);
     );
     //***************************************************************
     // ALU Mux A
-    wire aluSrcASelect;     //*
+    wire aluSrcASelect;     					//*
     always @(*) begin
         case(aluSrcASelect)
         1'b0:   dataA = {4'd0,statusOut};       // From zero-extended status register
@@ -42,7 +63,7 @@ module top(input wire clk);
     end
     //***************************************************************
     // ALU Mux B
-    wire [1:0] aluSrcBSelect; //*
+    wire [1:0] aluSrcBSelect; 					//*
     always @(*) begin
         case(aluSrcBSelect)
         2'b00:  dataB = regFileOutB;            // From the register file
@@ -53,7 +74,7 @@ module top(input wire clk);
     end
     //***************************************************************
     // ALU
-    wire [3:0] aluMode; //*
+    wire [3:0] aluMode; 						//*
     wire carryOut;
     wire zeroOut;
     wire negitiveOut;
@@ -71,7 +92,7 @@ module top(input wire clk);
     );
     //***************************************************************
     // Data Memory and I/O Data Mux
-    wire [1:0] dMemDataSelect; //*
+    wire [1:0] dMemDataSelect; 					//*
     always @(*) begin
         case(dMemDataSelect)
             2'b00:  dMemIn = pcOut[15:8];       // From MSBs of the PC
@@ -82,7 +103,7 @@ module top(input wire clk);
     end
     //***************************************************************
     // Data Memory and I/O Address Mux
-    wire dMemAddressSelect; //*
+    wire dMemAddressSelect; 					//*
     always @(*) begin
         case(dMemAddressSelect)
             1'b0:   dMemAddress = {regFileOutC,regFileOutB};
@@ -94,8 +115,8 @@ module top(input wire clk);
     wire [7:0] dMemIn;
     wire [7:0] dMemOut;
     wire [15:0] dMemAddress;
-    wire dMemWriteEn;   //*
-    wire dMemReadEn;    //*
+    wire dMemWriteEn;   						//*
+    wire dMemReadEn;    						//*
     d_mem dataMemory(.din(dMemIn),
                      .w_addr(dMemAddress),
                      .w_en(dMemWriteEn),
@@ -106,7 +127,7 @@ module top(input wire clk);
     );
     //***************************************************************
     // Status Register Source Mux
-    wire [1:0] statusRegSrcSelect; //*
+    wire [1:0] statusRegSrcSelect; 				//*
     always @(*) begin
         case(statusRegSrcSelect)
         2'b00:  statusIn = {interruptEnOut,negitiveOut,zeroOut,carryOut};       // ALU flags out and save interrupt enable status
@@ -121,7 +142,7 @@ module top(input wire clk);
     reg zeroFlag;
     reg negativeFlag;
     reg interruptEnable;
-    wire flagEnable; //*
+    wire flagEnable; 							//*
     wire [3:0] statusIn;
     wire [3:0] statusOut = {interruptEnable,negativeFlag,zeroFlag,carryFlag};
 
@@ -141,7 +162,7 @@ module top(input wire clk);
     end 
     //***************************************************************
     // Instruction Memory Address Mux
-    wire [2:0] iMemAddrSelect; //*
+    wire [2:0] iMemAddrSelect; 					//*
     always @(*) begin
         case(iMemAddrSelect)
         3'b000:     iMemAddress = pcPlusOne;
@@ -157,7 +178,7 @@ module top(input wire clk);
     // Instruction Memory
     wire [15:0] iMemAddress;
     wire [7:0] iMemOut;
-    wire iMemReadEnable; //*
+    wire iMemReadEnable;						//*
     i_mem instructionMemory(.din(8'd0),
                             .w_addr(16'd0),
                             .w_en(1'd0),
@@ -172,7 +193,7 @@ module top(input wire clk);
     wire [15:0] pcIn = iMemAddress + 1;
     wire [15:0] pcOut = pc;
     wire [15:0] pcPlusOne = pcOut + 1;
-    wire pcWriteEn;     //*
+    wire pcWriteEn;								//*
     always @(posedge clk) begin
         if(pcWriteEn)
             pc <= pcIn;
