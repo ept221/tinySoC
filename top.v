@@ -2,6 +2,10 @@ module top(input wire clk);
 	//***************************************************************
 	// Instantiate Control Logic
 	control cntrl(.clk(clk),
+				  .iMemOut(iMemOut),
+				  .carryFlag(carryFlag),
+				  .zeroFlag(zeroFlag),
+				  .negativeFlag(negativeFlag),
                	  .regFileSrc(regFileSrc),
                	  .regFileOutBSelect(regFileOutBSelect),
                	  .regFileWriteEnable(regFileWriteEnable),
@@ -34,7 +38,7 @@ module top(input wire clk);
     //***************************************************************
     // Register File
     wire [3:0] regFileOutBSelect;   //*
-    wire [7:0] regFileIn;   
+    reg [7:0] regFileIn;   
     wire regFileWriteEnable;        //*
     wire regFileIncPair;            //*
     wire regFileDecPair;            //*
@@ -79,8 +83,8 @@ module top(input wire clk);
     wire zeroOut;
     wire negitiveOut;
     wire [7:0] aluOut;
-    wire [7:0] dataA;
-    wire [7:0] dataB;
+    reg [7:0] dataA;
+    reg [7:0] dataB;
     alu ALU(.dataA(dataA),
             .dataB(dataB),
             .mode(aluMode),
@@ -112,9 +116,9 @@ module top(input wire clk);
     end
     //***************************************************************
     // Data Memory
-    wire [7:0] dMemIn;
+    reg [7:0] dMemIn;
     wire [7:0] dMemOut;
-    wire [15:0] dMemAddress;
+    reg [15:0] dMemAddress;
     wire dMemWriteEn;   						//*
     wire dMemReadEn;    						//*
     d_mem dataMemory(.din(dMemIn),
@@ -130,7 +134,7 @@ module top(input wire clk);
     wire [1:0] statusRegSrcSelect; 				//*
     always @(*) begin
         case(statusRegSrcSelect)
-        2'b00:  statusIn = {interruptEnOut,negitiveOut,zeroOut,carryOut};       // ALU flags out and save interrupt enable status
+        2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};       // ALU flags out and save interrupt enable status
         2'b01:  statusIn = aluOut[3:0];                                         // ALU output
         2'b10:  statusIn = dMemOut[3:0];                                        // Data memory output
         2'b11:  statusIn = 4'd0;                                                // Default to zero
@@ -143,7 +147,7 @@ module top(input wire clk);
     reg negativeFlag;
     reg interruptEnable;
     wire flagEnable; 							//*
-    wire [3:0] statusIn;
+    reg [3:0] statusIn;
     wire [3:0] statusOut = {interruptEnable,negativeFlag,zeroFlag,carryFlag};
 
     always @(posedge clk) begin
@@ -157,11 +161,12 @@ module top(input wire clk);
     //***************************************************************
     // Return Register
     reg [7:0] returnReg;
-    always(@posedge clk) begin
+    always @(posedge clk) begin
         returnReg <= dMemOut;
     end 
     //***************************************************************
     // Instruction Memory Address Mux
+    wire [15:0] interruptVector = 16'h00FF;
     wire [2:0] iMemAddrSelect; 					//*
     always @(*) begin
         case(iMemAddrSelect)
@@ -176,8 +181,8 @@ module top(input wire clk);
     end
     //***************************************************************
     // Instruction Memory
-    wire [15:0] iMemAddress;
-    wire [7:0] iMemOut;
+    reg [15:0] iMemAddress;
+    wire [15:0] iMemOut;
     wire iMemReadEnable;						//*
     i_mem instructionMemory(.din(8'd0),
                             .w_addr(16'd0),

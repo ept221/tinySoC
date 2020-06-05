@@ -5,7 +5,7 @@ module i_mem(din, w_addr, w_en, r_addr, r_en, clk, dout);
 	end
 
 	parameter addr_width = 16;
-	parameter data_width = 8;
+	parameter data_width = 16;
 	input [addr_width-1:0] w_addr;
 	input [addr_width-1:0] r_addr;
 	input [data_width-1:0] din;

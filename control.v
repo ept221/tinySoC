@@ -1,21 +1,25 @@
 module control(input wire clk,
-               output wire [1:0] regFileSrc,
-               output wire [3:0] regFileOutBSelect,
-               output wire regFileWriteEnable,  
-               output wire regFileIncPair,        
-               output wire regFileDecPair,            
-               output wire aluSrcASelect,
-               output wire [1:0] aluSrcBSelect,
-               output wire [3:0] aluMode,
-               output wire [1:0] dMemDataSelect,
-               output wire dMemAddressSelect,
-               output wire dMemWriteEn,
-               output wire dMemReadEn,
-               output wire [1:0] statusRegSrcSelect,
-               output wire flagEnable,
-               output wire [2:0] iMemAddrSelect,
-               output wire iMemReadEnable,
-               output wire pcWriteEn
+               input wire [15:0] iMemOut,
+               input wire carryFlag,
+               input wire zeroFlag,
+               input wire negativeFlag,
+               output reg [1:0] regFileSrc,
+               output reg [3:0] regFileOutBSelect,
+               output reg regFileWriteEnable,  
+               output reg regFileIncPair,        
+               output reg regFileDecPair,            
+               output reg aluSrcASelect,
+               output reg [1:0] aluSrcBSelect,
+               output reg [3:0] aluMode,
+               output reg [1:0] dMemDataSelect,
+               output reg dMemAddressSelect,
+               output reg dMemWriteEn,
+               output reg dMemReadEn,
+               output reg [1:0] statusRegSrcSelect,
+               output reg flagEnable,
+               output reg [2:0] iMemAddrSelect,
+               output reg iMemReadEnable,
+               output reg pcWriteEn
 );
 
     reg [2:0] state;
@@ -24,8 +28,8 @@ module control(input wire clk,
         state <= nextState;
     end
 
+    reg condition;
     always @(*) begin
-        wire condition;
         case(iMemOut[15:13])
         3'b000:    condition = 1'b1;
         3'b001:    condition = (carryFlag);
@@ -152,7 +156,7 @@ module control(input wire clk,
                     nextState = 3'b000;
                 end
                 else begin
-                    if(state = 3'b000) begin
+                    if(state == 3'b000) begin
                         iMemReadEnable = 1'b0;
                         pcWriteEn = 1'b0;
                         nextState = 3'b001;
@@ -352,7 +356,7 @@ module control(input wire clk,
                 nextState = 3'b000;
             end
             // SSR and CSR
-            else if(iMemOut[7:3] == 5'b11011 || i MemOut[7:3] == 5'b11100 && iMemOut[2:0] == 3'b000) begin
+            else if(iMemOut[7:3] == 5'b11011 || iMemOut[7:3] == 5'b11100 && iMemOut[2:0] == 3'b000) begin
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
                 regFileWriteEnable = 1'b0;
