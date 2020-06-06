@@ -37,7 +37,8 @@ module control(input wire clk,
         3'b011:    condition = (zeroFlag);
         3'b100:    condition = (~zeroFlag);
         3'b101:    condition = (negativeFlag);
-        3'b111:    condition = (~negativeFlag);
+        3'b110:    condition = (~negativeFlag);
+        3'b111:    condition = 1'b1;
         endcase 
     end
 
@@ -331,6 +332,7 @@ module control(input wire clk,
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
+                iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
@@ -445,7 +447,7 @@ module control(input wire clk,
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
-            if(state == 3'b011) begin
+            else begin
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
