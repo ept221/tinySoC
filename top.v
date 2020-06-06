@@ -1,4 +1,4 @@
-module top(input wire clk);
+module top(input wire clk, output wire R);
     //***************************************************************
     // Instantiate Control Logic
     //***************************************************************
@@ -75,6 +75,7 @@ module top(input wire clk);
     // Data Memory
     reg [7:0] dMemIn;
     wire [7:0] dMemOut;
+    assign R = dMemOut[1];
     reg [15:0] dMemAddress;
     wire dMemWriteEn;                           //*
     wire dMemReadEn;                            //*

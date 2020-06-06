@@ -1,7 +1,7 @@
 module d_ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
 
 	initial begin
-		$readmemh("d_ram.ini",mem);
+		$readmemb("d_ram.ini",mem);
 	end
 
 	parameter addr_width = 8;
