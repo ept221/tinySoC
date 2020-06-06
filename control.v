@@ -53,7 +53,7 @@ module control(input wire clk,
                 regFileDecPair = 1'b0;
                 aluSrcASelect = 1'b1;               // From the register file
                 aluSrcBSelect = 2'b10;              // From immediate 8-bit data
-                aluMode = {0,iMemOut[3:1]};
+                aluMode = {1'b0,iMemOut[3:1]};
                 dMemDataSelect = 2'b10;             // aluOut
                 dMemAddressSelect = 1'b0;           // {12'b0,iMemOut[15:12]}
                 dMemWriteEn = 1'd0;
@@ -168,11 +168,11 @@ module control(input wire clk,
                         nextState = 3'b000;
                     end
                 end
-                if(iMemOut[7:3] == 01101 || iMemOut[7:3] == 10000) begin
+                if(iMemOut[7:3] == 5'b01101 || iMemOut[7:3] == 5'b10000) begin
                     regFileIncPair = 1'b0;
                     regFileDecPair = 1'b0;
                 end
-                else if(iMemOut[7:3] == 01110 || iMemOut[7:3] == 10001) begin
+                else if(iMemOut[7:3] == 5'b01110 || iMemOut[7:3] == 5'b10001) begin
                     regFileIncPair = 1'b1;
                     regFileDecPair = 1'b0;
                 end
@@ -217,7 +217,7 @@ module control(input wire clk,
                         iMemAddrSelect = 3'b001;                // pcOut
                     end
                 end
-                nextState = 1'b000;
+                nextState = 3'b000;
             end
             // JMP
             else if(iMemOut[7:3] == 5'b10110) begin

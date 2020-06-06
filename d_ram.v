@@ -1,4 +1,4 @@
-module d_mem(din, w_addr, w_en, r_addr, r_en, clk, dout);
+module d_ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
 
 	initial begin
 		$readmemh("d_ram.ini",mem);
