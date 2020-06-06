@@ -1,29 +1,6 @@
 module top(input wire clk);
     //***************************************************************
     // Instantiate Control Logic
-    control cntrl(.clk(clk),
-                  .iMemOut(iMemOut),
-                  .carryFlag(carryFlag),
-                  .zeroFlag(zeroFlag),
-                  .negativeFlag(negativeFlag),
-                  .regFileSrc(regFileSrc),
-                  .regFileOutBSelect(regFileOutBSelect),
-                  .regFileWriteEnable(regFileWriteEnable),
-                  .regFileIncPair(regFileIncPair),
-                  .regFileDecPair(regFileDecPair),
-                  .aluSrcASelect(aluSrcASelect),
-                  .aluSrcBSelect(aluSrcBSelect),
-                  .aluMode(aluMode),
-                  .dMemDataSelect(dMemDataSelect),
-                  .dMemAddressSelect(dMemAddressSelect),
-                  .dMemWriteEn(dMemWriteEn),
-                  .dMemReadEn(dMemReadEn),
-                  .statusRegSrcSelect(statusRegSrcSelect),
-                  .flagEnable(flagEnable),
-                  .iMemAddrSelect(iMemAddrSelect),
-                  .iMemReadEnable(iMemReadEnable),
-                  .pcWriteEn(pcWriteEn)
-    );
     //***************************************************************
     // Register File Source Mux
     wire [1:0] regFileSrc;                      //*
@@ -45,17 +22,6 @@ module top(input wire clk);
     wire [7:0] regFileOutA;
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
-    regFile registerFile(.inSelect(iMemOut[15:12]),
-                         .outBselect(regFileOutBSelect),
-                         .in(regFileIn),
-                         .write_en(regFileWriteEnable),
-                         .inc(regFileIncPair),
-                         .dec(regFileDecPair),
-                         .clk(clk),
-                         .outA(regFileOutA),
-                         .outB(regFileOutB),
-                         .outC(regFileOutC)
-    );
     //***************************************************************
     // ALU Mux A
     wire aluSrcASelect;                         //*
@@ -85,15 +51,6 @@ module top(input wire clk);
     wire [7:0] aluOut;
     reg [7:0] dataA;
     reg [7:0] dataB;
-    alu ALU(.dataA(dataA),
-            .dataB(dataB),
-            .mode(aluMode),
-            .cin(carryFlag),
-            .out(aluOut),
-            .cout(carryOut),
-            .zout(zeroOut),
-            .nout(negitiveOut)
-    );
     //***************************************************************
     // Data Memory and I/O Data Mux
     wire [1:0] dMemDataSelect;                  //*
@@ -121,14 +78,6 @@ module top(input wire clk);
     reg [15:0] dMemAddress;
     wire dMemWriteEn;                           //*
     wire dMemReadEn;                            //*
-    d_ram dataMemory(.din(dMemIn),
-                     .w_addr(dMemAddress),
-                     .w_en(dMemWriteEn),
-                     .r_addr(dMemAddress),
-                     .r_en(dMemReadEn),
-                     .clk(clk),
-                     .dout(dMemOut)
-    );
     //***************************************************************
     // Status Register Source Mux
     wire [1:0] statusRegSrcSelect;              //*
@@ -142,10 +91,10 @@ module top(input wire clk);
     end
     //***************************************************************
     // Status Register
-    reg carryFlag;
-    reg zeroFlag;
-    reg negativeFlag;
-    reg interruptEnable;
+    reg carryFlag = 0;
+    reg zeroFlag = 0;
+    reg negativeFlag = 0;
+    reg interruptEnable = 0;
     wire flagEnable;                            //*
     reg [3:0] statusIn;
     wire [3:0] statusOut = {interruptEnable,negativeFlag,zeroFlag,carryFlag};
@@ -160,7 +109,7 @@ module top(input wire clk);
     end
     //***************************************************************
     // Return Register
-    reg [7:0] returnReg;
+    reg [7:0] returnReg = 0;
     always @(posedge clk) begin
         returnReg <= dMemOut;
     end 
@@ -184,14 +133,6 @@ module top(input wire clk);
     reg [15:0] iMemAddress;
     wire [15:0] iMemOut;
     wire iMemReadEnable;                        //*
-    i_ram instructionMemory(.din(16'd0),
-                            .w_addr(16'd0),
-                            .w_en(1'd0),
-                            .r_addr(iMemAddress),
-                            .r_en(iMemReadEnable),
-                            .clk(clk),
-                            .dout(iMemOut)
-    );
     //***************************************************************
     // PC and pcPlusOne adder
     reg [15:0] pc = 16'd1;
@@ -204,4 +145,63 @@ module top(input wire clk);
             pc <= pcIn;
     end
     //***************************************************************
+    control cntrl(.clk(clk),
+                  .iMemOut(iMemOut),
+                  .carryFlag(carryFlag),
+                  .zeroFlag(zeroFlag),
+                  .negativeFlag(negativeFlag),
+                  .regFileSrc(regFileSrc),
+                  .regFileOutBSelect(regFileOutBSelect),
+                  .regFileWriteEnable(regFileWriteEnable),
+                  .regFileIncPair(regFileIncPair),
+                  .regFileDecPair(regFileDecPair),
+                  .aluSrcASelect(aluSrcASelect),
+                  .aluSrcBSelect(aluSrcBSelect),
+                  .aluMode(aluMode),
+                  .dMemDataSelect(dMemDataSelect),
+                  .dMemAddressSelect(dMemAddressSelect),
+                  .dMemWriteEn(dMemWriteEn),
+                  .dMemReadEn(dMemReadEn),
+                  .statusRegSrcSelect(statusRegSrcSelect),
+                  .flagEnable(flagEnable),
+                  .iMemAddrSelect(iMemAddrSelect),
+                  .iMemReadEnable(iMemReadEnable),
+                  .pcWriteEn(pcWriteEn)
+    );
+    regFile registerFile(.inSelect(iMemOut[15:12]),
+                         .outBselect(regFileOutBSelect),
+                         .in(regFileIn),
+                         .write_en(regFileWriteEnable),
+                         .inc(regFileIncPair),
+                         .dec(regFileDecPair),
+                         .clk(clk),
+                         .outA(regFileOutA),
+                         .outB(regFileOutB),
+                         .outC(regFileOutC)
+    );
+    alu ALU(.dataA(dataA),
+            .dataB(dataB),
+            .mode(aluMode),
+            .cin(carryFlag),
+            .out(aluOut),
+            .cout(carryOut),
+            .zout(zeroOut),
+            .nout(negitiveOut)
+    );
+    d_ram dataMemory(.din(dMemIn),
+                     .w_addr(dMemAddress),
+                     .w_en(dMemWriteEn),
+                     .r_addr(dMemAddress),
+                     .r_en(dMemReadEn),
+                     .clk(clk),
+                     .dout(dMemOut)
+    );
+    i_ram instructionMemory(.din(16'd0),
+                            .w_addr(16'd0),
+                            .w_en(1'd0),
+                            .r_addr(iMemAddress),
+                            .r_en(iMemReadEnable),
+                            .clk(clk),
+                            .dout(iMemOut)
+    );
 endmodule

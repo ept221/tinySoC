@@ -13,7 +13,7 @@ module regFile(input wire [3:0] inSelect,
     reg [7:0] rFile [0:15];
     integer i;
     initial begin
-        for(i = 0; i < 15; i = i + 1) begin
+        for(i = 0; i < 16; i = i + 1) begin
             rFile[i] = 8'd0;
         end
     end
