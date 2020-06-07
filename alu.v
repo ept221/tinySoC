@@ -9,7 +9,7 @@ module alu(input wire [7:0] dataA,
 
     always @(*) begin
         case(mode)
-        4'b0000:    {cout, out} = {cin,dataA};              // Pass B
+        4'b0000:    {cout, out} = {cin,dataB};              // Pass B
         4'b0001:    {cout, out} = {cin,dataA & dataB};      // AND
         4'b0010:    {cout, out} = {cin,dataA | dataB};      // OR
         4'b0011:    {cout, out} = {cin,dataA ^ dataB};      // XOR
