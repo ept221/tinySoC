@@ -22,10 +22,10 @@ module regFile(input wire [3:0] inSelect,
         if(write_en) begin
             rFile[inSelect] <= in;
         end
-        else if(inc) begin
+        if(inc && (~write_en || (write_en && ~(inSelect == outBselect)))) begin
             {rFile[(outBselect*2) + 1],rFile[outBselect*2]} <= {rFile[(outBselect*2) + 1],rFile[outBselect]} + 1;
         end
-        else if(dec) begin
+        else if(dec && (~write_en || (write_en && ~(inSelect == outBselect)))) begin
             {rFile[(outBselect*2) + 1],rFile[outBselect*2]} <= {rFile[(outBselect*2) + 1],rFile[outBselect]} - 1;
         end
     end

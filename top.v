@@ -1,4 +1,4 @@
-module top(input wire clk, output wire R);
+module top(input wire clk);
     //***************************************************************
     // Instantiate Control Logic
     //***************************************************************
@@ -14,11 +14,11 @@ module top(input wire clk, output wire R);
     end
     //***************************************************************
     // Register File
-    wire [3:0] regFileOutBSelect;   //*
+    wire [3:0] regFileOutBSelect;               //*
     reg [7:0] regFileIn;   
-    wire regFileWriteEnable;        //*
-    wire regFileIncPair;            //*
-    wire regFileDecPair;            //*
+    wire regFileWriteEnable;                    //*
+    wire regFileIncPair;                        //*
+    wire regFileDecPair;                        //*
     wire [7:0] regFileOutA;
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
@@ -75,7 +75,6 @@ module top(input wire clk, output wire R);
     // Data Memory
     reg [7:0] dMemIn;
     wire [7:0] dMemOut;
-    assign R = dMemOut[1];
     reg [15:0] dMemAddress;
     wire dMemWriteEn;                           //*
     wire dMemReadEn;                            //*

@@ -4,12 +4,11 @@ module test_tb();
     top dut(clk);
 
     initial begin
-    	$dumpfile("test_tb.vcd");
+        $dumpfile("test_tb.vcd");
         $dumpvars(0, dut);
         clk = 0;
-        repeat(6)
-            #1 clk = ~clk; 
-
+        repeat(12)
+            #1 clk = ~clk;
         $finish;
     end
 

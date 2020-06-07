@@ -22,7 +22,7 @@ module control(input wire clk,
                output reg pcWriteEn
 );
 
-    reg [2:0] state;
+    reg [2:0] state = 3'b0;
     reg [2:0] nextState;
     always @(posedge clk) begin
         state <= nextState;
