@@ -1,15 +1,15 @@
 ***********************************************
 Type: R-I
-LDI     DDDD IIIIIIII 0001		Load register immediate 
-ANI     DDDD IIIIIIII 0011		AND register immediate
+LDI     DDDD IIIIIIII 0001      Load register immediate 
+ANI     DDDD IIIIIIII 0011      AND register immediate
 ORI     DDDD IIIIIIII 0101      OR register immediate
-XOI     DDDD IIIIIIII 0111		XOR register immediate
-ADI     DDDD IIIIIIII 1001		Add register immediate
-ACI     DDDD IIIIIIII 1011		Add register with carry immediate
+XOI     DDDD IIIIIIII 0111      XOR register immediate
+ADI     DDDD IIIIIIII 1001      Add register immediate
+ACI     DDDD IIIIIIII 1011      Add register with carry immediate
 CPI     DDDD IIIIIIII 1101      compare immediate
 ***********************************************
 Type: R-L    
-IN		DDDD LLLLLLLL 0010		data at L gets put into D
+IN      DDDD LLLLLLLL 0010      data at L gets put into D
 OUT     SSSS LLLLLLLL 0100
 ***********************************************
 Type: R-R
