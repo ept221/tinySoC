@@ -56,19 +56,21 @@ module top(input wire clk);
     wire [1:0] dMemDataSelect;                  //*
     always @(*) begin
         case(dMemDataSelect)
-            2'b00:  dMemIn = pcOut[15:8];       // From MSBs of the PC
-            2'b01:  dMemIn = pcOut[7:0];        // From LSBs of the PC
+            2'b00:  dMemIn = pcPlusOne[15:8];   // From MSBs of the PC + 1
+            2'b01:  dMemIn = pcPlusOne[7:0];    // From LSBs of the PC + 1
             2'b10:  dMemIn = aluOut;            // From the ALU
             2'b11:  dMemIn = 8'd0;              // Default to zero
         endcase
     end
     //***************************************************************
     // Data Memory and I/O Address Mux
-    wire dMemAddressSelect;                     //*
+    wire [1:0] dMemAddressSelect;                     //*
     always @(*) begin
         case(dMemAddressSelect)
-            1'b0:   dMemAddress = {regFileOutC,regFileOutB};
-            1'b1:   dMemAddress = {8'd0,iMemOut[11:4]};
+            2'b00:   dMemAddress = {regFileOutC,regFileOutB};
+            2'b01:   dMemAddress = {8'd0,iMemOut[11:4]};
+            2'b10:   dMemAddress = {regFileOutC,regFileOutB} + 16'b1;
+            default  dMemAddress = {regFileOutC,regFileOutB};
         endcase
     end
     //***************************************************************
