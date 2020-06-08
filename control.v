@@ -59,7 +59,7 @@ module control(input wire clk,
                 dMemWriteEn = 1'd0;
                 dMemReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-                flagEnable = 1'b1;
+                flagEnable = (iMemOut[3:1] != 3'b000);  // Dont set flags on LDI
                 iMemAddrSelect = 3'b001;
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'd1;
