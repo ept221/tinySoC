@@ -464,7 +464,7 @@ module control(input wire clk,
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
                 dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, SP
                 dMemReadEn = 1'b0;
-                statusRegSrcSelect = 2'b00;                     // ALU flags out and save interrupt enable status
+                statusRegSrcSelect = 2'b00;     // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 dMemDataSelect = 2'b00;         // From MSBs of the PC + 1
                 iMemReadEnable = 1'b1;          // read the instruction at the address we call to
