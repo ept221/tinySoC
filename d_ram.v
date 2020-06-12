@@ -11,7 +11,7 @@ module d_ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
     input [data_width-1:0] din;
     input w_en, r_en, clk;
     output [data_width-1:0] dout;
-    reg [data_width-1:0] dout = 0;
+    reg [data_width-1:0] dout;
     reg [data_width-1:0] mem [0:(1<<addr_width)-1];
 
     always @(posedge clk) begin
