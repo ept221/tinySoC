@@ -1,4 +1,5 @@
-module top(input wire clk);
+module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN_8, output wire PIN_9,
+                           output wire PIN_10, output wire PIN_11, output wire PIN_12, output wire PIN_13);
     //***************************************************************
     // Instantiate Control Logic
     //***************************************************************
@@ -8,7 +9,7 @@ module top(input wire clk);
         case(regFileSrc)
         2'b00:  regFileIn = aluOut;             // From the ALU output
         2'b01:  regFileIn = iMemOut[11:4];      // From the instruction memory output
-        2'b10:  regFileIn = dMemOut;            // From the data memory output
+        2'b10:  regFileIn = dMemIOOut;          // From the data memory output
         2'b11:  regFileIn = aluOut;             // From the ALU output, for default
         endcase
     end
@@ -56,38 +57,80 @@ module top(input wire clk);
     wire [1:0] dMemDataSelect;                  //*
     always @(*) begin
         case(dMemDataSelect)
-            2'b00:  dMemIn = pcPlusOne[15:8];   // From MSBs of the PC + 1
-            2'b01:  dMemIn = pcPlusOne[7:0];    // From LSBs of the PC + 1
-            2'b10:  dMemIn = aluOut;            // From the ALU
-            2'b11:  dMemIn = 8'd0;              // Default to zero
+            2'b00:  dMemIOIn = pcPlusOne[15:8];   // From MSBs of the PC + 1
+            2'b01:  dMemIOIn = pcPlusOne[7:0];    // From LSBs of the PC + 1
+            2'b10:  dMemIOIn = aluOut;            // From the ALU
+            2'b11:  dMemIOIn = 8'd0;              // Default to zero
         endcase
     end
     //***************************************************************
     // Data Memory and I/O Address Mux
-    wire [1:0] dMemAddressSelect;                     //*
+    wire [1:0] dMemIOAddressSelect;                     //*
     always @(*) begin
-        case(dMemAddressSelect)
-            2'b00:   dMemAddress = {regFileOutC,regFileOutB};
-            2'b01:   dMemAddress = {8'd0,iMemOut[11:4]};
-            2'b10:   dMemAddress = {regFileOutC,regFileOutB} + 16'b1;
-            default  dMemAddress = {regFileOutC,regFileOutB};
+        case(dMemIOAddressSelect)
+            2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};
+            2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};
+            2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
+            default  dMemIOAddress = {regFileOutC,regFileOutB};
         endcase
     end
     //***************************************************************
-    // Data Memory
-    reg [7:0] dMemIn;
+    // Data Memory and IO
+    reg [7:0] dMemIOIn;
+    reg [7:0] dMemIOOut;
     wire [7:0] dMemOut;
-    reg [15:0] dMemAddress;
-    wire dMemWriteEn;                           //*
-    wire dMemReadEn;                            //*
+    reg [7:0] IOOut = 0;
+    reg [15:0] dMemIOAddress;
+    wire dMemIOWriteEn;                           //*
+    wire dMemIOReadEn;                            //*
+
+    reg dMemWriteEn;
+    reg dMemReadEn;
+    reg IOWriteEn;
+    reg IOReadEn;
+
+    // This is the logic for the address map for the data memory
+    // and I/O. The data memory will be from 0x0000 through 0x0FFF
+    // and the I/O will be from 0x1000 through 0x10FF.
+    reg foo = 0;
+    always @(*) begin
+        if(dMemIOAddress > 16'h0FFF) begin
+            dMemWriteEn = 0;
+            dMemReadEn = 0;
+            IOWriteEn = dMemIOWriteEn;
+            IOReadEn = dMemIOReadEn;
+            dMemIOOut = IOOut;
+            foo = 1;
+        end
+        else begin
+            foo = 0;
+            dMemWriteEn = dMemIOWriteEn;
+            dMemReadEn = dMemIOReadEn;
+            IOWriteEn = 0;
+            IOReadEn = 0;
+            dMemIOOut = dMemOut;
+        end
+    end
+
+    reg [7:0] IO_PINS = 0;
+    assign {PIN_13,PIN_12,PIN_11,PIN_10,PIN_9,PIN_8,PIN_7,PIN_6} = IO_PINS;
+    //This is the logic for the I/O ports
+    always @(posedge clk) begin
+        if(dMemIOAddress == 16'h1000) begin
+            if(IOWriteEn)
+                IO_PINS <= dMemIOIn;
+            if(IOReadEn)
+                IOOut <= IO_PINS;
+        end
+    end
     //***************************************************************
     // Status Register Source Mux
     wire [1:0] statusRegSrcSelect;              //*
     always @(*) begin
         case(statusRegSrcSelect)
-        2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};       // ALU flags out and save interrupt enable status
+        2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
         2'b01:  statusIn = aluOut[3:0];                                         // ALU output
-        2'b10:  statusIn = dMemOut[3:0];                                        // Data memory output
+        2'b10:  statusIn = dMemIOOut[3:0];                                      // Data memory output
         2'b11:  statusIn = 4'd0;                                                // Default to zero
         endcase
     end
@@ -113,7 +156,7 @@ module top(input wire clk);
     // Return Register
     reg [7:0] returnReg = 0;
     always @(posedge clk) begin
-        returnReg <= dMemOut;
+        returnReg <= dMemIOOut;
     end 
     //***************************************************************
     // Instruction Memory Address Mux
@@ -126,7 +169,7 @@ module top(input wire clk);
         3'b010:     iMemAddress = interruptVector;
         3'b011:     iMemAddress = iMemOut;
         3'b100:     iMemAddress = {regFileOutC, regFileOutB};
-        3'b101:     iMemAddress = {returnReg,dMemOut};
+        3'b101:     iMemAddress = {returnReg,dMemIOOut};
         default     iMemAddress = 16'd0;      
         endcase
     end
@@ -161,9 +204,9 @@ module top(input wire clk);
                   .aluSrcBSelect(aluSrcBSelect),
                   .aluMode(aluMode),
                   .dMemDataSelect(dMemDataSelect),
-                  .dMemAddressSelect(dMemAddressSelect),
-                  .dMemWriteEn(dMemWriteEn),
-                  .dMemReadEn(dMemReadEn),
+                  .dMemIOAddressSelect(dMemIOAddressSelect),
+                  .dMemIOWriteEn(dMemIOWriteEn),
+                  .dMemIOReadEn(dMemIOReadEn),
                   .statusRegSrcSelect(statusRegSrcSelect),
                   .flagEnable(flagEnable),
                   .iMemAddrSelect(iMemAddrSelect),
@@ -190,10 +233,10 @@ module top(input wire clk);
             .zout(zeroOut),
             .nout(negitiveOut)
     );
-    d_ram dataMemory(.din(dMemIn),
-                     .w_addr(dMemAddress),
+    d_ram dataMemory(.din(dMemIOIn),
+                     .w_addr(dMemIOAddress),
                      .w_en(dMemWriteEn),
-                     .r_addr(dMemAddress),
+                     .r_addr(dMemIOAddress),
                      .r_en(dMemReadEn),
                      .clk(clk),
                      .dout(dMemOut)

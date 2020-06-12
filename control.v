@@ -12,9 +12,9 @@ module control(input wire clk,
                output reg [1:0] aluSrcBSelect,
                output reg [3:0] aluMode,
                output reg [1:0] dMemDataSelect,
-               output reg [1:0] dMemAddressSelect,
-               output reg dMemWriteEn,
-               output reg dMemReadEn,
+               output reg [1:0] dMemIOAddressSelect,
+               output reg dMemIOWriteEn,
+               output reg dMemIOReadEn,
                output reg [1:0] statusRegSrcSelect,
                output reg flagEnable,
                output reg [2:0] iMemAddrSelect,
@@ -55,9 +55,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b10;              // From immediate 8-bit data
                 aluMode = {1'b0,iMemOut[3:1]};
                 dMemDataSelect = 2'b10;             // aluOut
-                dMemAddressSelect = 2'b00;          // {12'b0,iMemOut[15:12]}
-                dMemWriteEn = 1'd0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {12'b0,iMemOut[15:12]}
+                dMemIOWriteEn = 1'd0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = (iMemOut[3:1] != 3'b000);  // Dont set flags on LDI
                 iMemAddrSelect = 3'b001;
@@ -75,9 +75,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass B
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b01;          // {8'd0,iMemOut[11:4]};
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b1;
+                dMemIOAddressSelect = 2'b01;        // {8'd0,iMemOut[11:4]};
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b1;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut, pcPlusOne
@@ -105,9 +105,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass B
                 dMemDataSelect = 2'b10;             // aluOut
-                dMemAddressSelect = 2'b01;          // {8'd0,iMemOut[11:4]};
-                dMemWriteEn = 1'b1;
-                dMemReadEn = 1'b1;
+                dMemIOAddressSelect = 2'b01;        // {8'd0,iMemOut[11:4]};
+                dMemIOWriteEn = 1'b1;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut, pcPlusOne
@@ -126,9 +126,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = iMemOut[6:3];
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, but doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, but doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b1;
                 iMemReadEnable = 1'b1;
@@ -145,9 +145,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                  // Pass A
                 dMemDataSelect = 2'b10;             // aluOut
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}
-                dMemWriteEn = ~iMemOut[7];
-                dMemReadEn = iMemOut[7];
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
+                dMemIOWriteEn = ~iMemOut[7];
+                dMemIOReadEn = iMemOut[7];
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -190,9 +190,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;                      // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                          // Pass A, doesnt really matter
                 dMemDataSelect = 2'b10;                     // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;                  // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b1;
+                dMemIOAddressSelect = 2'b00;                // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b1;
                 statusRegSrcSelect = 2'b00;                 // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemReadEnable = 1'b1;
@@ -230,9 +230,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;                          // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                              // pass A
                 dMemDataSelect = 2'b10;                         // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;                      // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;                    // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;                     // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemReadEnable = 1'b1;
@@ -255,22 +255,22 @@ module control(input wire clk,
                 aluSrcASelect = 1'b1;               // From the register file, doesnt really matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, SP
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, SP
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 dMemDataSelect = 2'b01;             // From LSBs of the PC + 1
                 iMemReadEnable = 1'b1;
                 if(condition) begin                 // If the call condition is met
                     regFileDecPair = 1'b1;          // Deincrement the SP
-                    dMemWriteEn = 1'b1;             // Write the LSBs of the PC to the stack
+                    dMemIOWriteEn = 1'b1;           // Write the LSBs of the PC to the stack
                     iMemAddrSelect = 3'b001;        // pcOut, read the address we need to jump to
                     pcWriteEn = 1'b0;               // Dont write to the PC because we still need to get the MSBs
                     nextState = 3'b011;
                 end
                 else begin                          // If the call condition is not met
                     regFileDecPair = 1'b0;
-                    dMemWriteEn = 1'b0;
+                    dMemIOWriteEn = 1'b0;
                     iMemAddrSelect = 3'b000;        // pcPlusOne
                     pcWriteEn = 1'b1;
                     nextState = 3'b000;
@@ -286,15 +286,15 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
                 dMemDataSelect = 2'b10;             // aluOut
-                dMemAddressSelect = 2'b10;          // {regFileOutC,regFileOutB} + 1, SP + 1
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b1;                  // Pop the return address
+                dMemIOAddressSelect = 2'b10;        // {regFileOutC,regFileOutB} + 1, SP + 1
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b1;                // Pop the return address
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 if(state == 3'b000) begin
                     if(condition) begin
                         regFileIncPair = 1'b1;      // Increment the SP
-                        iMemAddrSelect = 3'b101;    // returnReg,dMemOut
+                        iMemAddrSelect = 3'b101;    // returnReg,dMemIOOut
                         iMemReadEnable = 1'b0;
                         pcWriteEn = 1'b0;
                         nextState = 3'b010;
@@ -309,14 +309,14 @@ module control(input wire clk,
                 end
                 else if(state == 3'b010) begin
                     regFileIncPair = 1'b1;          // Increment the SP
-                    iMemAddrSelect = 3'b101;        // returnReg,dMemOut
+                    iMemAddrSelect = 3'b101;        // returnReg,dMemIOOut
                     iMemReadEnable = 1'b0;
                     pcWriteEn = 1'b0;
                     nextState = 3'b100;
                 end
                 else begin
                     regFileIncPair = 1'b0;
-                    iMemAddrSelect = 3'b101;        // returnReg,dMemOut
+                    iMemAddrSelect = 3'b101;        // returnReg,dMemIOOut
                     iMemReadEnable = 1'b1;
                     pcWriteEn = 1'b1;
                     nextState = 3'b000;
@@ -333,9 +333,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                  // pass A
                 dMemDataSelect = 2'b10;             // aluOut
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}
-                dMemWriteEn = 1'b1;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
+                dMemIOWriteEn = 1'b1;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -354,10 +354,10 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                  // pass A
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b1;
-                statusRegSrcSelect = 2'b10;         // dMemOut[3:0]
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b1;
+                statusRegSrcSelect = 2'b10;         // dMemIOOut[3:0]
                 flagEnable = 1'b1;
                 iMemAddrSelect = 3'b001;            // pcOut
                 iMemReadEnable = 1'b1;
@@ -374,9 +374,9 @@ module control(input wire clk,
                 aluSrcASelect = 1'b0;               // From zero-extended status register
                 aluSrcBSelect = 2'b01;              // {4'd0,iMemOut[11:8]}, immediate 4-bit mask
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b01;         // ALU output
                 flagEnable = 1'b1;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -401,9 +401,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -422,9 +422,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
                 dMemDataSelect = 2'b10;             // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -444,9 +444,9 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;                          // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                              // pass A
                 dMemDataSelect = 2'b10;                         // aluOut, doesnt really matter
-                dMemAddressSelect = 2'b00;                      // {regFileOutC,regFileOutB}, doesnt really matter
-                dMemWriteEn = 1'b0;
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;                    // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;                     // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b011;                        // iMemOut
@@ -462,14 +462,14 @@ module control(input wire clk,
                 aluSrcASelect = 1'b1;               // From the register file, doesnt really matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b0000;                  // Pass B, doesnt really matter
-                dMemAddressSelect = 2'b00;          // {regFileOutC,regFileOutB}, SP
-                dMemReadEn = 1'b0;
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, SP
+                dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;     // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 dMemDataSelect = 2'b00;         // From MSBs of the PC + 1
                 iMemReadEnable = 1'b1;          // read the instruction at the address we call to
                 regFileDecPair = 1'b1;          // Deincrement the SP
-                dMemWriteEn = 1'b1;             // Write the MSBs of the PC to the stack
+                dMemIOWriteEn = 1'b1;           // Write the MSBs of the PC to the stack
                 iMemAddrSelect = 3'b011;        // iMemOut, the address of the place we call to
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;

@@ -4,7 +4,7 @@ module d_ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
         $readmemb("d_ram.ini",mem);
     end
 
-    parameter addr_width = 8;
+    parameter addr_width = 12;
     parameter data_width = 8;
     input [addr_width-1:0] w_addr;
     input [addr_width-1:0] r_addr;
