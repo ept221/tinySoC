@@ -15,7 +15,7 @@ module test_tb();
         $dumpfile("test_tb.vcd");
         $dumpvars(0, dut);
         clk = 0;
-        repeat(36)
+        repeat(5000)
             #1 clk = ~clk;
         $finish;
     end

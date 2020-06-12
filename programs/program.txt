@@ -1,16 +1,15 @@
-        nop
-start:  ldi r0, ff
-loop:   cpi r0, 0
-        jz foo
-        adi r0, ff
-        jmp loop
+        nop         // processor needs one nop on startup to fill fetch pipeline
+start:  ldi r0, 
+delay:  cpi r0, 0
+        jz toggle
+        adi r0, ff  // add -1
+        jmp delay
 
-foo:    in r1, 0
+toggle: in r1, 0
         xoi r1, 1
         ani r1, 1
         out r1, 0
         jmp start
-
 
 0000000000000000 nop
 0000111111110001 ldi, r0 ff
@@ -26,18 +25,3 @@ foo:    in r1, 0
 0001000000000100 out r1, 0
 0000000010110000
 0000000000000001 start
-
-0000000000000000
-0000111111110001
-0000000000001101
-1010000010110000
-0000000000001000
-0000111111111001
-0000000010110000
-0000000000000010
-0001000000000010
-0001000000010111
-0001000000010011
-0001000000000100
-0000000010110000
-0000000000000001
