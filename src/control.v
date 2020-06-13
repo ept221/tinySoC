@@ -67,7 +67,7 @@ module control(input wire clk,
             end
             // [Type R-L] : IN
             else if(iMemOut[2:0] == 3'b010) begin
-                regFileSrc = 2'b00;                 // aluOut
+                regFileSrc = 2'b10;                 // dMemIOOut
                 regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
                 regFileIncPair = 1'b0;
                 regFileDecPair = 1'b0;
