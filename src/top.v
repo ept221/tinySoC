@@ -111,16 +111,37 @@ module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN
             dMemIOOut = dMemOut;
         end
     end
+    reg [7:0] dir = 0;
+    reg [7:0] port = 0;
+    wire [7:0] pins;
+    wire [7:0] IO_PINS = {PIN_13,PIN_12,PIN_11,PIN_10,PIN_9,PIN_8,PIN_7,PIN_6};
+    SB_IO #(
+        .PIN_TYPE(6'b 1010_01),
+        .PULLUP(1'b 0)
+    ) io_block_instance0 [7:0](
+        .PACKAGE_PIN(IO_PINS),
+        .OUTPUT_ENABLE(dir),
+        .D_OUT_0(port),
+        .D_IN_0(pins)
+    );
 
-    reg [7:0] IO_PINS = 0;
-    assign {PIN_13,PIN_12,PIN_11,PIN_10,PIN_9,PIN_8,PIN_7,PIN_6} = IO_PINS;
     //This is the logic for the I/O ports
     always @(posedge clk) begin
         if(dMemIOAddress == 16'h1000) begin
             if(IOWriteEn)
-                IO_PINS <= dMemIOIn;
+                dir <= dMemIOIn;
             if(IOReadEn)
-                IOOut <= IO_PINS;
+                IOOut <= dir;
+        end
+        else if(dMemIOAddress == 16'h1001) begin
+            if(IOWriteEn)
+                port <= dMemIOIn;
+            if(IOReadEn)
+                IOOut <= port;
+        end
+        else if(dMemIOAddress == 16'h1002) begin
+            if(IOReadEn)
+                IOOut <= pins;
         end
     end
     //***************************************************************

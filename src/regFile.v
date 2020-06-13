@@ -7,7 +7,7 @@ module regFile(input wire [3:0] inSelect,
                input wire clk,
                output wire [7:0] outA,
                output wire [7:0] outB,
-               output wire [7:0] outC
+               output reg [7:0] outC
 );
     // Construct the register file and initialize it to zero
     reg [7:0] rFile [0:15];
