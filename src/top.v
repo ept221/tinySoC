@@ -1,5 +1,6 @@
 module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN_8, output wire PIN_9,
-                           output wire PIN_10, output wire PIN_11, output wire PIN_12, output wire PIN_13);
+                           output wire PIN_10, output wire PIN_11, output wire PIN_12, output wire PIN_13,
+                           output wire h_sync, output wire v_sync, output wire R, output wire G, output wire B);
     //***************************************************************
     // Instantiate Control Logic
     //***************************************************************
@@ -270,4 +271,7 @@ module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN
                             .clk(clk),
                             .dout(iMemOut)
     );
+
+    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.R(R),.G(G),.B(B));
+
 endmodule
