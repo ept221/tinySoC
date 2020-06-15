@@ -1,1 +1,1 @@
-# microCore
+# tinySoC
