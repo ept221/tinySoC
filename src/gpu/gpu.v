@@ -73,7 +73,7 @@ endmodule
 
 module rom(din, addr, write_en, clk, dout);
 	initial begin
-		$readmemh("src/rom.ini",mem);
+		$readmemh("src/gpu/rom.ini",mem);
 	end
 
 	parameter addr_width = 11;
@@ -97,7 +97,7 @@ endmodule
 module ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
 
 	initial begin
-		$readmemh("src/ram.ini",mem);
+		$readmemh("src/gpu/ram.ini",mem);
 	end
 
 	parameter addr_width = 12;
