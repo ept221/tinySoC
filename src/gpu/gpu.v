@@ -1,9 +1,7 @@
 module gpu(input wire clk,
 		   output reg h_syncD2,
 		   output reg v_syncD2,
-		   output wire R,
-		   output wire G,
-		   output wire B
+		   output wire pixel
 );
 	
 	// Create the VGA clock with the PLL
@@ -63,11 +61,7 @@ module gpu(input wire clk,
 	for(i = 0; i < 8; i++) begin
 		assign reversedPixleRow[i] = pixelRow[7-i];
 	end
-	assign pixel = reversedPixleRow[xD2[2:0]];
-
-	assign R = activeD2 && pixel;
-	assign G = activeD2 && pixel;
-	assign B = activeD2 && pixel;
+	assign pixel = activeD2 & reversedPixleRow[xD2[2:0]];
 
 endmodule
 

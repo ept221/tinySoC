@@ -15,7 +15,7 @@ synth: src/micro/top.v
 	yosys -p "synth_ice40 -json build/synth/hardware.json" src/micro/top.v src/micro/control.v src/micro/i_ram.v src/micro/regFile.v src/micro/alu.v src/micro/d_ram.v src/gpu/gpu.v src/gpu/vga.v src/gpu/pll.v
 pnr: build/synth/hardware.json
 	mkdir -p build/pnr
-	nextpnr-ice40 --lp8k --package cm81 --json build/synth/hardware.json --pcf src/pins.pcf --asc build/pnr/hardware.asc 
+	nextpnr-ice40 --lp8k --package cm81 --json build/synth/hardware.json --pcf src/pins.pcf --asc build/pnr/hardware.asc
 
 pack: build/pnr/hardware.asc
 	mkdir -p build/binary

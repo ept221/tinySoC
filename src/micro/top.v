@@ -1,6 +1,8 @@
-module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN_8, output wire PIN_9,
-                           output wire PIN_10, output wire PIN_11, output wire PIN_12, output wire PIN_13,
-                           output wire h_sync, output wire v_sync, output wire R, output wire G, output wire B);
+module top(input wire clk, output wire [7:0] io,
+                           output wire h_sync, output wire v_sync, output wire pixel);
+
+    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.pixel(pixel));
+    
     //***************************************************************
     // Instantiate Control Logic
     //***************************************************************
@@ -115,12 +117,11 @@ module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN
     reg [7:0] dir = 0;
     reg [7:0] port = 0;
     wire [7:0] pins;
-    wire [7:0] IO_PINS = {PIN_13,PIN_12,PIN_11,PIN_10,PIN_9,PIN_8,PIN_7,PIN_6};
     SB_IO #(
         .PIN_TYPE(6'b 1010_01),
         .PULLUP(1'b 0)
     ) io_block_instance0 [7:0](
-        .PACKAGE_PIN(IO_PINS),
+        .PACKAGE_PIN(io),
         .OUTPUT_ENABLE(dir),
         .D_OUT_0(port),
         .D_IN_0(pins)
@@ -271,7 +272,5 @@ module top(input wire clk, output wire PIN_6, output wire PIN_7, output wire PIN
                             .clk(clk),
                             .dout(iMemOut)
     );
-
-    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.R(R),.G(G),.B(B));
 
 endmodule
