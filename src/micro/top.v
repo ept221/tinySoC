@@ -1,7 +1,7 @@
 module top(input wire clk, output wire [7:0] io,
                            output wire h_sync, output wire v_sync, output wire pixel);
 
-    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.pixel(pixel));
+    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.pixel(pixel),.data_in(dMemIOIn),.write_address(dMemIOAddress),.w_en(vMemWriteEn));
     
     //***************************************************************
     // Instantiate Control Logic
@@ -95,28 +95,45 @@ module top(input wire clk, output wire [7:0] io,
     // This is the logic for the address map for the data memory
     // and I/O. The data memory will be from 0x0000 through 0x0FFF
     // and the I/O will be from 0x1000 through 0x10FF.
-    reg foo = 0;
     always @(*) begin
-        if(dMemIOAddress > 16'h0FFF) begin
-            dMemWriteEn = 0;
-            dMemReadEn = 0;
-            IOWriteEn = dMemIOWriteEn;
-            IOReadEn = dMemIOReadEn;
-            dMemIOOut = IOOut;
-            foo = 1;
-        end
-        else begin
-            foo = 0;
+        if(dMemIOAddress <= 16'h0FFF) begin    // D_MEM
             dMemWriteEn = dMemIOWriteEn;
             dMemReadEn = dMemIOReadEn;
             IOWriteEn = 0;
             IOReadEn = 0;
+            vMemWriteEn = 0;
             dMemIOOut = dMemOut;
         end
+        else if(dMemIOAddress > 16'h0FFF && dMemIOAddress <= 16'h10FF) begin    // I/O
+            dMemWriteEn = 0;
+            dMemReadEn = 0;
+            IOWriteEn = dMemIOWriteEn;
+            IOReadEn = dMemIOReadEn;
+            vMemWriteEn = 0;
+            dMemIOOut = IOOut;
+        end
+        else if(dMemIOAddress >= 16'h2000 && dMemIOAddress <= 16'h2960) begin  // V_MEM
+            dMemWriteEn = 0;
+            dMemReadEn = 0;
+            IOWriteEn = 0;
+            IOReadEn = 0;
+            vMemWriteEn = dMemIOWriteEn;
+            dMemIOOut = 0;
+        end
+        else begin
+            dMemWriteEn = 0;
+            dMemReadEn = 0;
+            IOWriteEn = 0;
+            IOReadEn = 0;
+            vMemWriteEn = 0;
+            dMemIOOut = 0;
+        end
     end
+
     reg [7:0] dir = 0;
     reg [7:0] port = 0;
     wire [7:0] pins;
+
     SB_IO #(
         .PIN_TYPE(6'b 1010_01),
         .PULLUP(1'b 0)

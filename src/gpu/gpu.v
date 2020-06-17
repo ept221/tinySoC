@@ -1,4 +1,7 @@
 module gpu(input wire clk,
+		   input wire [7:0] data_in,
+		   input wire [8:0] write_address,
+		   input wire w_en,
 		   output reg h_syncD2,
 		   output reg v_syncD2,
 		   output wire pixel
@@ -41,7 +44,7 @@ module gpu(input wire clk,
 	// by the vga sync generator.
 	wire [7:0] char;
 	wire [11:0] address = (x[9:3] + (y[9:4]*80));
-	ram myRam(8'd0, 12'd0, 1'd0, address,1'd1,vgaClk,char);
+	ram myRam(data_in, 12'd0, 1'd0, address,1'd1,vgaClk,char);
 
 	// Create the font ROM. The upper portion of the address comes from the 
 	// output of the text RAM, which then has 32 subtracted from it, to
