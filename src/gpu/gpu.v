@@ -1,10 +1,12 @@
 module gpu(input wire clk,
-		   input wire [7:0] data_in,
-		   input wire [8:0] write_address,
-		   input wire w_en,
 		   output reg h_syncD2,
 		   output reg v_syncD2,
-		   output wire pixel
+		   output wire R,
+		   output wire G,
+		   output wire B,
+		   input wire [7:0] data_in,
+		   input wire [11:0] write_address,
+		   input wire w_en
 );
 	
 	// Create the VGA clock with the PLL
@@ -42,9 +44,19 @@ module gpu(input wire clk,
 
 	// Create the text RAM addressed by the current tile being displayed
 	// by the vga sync generator.
-	wire [7:0] char;
+	reg [7:0] char;
 	wire [11:0] address = (x[9:3] + (y[9:4]*80));
-	ram myRam(data_in, 12'd0, 1'd0, address,1'd1,vgaClk,char);
+	wire readRamActive = (address < 12'd2400) ? 1 : 0;
+	ram myRam(
+			  .din(data_in),
+			  .w_addr(write_address),
+			  .w_en(w_en),
+			  .r_addr(address),
+			  .r_en(readRamActive),
+			  .w_clk(vgaClk),
+			  .r_clk(clk),
+			  .dout(char)
+	);
 
 	// Create the font ROM. The upper portion of the address comes from the 
 	// output of the text RAM, which then has 32 subtracted from it, to
@@ -64,9 +76,43 @@ module gpu(input wire clk,
 	for(i = 0; i < 8; i++) begin
 		assign reversedPixleRow[i] = pixelRow[7-i];
 	end
-	assign pixel = activeD2 & reversedPixleRow[xD2[2:0]];
+	assign pixel = reversedPixleRow[xD2[2:0]];
+
+	assign R = activeD2 && pixel;
+	assign G = activeD2 && pixel;
+	assign B = activeD2 && pixel;
 
 endmodule
+
+module ram(din, w_addr, w_en, r_addr, r_en, r_clk, w_clk, dout);
+	initial begin
+        $readmemh("src/gpu/ram.ini",mem);
+    end
+
+    parameter addr_width = 12;
+    parameter data_width = 8;
+    input [addr_width-1:0] w_addr;
+    input [addr_width-1:0] r_addr;
+    input [data_width-1:0] din;
+    input w_en, r_en, r_clk, w_clk;
+    output [data_width-1:0] dout;
+    reg [data_width-1:0] dout;
+    reg [data_width-1:0] mem [0:2399];
+
+    always @(posedge w_clk) begin
+        if(w_en) begin
+            mem[w_addr] <= din;
+        end
+    end
+
+    always @(posedge r_clk) begin
+        if(r_en) begin
+            dout <= mem[r_addr];
+        end
+    end
+
+endmodule
+
 
 module rom(din, addr, write_en, clk, dout);
 	initial begin
@@ -90,32 +136,3 @@ module rom(din, addr, write_en, clk, dout);
 	end
 
 endmodule
-
-module ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
-
-	initial begin
-		$readmemh("src/gpu/ram.ini",mem);
-	end
-
-	parameter addr_width = 12;
-	parameter data_width = 8;
-	input [addr_width-1:0] w_addr;
-	input [addr_width-1:0] r_addr;
-	input [data_width-1:0] din;
-	input w_en, r_en, clk;
-	output [data_width-1:0] dout;
-	reg [data_width-1:0] dout;
-	reg [data_width-1:0] mem [0:(1<<addr_width)-1];
-
-	always @(posedge clk) begin
-		if(w_en)
-			mem[w_addr] <= din;
-	end
-
-	always @(posedge clk) begin
-		if(r_en)
-			dout <= mem[r_addr];
-	end
-
-endmodule
-

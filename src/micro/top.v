@@ -1,7 +1,15 @@
-module top(input wire clk, output wire [7:0] io,
-                           output wire h_sync, output wire v_sync, output wire pixel);
+module top(input wire clk, output wire [7:0] io, output wire h_sync,
+           output wire v_sync, output wire R, output wire G, output wire B);
 
-    gpu my_gpu(.clk(clk),.h_syncD2(h_sync),.v_syncD2(v_sync),.pixel(pixel),.data_in(dMemIOIn),.write_address(dMemIOAddress),.w_en(vMemWriteEn));
+    gpu my_gpu(.clk(clk),
+               .h_syncD2(h_sync),
+               .v_syncD2(v_sync),
+               .R(R),
+               .G(G),
+               .B(B),
+               .data_in(dMemIOIn),
+               .write_address(dMemIOAddress),
+               .w_en(vMemWriteEn));
     
     //***************************************************************
     // Instantiate Control Logic
@@ -91,6 +99,7 @@ module top(input wire clk, output wire [7:0] io,
     reg dMemReadEn;
     reg IOWriteEn;
     reg IOReadEn;
+    reg vMemWriteEn;
 
     // This is the logic for the address map for the data memory
     // and I/O. The data memory will be from 0x0000 through 0x0FFF
