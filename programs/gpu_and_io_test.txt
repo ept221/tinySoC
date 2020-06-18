@@ -1,0 +1,35 @@
+        nop             // Need to start with a nop to fill fetch pipeline
+        ldi r0, 1
+        out r0, 0       // set the first pin to output
+        ldi r0, 0x00    // setup gpu pointer
+        ldi r1, 0x20
+
+poll:   in r2, 2        // read pin register
+        ani r2, 2       // mask the button
+        sll r2          // get the state of the button in the lsb
+        out r2, 1       // set the led to the state of the button
+        adi r2, 48      // calculate the ascii (0 or 1) state of the button
+        str r2, p0      // write the char to the screen
+        jmp poll        // poll the button again
+
+
+Note that this does not protect against writing to the same location as
+the gpu is trying to read from at the same time. A better method would be to
+implement a print function which waits for the blanking period to write to
+the memory. 
+
+0000000000000000
+0000000000010001
+0000000000000100
+0000000000000001
+0001001000000001
+0010000000100010
+0010000000100011
+0010000001011000
+0010000000010100
+0010001100001001
+0010000001101000
+0000000010110000
+0000000000000101
+
+
