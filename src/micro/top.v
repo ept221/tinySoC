@@ -1,6 +1,7 @@
 module top(input wire clk, output wire [7:0] io, output wire h_sync,
            output wire v_sync, output wire R, output wire G, output wire B);
-
+    //***************************************************************
+    // Instantiate GPU
     gpu my_gpu(.clk(clk),
                .h_syncD2(h_sync),
                .v_syncD2(v_sync),
@@ -102,10 +103,9 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
     reg vMemWriteEn;
 
     // This is the logic for the address map for the data memory
-    // and I/O. The data memory will be from 0x0000 through 0x0FFF
-    // and the I/O will be from 0x1000 through 0x10FF.
+    // and I/O.
     always @(*) begin
-        if(dMemIOAddress <= 16'h0FFF) begin    // D_MEM
+        if(dMemIOAddress <= 16'h07FF) begin    // D_MEM
             dMemWriteEn = dMemIOWriteEn;
             dMemReadEn = dMemIOReadEn;
             IOWriteEn = 0;
@@ -113,7 +113,7 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
             vMemWriteEn = 0;
             dMemIOOut = dMemOut;
         end
-        else if(dMemIOAddress > 16'h0FFF && dMemIOAddress <= 16'h10FF) begin    // I/O
+        else if(dMemIOAddress >= 16'h1000 && dMemIOAddress <= 16'h10FF) begin    // I/O
             dMemWriteEn = 0;
             dMemReadEn = 0;
             IOWriteEn = dMemIOWriteEn;
@@ -298,5 +298,4 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
                             .clk(clk),
                             .dout(iMemOut)
     );
-
 endmodule
