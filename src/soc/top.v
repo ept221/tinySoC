@@ -8,7 +8,6 @@ module top(input wire clk,
 );
     //***************************************************************
     // Instantiate CPU
-
     cpu my_cpu(.clk(clk),
                .iMemAddress(iMemAddress),
                .iMemOut(iMemOut),
@@ -21,7 +20,6 @@ module top(input wire clk,
     );
     //***************************************************************
     // Instantiate Instruction Memory
-    
     wire iMemReadEnable;
     wire [15:0] iMemAddress;
     wire [15:0] iMemOut;
@@ -35,7 +33,6 @@ module top(input wire clk,
     );
     //***************************************************************
     // Memory Map Logic
-
     reg [15:0] dMemIOAddress;
     reg [7:0] dMemIOOut;
     wire [7:0] dMemIOIn;
@@ -77,8 +74,7 @@ module top(input wire clk,
         end
     end
     //***************************************************************
-    // Instantiate Data Memory
-    
+    // Instantiate Data Memory 
     reg [7:0] dMemOut;
     reg dMemWriteEn;
     reg dMemReadEn;
@@ -92,8 +88,7 @@ module top(input wire clk,
                      .dout(dMemOut)
     );
     //***************************************************************
-    // Instantiate IO
-    
+    // Instantiate IO  
     reg IOWriteEn;
     reg IOReadEn;
     wire [7:0] IOOut;
@@ -109,7 +104,6 @@ module top(input wire clk,
     );
     //***************************************************************
     // Instantiate GPU
-
     reg vMemWriteEn;
 
     gpu my_gpu(.clk(clk),

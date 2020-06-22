@@ -3,7 +3,7 @@ lint: src/top.v
 
 sim: src/top.v src/test_tb.v
 	mkdir -p build/sim
-	iverilog -o build/sim/sim.vvp src/top.v src/control.v src/i_ram.v src/regFile.v src/alu.v src/d_ram.v src/test_tb.v
+	iverilog -o build/sim/sim.vvp src/top.v test_tb.v
 	vvp build/sim/sim.vvp
 	mv test_tb.vcd build/sim/test_tb.vcd
 	open -a Scansion build/sim/test_tb.vcd
