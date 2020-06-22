@@ -97,10 +97,7 @@ module top(input wire clk,
     reg IOWriteEn;
     reg IOReadEn;
     wire [7:0] IOOut;
-
-    wire [7:0] dir;
-    wire [7:0] port;
-    wire [7:0] pins;
+    wire [7:0] io_pins;
 
     io my_io(.clk(clk),
              .din(dMemIOIn),
@@ -108,19 +105,7 @@ module top(input wire clk,
              .w_en(IOWriteEn),
              .r_en(IOReadEn),
              .dout(IOOut),
-             .dir(dir),
-             .port(port),
-             .pins(pins)
-    );
-
-    SB_IO #(
-        .PIN_TYPE(6'b 1010_01),
-        .PULLUP(1'b 0)
-    ) io_block_instance0 [7:0](
-        .PACKAGE_PIN(io_pins),
-        .OUTPUT_ENABLE(dir),
-        .D_OUT_0(port),
-        .D_IN_0(pins)
+             .io_pins(io_pins)
     );
     //***************************************************************
     // Instantiate GPU

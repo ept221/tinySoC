@@ -4,14 +4,26 @@ module io(input wire clk,
           input wire w_en,
           input wire r_en,
           output wire [7:0] dout,
-
-          output reg [7:0] dir,
-          output reg [7:0] port,
-          input wire [7:0] pins
+          output wire [7:0] io_pins,
 );
+    //***************************************************************
+    // Manually Instantiate Pin Primitives Ror Tri-state Control
+    SB_IO #(
+        .PIN_TYPE(6'b 1010_01),
+        .PULLUP(1'b 0)
+    ) io_block_instance0 [7:0](
+        .PACKAGE_PIN(io_pins),
+        .OUTPUT_ENABLE(dir),
+        .D_OUT_0(port),
+        .D_IN_0(pins)
+    );
     //***************************************************************
     // GPIO
     
+    reg [7:0] dir;
+    reg [7:0] port;
+    wire [7:0] pins;
+
     always @(posedge clk) begin
         if(address == 8'h00) begin             // DIR
             if(w_en)
