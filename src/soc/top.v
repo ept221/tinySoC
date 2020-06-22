@@ -4,13 +4,10 @@ module top(input wire clk,
            output wire R,
            output wire G,
            output wire B,
+           output wire [7:0] io_pins
 );
     //***************************************************************
     // Instantiate CPU
-    
-    reg [15:0] dMemIOAddress;
-    reg [7:0] dMemIOOut;
-    wire [7:0] dMemIOIn;
 
     cpu my_cpu(.clk(clk),
                .iMemAddress(iMemAddress),
@@ -25,6 +22,7 @@ module top(input wire clk,
     //***************************************************************
     // Instantiate Instruction Memory
     
+    wire iMemReadEnable;
     i_ram instructionMemory(.din(16'd0),
                             .w_addr(16'd0),
                             .w_en(1'd0),
@@ -35,6 +33,12 @@ module top(input wire clk,
     );
     //***************************************************************
     // Memory Map Logic
+
+    reg [15:0] dMemIOAddress;
+    reg [7:0] dMemIOOut;
+    wire [7:0] dMemIOIn;
+    wire dMemIOWriteEn;
+    wire dMemIOReadEn;
 
     always @(*) begin
         if(dMemIOAddress <= 16'h07FF) begin                                      // D_MEM
@@ -88,9 +92,32 @@ module top(input wire clk,
     //***************************************************************
     // Instantiate IO
     
-    io my_io
     reg IOWriteEn;
     reg IOReadEn;
+
+    wire [7:0] dir;
+    wire [7:0] port;
+    wire [7:0] pins;
+
+    io my_io(.clk(clk),
+             .din(dMemIOIn),
+             .address(dMemIOAddress),
+             .w_en(IOWriteEn),
+             .r_en(IOReadEn),
+             .dir(dir),
+             .port(port),
+             .pins(pins)
+    );
+
+    SB_IO #(
+        .PIN_TYPE(6'b 1010_01),
+        .PULLUP(1'b 0)
+    ) io_block_instance0 [7:0](
+        .PACKAGE_PIN(io_pins),
+        .OUTPUT_ENABLE(dir),
+        .D_OUT_0(port),
+        .D_IN_0(pins)
+    );
     //***************************************************************
     // Instantiate GPU
 

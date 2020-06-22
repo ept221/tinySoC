@@ -1,40 +1,38 @@
-    reg [7:0] IOOut = 0;
-    reg [7:0] dir = 0;
-    reg [7:0] port = 0;
-    wire [7:0] pins;
+module io(input wire clk,
+          input wire [7:0] din,
+          input wire [7:0] address,
+          input wire w_en,
+          input wire r_en,
+          output wire [7:0] dout,
 
-    SB_IO #(
-        .PIN_TYPE(6'b 1010_01),
-        .PULLUP(1'b 0)
-    ) io_block_instance0 [7:0](
-        .PACKAGE_PIN(io),
-        .OUTPUT_ENABLE(dir),
-        .D_OUT_0(port),
-        .D_IN_0(pins)
-    );
-
-    // This is the logic for the I/O ports
+          output reg [7:0] dir,
+          output reg [7:0] port,
+          input reg [7:0] pins
+);
+    //***************************************************************
+    // GPIO
+    
     always @(posedge clk) begin
-        if(dMemIOAddress == 16'h1000) begin
-            if(IOWriteEn)
-                dir <= dMemIOIn;
-            if(IOReadEn)
-                IOOut <= dir;
+        if(dMemIOAddress == 16'h1000) begin             // DIR
+            if(w_en)
+                dir <= din;
+            if(r_en)
+                dout <= dir;
         end
-        else if(dMemIOAddress == 16'h1001) begin
-            if(IOWriteEn)
-                port <= dMemIOIn;
-            if(IOReadEn)
-                IOOut <= port;
+        else if(dMemIOAddress == 16'h1001) begin        // PORT
+            if(w_en)
+                port <= din;
+            if(r_en)
+                dout <= port;
         end
-        else if(dMemIOAddress == 16'h1002) begin
-            if(IOReadEn)
-                IOOut <= pins;
+        else if(dMemIOAddress == 16'h1002) begin        // PINS
+            if(r_en)
+                dout <= pins;
         end
     end
+    //***************************************************************
+    // Counter/Timer
 
-
-     // Counter/Timer
     reg [7:0] counter;
     reg [15:0] prescaler;
     reg [15:0] scaleFactor
@@ -74,3 +72,5 @@
     // comparators
     assign match0 = (counter == cmpr0) ? 1 : 0;
     assign match1 = (counter == cmpr1) ? 1 : 0;
+    //***************************************************************
+endmodule
