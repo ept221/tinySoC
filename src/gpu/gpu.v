@@ -76,7 +76,7 @@ module gpu(input wire clk,
 	for(i = 0; i < 8; i++) begin
 		assign reversedPixleRow[i] = pixelRow[7-i];
 	end
-	assign pixel = reversedPixleRow[xD2[2:0]];
+	wire pixel = reversedPixleRow[xD2[2:0]];
 
 	assign R = activeD2 && pixel;
 	assign G = activeD2 && pixel;

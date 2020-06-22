@@ -23,6 +23,8 @@ module top(input wire clk,
     // Instantiate Instruction Memory
     
     wire iMemReadEnable;
+    wire [15:0] iMemAddress;
+    wire [15:0] iMemOut;
     i_ram instructionMemory(.din(16'd0),
                             .w_addr(16'd0),
                             .w_en(1'd0),
@@ -94,6 +96,7 @@ module top(input wire clk,
     
     reg IOWriteEn;
     reg IOReadEn;
+    wire [7:0] IOOut;
 
     wire [7:0] dir;
     wire [7:0] port;
@@ -104,6 +107,7 @@ module top(input wire clk,
              .address(dMemIOAddress),
              .w_en(IOWriteEn),
              .r_en(IOReadEn),
+             .dout(IOOut),
              .dir(dir),
              .port(port),
              .pins(pins)

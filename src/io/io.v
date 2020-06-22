@@ -7,32 +7,32 @@ module io(input wire clk,
 
           output reg [7:0] dir,
           output reg [7:0] port,
-          input reg [7:0] pins
+          input wire [7:0] pins
 );
     //***************************************************************
     // GPIO
     
     always @(posedge clk) begin
-        if(dMemIOAddress == 16'h1000) begin             // DIR
+        if(address == 8'h00) begin             // DIR
             if(w_en)
                 dir <= din;
             if(r_en)
                 dout <= dir;
         end
-        else if(dMemIOAddress == 16'h1001) begin        // PORT
+        else if(address == 8'h01) begin        // PORT
             if(w_en)
                 port <= din;
             if(r_en)
                 dout <= port;
         end
-        else if(dMemIOAddress == 16'h1002) begin        // PINS
+        else if(address == 8'h02) begin        // PINS
             if(r_en)
                 dout <= pins;
         end
     end
     //***************************************************************
     // Counter/Timer
-
+    /*
     reg [7:0] counter;
     reg [15:0] prescaler;
     reg [15:0] scaleFactor
@@ -71,6 +71,6 @@ module io(input wire clk,
 
     // comparators
     assign match0 = (counter == cmpr0) ? 1 : 0;
-    assign match1 = (counter == cmpr1) ? 1 : 0;
+    assign match1 = (counter == cmpr1) ? 1 : 0;*/
     //***************************************************************
 endmodule
