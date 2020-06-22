@@ -1,19 +1,40 @@
-module top(input wire clk, output wire [7:0] io, output wire h_sync,
-           output wire v_sync, output wire R, output wire G, output wire B);
-    //***************************************************************
-    // Instantiate GPU
-    gpu my_gpu(.clk(clk),
-               .h_syncD2(h_sync),
-               .v_syncD2(v_sync),
-               .R(R),
-               .G(G),
-               .B(B),
-               .data_in(dMemIOIn),
-               .write_address(dMemIOAddress),
-               .w_en(vMemWriteEn));
-    
+module cpu(input wire clk,
+
+           output reg [15:0] iMemAddress,
+           input wire [15:0] iMemOut,
+           output reg iMemReadEnable,
+
+           output reg [15:0] dMemIOAddress,
+           output reg [7:0] dMemIOIn,
+           input wire [15:0] dMemIOOut,
+           output reg dMemIOWriteEn,
+           output reg dMemIOReadEn
+);
     //***************************************************************
     // Instantiate Control Logic
+    control cntrl(.clk(clk),
+                  .iMemOut(iMemOut),
+                  .carryFlag(carryFlag),
+                  .zeroFlag(zeroFlag),
+                  .negativeFlag(negativeFlag),
+                  .regFileSrc(regFileSrc),
+                  .regFileOutBSelect(regFileOutBSelect),
+                  .regFileWriteEnable(regFileWriteEnable),
+                  .regFileIncPair(regFileIncPair),
+                  .regFileDecPair(regFileDecPair),
+                  .aluSrcASelect(aluSrcASelect),
+                  .aluSrcBSelect(aluSrcBSelect),
+                  .aluMode(aluMode),
+                  .dMemDataSelect(dMemDataSelect),
+                  .dMemIOAddressSelect(dMemIOAddressSelect),
+                  .dMemIOWriteEn(dMemIOWriteEn),
+                  .dMemIOReadEn(dMemIOReadEn),
+                  .statusRegSrcSelect(statusRegSrcSelect),
+                  .flagEnable(flagEnable),
+                  .iMemAddrSelect(iMemAddrSelect),
+                  .iMemReadEnable(iMemReadEnable),
+                  .pcWriteEn(pcWriteEn)
+    );
     //***************************************************************
     // Register File Source Mux
     wire [1:0] regFileSrc;                      //*
@@ -35,6 +56,18 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
     wire [7:0] regFileOutA;
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
+
+    regFile registerFile(.inSelect(iMemOut[15:12]),
+                         .outBselect(regFileOutBSelect),
+                         .in(regFileIn),
+                         .write_en(regFileWriteEnable),
+                         .inc(regFileIncPair),
+                         .dec(regFileDecPair),
+                         .clk(clk),
+                         .outA(regFileOutA),
+                         .outB(regFileOutB),
+                         .outC(regFileOutC)
+    );
     //***************************************************************
     // ALU Mux A
     wire aluSrcASelect;                         //*
@@ -64,6 +97,16 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
     wire [7:0] aluOut;
     reg [7:0] dataA;
     reg [7:0] dataB;
+
+    alu ALU(.dataA(dataA),
+            .dataB(dataB),
+            .mode(aluMode),
+            .cin(carryFlag),
+            .out(aluOut),
+            .cout(carryOut),
+            .zout(zeroOut),
+            .nout(negitiveOut)
+    );
     //***************************************************************
     // Data Memory and I/O Data Mux
     wire [1:0] dMemDataSelect;                  //*
@@ -77,7 +120,7 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
     end
     //***************************************************************
     // Data Memory and I/O Address Mux
-    wire [1:0] dMemIOAddressSelect;                     //*
+    wire [1:0] dMemIOAddressSelect;             //*
     always @(*) begin
         case(dMemIOAddressSelect)
             2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};
@@ -85,92 +128,6 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
             2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
             default  dMemIOAddress = {regFileOutC,regFileOutB};
         endcase
-    end
-    //***************************************************************
-    // Data Memory and IO
-    reg [7:0] dMemIOIn;
-    reg [7:0] dMemIOOut;
-    wire [7:0] dMemOut;
-    reg [7:0] IOOut = 0;
-    reg [15:0] dMemIOAddress;
-    wire dMemIOWriteEn;                           //*
-    wire dMemIOReadEn;                            //*
-
-    reg dMemWriteEn;
-    reg dMemReadEn;
-    reg IOWriteEn;
-    reg IOReadEn;
-    reg vMemWriteEn;
-
-    // This is the logic for the address map for the data memory
-    // and I/O.
-    always @(*) begin
-        if(dMemIOAddress <= 16'h07FF) begin    // D_MEM
-            dMemWriteEn = dMemIOWriteEn;
-            dMemReadEn = dMemIOReadEn;
-            IOWriteEn = 0;
-            IOReadEn = 0;
-            vMemWriteEn = 0;
-            dMemIOOut = dMemOut;
-        end
-        else if(dMemIOAddress >= 16'h1000 && dMemIOAddress <= 16'h10FF) begin    // I/O
-            dMemWriteEn = 0;
-            dMemReadEn = 0;
-            IOWriteEn = dMemIOWriteEn;
-            IOReadEn = dMemIOReadEn;
-            vMemWriteEn = 0;
-            dMemIOOut = IOOut;
-        end
-        else if(dMemIOAddress >= 16'h2000 && dMemIOAddress <= 16'h2960) begin  // V_MEM
-            dMemWriteEn = 0;
-            dMemReadEn = 0;
-            IOWriteEn = 0;
-            IOReadEn = 0;
-            vMemWriteEn = dMemIOWriteEn;
-            dMemIOOut = 0;
-        end
-        else begin
-            dMemWriteEn = 0;
-            dMemReadEn = 0;
-            IOWriteEn = 0;
-            IOReadEn = 0;
-            vMemWriteEn = 0;
-            dMemIOOut = 0;
-        end
-    end
-
-    reg [7:0] dir = 0;
-    reg [7:0] port = 0;
-    wire [7:0] pins;
-
-    SB_IO #(
-        .PIN_TYPE(6'b 1010_01),
-        .PULLUP(1'b 0)
-    ) io_block_instance0 [7:0](
-        .PACKAGE_PIN(io),
-        .OUTPUT_ENABLE(dir),
-        .D_OUT_0(port),
-        .D_IN_0(pins)
-    );
-
-    //This is the logic for the I/O ports
-    always @(posedge clk) begin
-        if(dMemIOAddress == 16'h1000) begin
-            if(IOWriteEn)
-                dir <= dMemIOIn;
-            if(IOReadEn)
-                IOOut <= dir;
-        end
-        else if(dMemIOAddress == 16'h1001) begin
-            if(IOWriteEn)
-                port <= dMemIOIn;
-            if(IOReadEn)
-                IOOut <= port;
-        end
-        else if(dMemIOAddress == 16'h1002) begin
-            if(IOReadEn)
-                IOOut <= pins;
-        end
     end
     //***************************************************************
     // Status Register Source Mux
@@ -223,11 +180,6 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
         endcase
     end
     //***************************************************************
-    // Instruction Memory
-    reg [15:0] iMemAddress;
-    wire [15:0] iMemOut;
-    wire iMemReadEnable;                        //*
-    //***************************************************************
     // PC and pcPlusOne adder
     reg [15:0] pc = 16'd1;
     wire [15:0] pcIn = iMemAddress + 1;
@@ -239,63 +191,4 @@ module top(input wire clk, output wire [7:0] io, output wire h_sync,
             pc <= pcIn;
     end
     //***************************************************************
-    control cntrl(.clk(clk),
-                  .iMemOut(iMemOut),
-                  .carryFlag(carryFlag),
-                  .zeroFlag(zeroFlag),
-                  .negativeFlag(negativeFlag),
-                  .regFileSrc(regFileSrc),
-                  .regFileOutBSelect(regFileOutBSelect),
-                  .regFileWriteEnable(regFileWriteEnable),
-                  .regFileIncPair(regFileIncPair),
-                  .regFileDecPair(regFileDecPair),
-                  .aluSrcASelect(aluSrcASelect),
-                  .aluSrcBSelect(aluSrcBSelect),
-                  .aluMode(aluMode),
-                  .dMemDataSelect(dMemDataSelect),
-                  .dMemIOAddressSelect(dMemIOAddressSelect),
-                  .dMemIOWriteEn(dMemIOWriteEn),
-                  .dMemIOReadEn(dMemIOReadEn),
-                  .statusRegSrcSelect(statusRegSrcSelect),
-                  .flagEnable(flagEnable),
-                  .iMemAddrSelect(iMemAddrSelect),
-                  .iMemReadEnable(iMemReadEnable),
-                  .pcWriteEn(pcWriteEn)
-    );
-    regFile registerFile(.inSelect(iMemOut[15:12]),
-                         .outBselect(regFileOutBSelect),
-                         .in(regFileIn),
-                         .write_en(regFileWriteEnable),
-                         .inc(regFileIncPair),
-                         .dec(regFileDecPair),
-                         .clk(clk),
-                         .outA(regFileOutA),
-                         .outB(regFileOutB),
-                         .outC(regFileOutC)
-    );
-    alu ALU(.dataA(dataA),
-            .dataB(dataB),
-            .mode(aluMode),
-            .cin(carryFlag),
-            .out(aluOut),
-            .cout(carryOut),
-            .zout(zeroOut),
-            .nout(negitiveOut)
-    );
-    d_ram dataMemory(.din(dMemIOIn),
-                     .w_addr(dMemIOAddress),
-                     .w_en(dMemWriteEn),
-                     .r_addr(dMemIOAddress),
-                     .r_en(dMemReadEn),
-                     .clk(clk),
-                     .dout(dMemOut)
-    );
-    i_ram instructionMemory(.din(16'd0),
-                            .w_addr(16'd0),
-                            .w_en(1'd0),
-                            .r_addr(iMemAddress),
-                            .r_en(iMemReadEnable),
-                            .clk(clk),
-                            .dout(iMemOut)
-    );
 endmodule
