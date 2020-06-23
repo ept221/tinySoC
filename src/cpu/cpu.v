@@ -56,7 +56,7 @@ module cpu(input wire clk,
     //***************************************************************
     // Register File
     wire [3:0] regFileOutBSelect;               //*
-    reg [7:0] regFileIn;   
+    reg [7:0] regFileIn;
     wire regFileWriteEnable;                    //*
     wire regFileIncPair;                        //*
     wire regFileDecPair;                        //*

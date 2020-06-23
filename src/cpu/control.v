@@ -24,13 +24,27 @@ module control(input wire clk,
                input wire interrupt_1,
                input wire interrupt_2
 );
-
+    
     reg [2:0] state = 3'b0;
     reg [2:0] nextState;
     always @(posedge clk) begin
         state <= nextState;
     end
 
+    // Safe any incoming interrupts 
+    reg interrupt_0_flag;
+    reg interrupt_1_flag;
+    reg interrupt_2_flag;
+    always @(posedge clk) begin
+        if(interrupt_0 == 1)
+            interrupt_0_flag <= 1;
+        if(interrupt_1 == 1)
+            interrupt_1_flag <= 1;
+        if(interrupt_2 == 1)
+            interrupt_2_flag <= 1;
+    end
+
+    // Logic for jmp, call, and ret conditions
     reg condition;
     always @(*) begin
         case(iMemOut[15:13])
@@ -223,7 +237,7 @@ module control(input wire clk,
                 nextState = 3'b000;
             end
             // JMP
-            else if(iMemOut[7:3] == 5'b10110) begin
+            else if(iMemOut[7:3] == 5'b10110 && iMemOut[2:0] == 3'b000) begin
                 regFileSrc = 2'b00;                             // aluOut, doesnt really matter
                 regFileOutBSelect = iMemOut[15:12];             // same as inSelect
                 regFileWriteEnable = 1'b0;
