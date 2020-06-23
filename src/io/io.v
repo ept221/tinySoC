@@ -7,7 +7,7 @@ module io(input wire clk,
           output wire [7:0] io_pins,
 );
     //***************************************************************
-    // Manually Instantiate Pin Primitives Ror Tri-state Control
+    // Manually Instantiate Pin Primitives For Tri-state Control
     
     SB_IO #(
         .PIN_TYPE(6'b 1010_01),
@@ -23,6 +23,100 @@ module io(input wire clk,
     reg [7:0] dir;
     reg [7:0] port;
     wire [7:0] pins;
+    //***************************************************************
+    // 8-bit Counter/Timer
+
+    // Prescaler registeres
+    reg [15:0] scaleFactor;
+    reg [15:0] prescaler;
+
+    // Counter/Timer registers
+    reg [7:0] counterControl;
+    reg [7:0] cmpr0;
+    reg [7:0] cmpr1;
+    reg [7:0] counter;
+
+    // Output registers
+    reg out0;
+    reg out1;
+
+    // Interrupt registers
+    reg top;
+    reg cmpr0_interrupt;
+    reg cmpr1_interrupt;
+
+    // 
+    wire match0;
+    wire match1;
+    wire scaled;
+
+    // Prescaler
+    always @(posedge clk) begin
+        prescaler <= prescaler + 1;
+        if(prescaler == scaleFactor) begin
+            scaled <= 1;
+            prescaler <= 0;
+        end
+        else begin
+            scaled <= 0;
+        end
+    end
+
+    // Counter/Timer
+    always @(posedge clk) begin
+        if(scaled) begin
+            counter <= counter + 1;
+            if(counterControl[1:0] == 2'b00) begin          // Idle mode
+                counter <= 0;                               // Clear the counter
+                out0 <= 0;                                  // 
+                out1 <= 0;
+            end
+            else if(counterControl[1:0] == 2'b01) begin     // CTC mode
+                if(match0) begin                            // On match0:
+                    counter <= 0;                           // Reset the counter
+                    out0 <= ~out0;                          // Toggle the output
+                end
+            end
+            else if(counterControl[1:0] == 2'b10) begin     // PWM mode
+                if(counter == 8'd255) begin                 // If finished 256 cycles
+                    out0 <= 1;                              // On next edge (start of zero), set the outputs to 1
+                    out1 <= 1;
+                end
+                else begin
+                    if(match0) begin                        // On match0:
+                        out0 <= 0;                          // clear out0
+                    end
+                    if(match1) begin                        // On match1:
+                        out1 <= 0;                          // clear out1
+                    end
+                end
+            end
+        end
+    end
+
+    // Interrupt flags
+    always @(posedge clk) begin
+        if(scaled)
+            if(counter == 8'd255)
+                top <= 1;
+            else
+                top <= 0;
+
+            if(counter == cmpr0)
+                cmpr0_interrupt <= 1;
+            else 
+                cmpr0_interrupt <= 0;
+
+            if(counter == cmpr1)
+                cmpr1_interrupt <= 1;
+            else 
+                cmpr1_interrupt <= 0;
+        end
+    end
+
+    // Comparators
+    assign match0 = (counter == cmpr0) ? 1 : 0;
+    assign match1 = (counter == cmpr1) ? 1 : 0;
     //***************************************************************
     // Memory Map
     always @(posedge clk) begin
@@ -73,63 +167,13 @@ module io(input wire clk,
                 if(r_en)
                     dout <= cmpr1;
             end
+            8'h08: begin                            // counter
+                if(w_en)
+                    counter <= din;
+                if(r_en)
+                    dout <= counter;
+            end
         endcase
     end
-    //***************************************************************
-    // Counter/Timer
-    reg [7:0] counter;
-    reg [15:0] prescaler;
-    reg [15:0] scaleFactor;
-    reg [7:0] cmpr0;
-    reg [7:0] cmpr1;
-    reg [7:0] counterControl = 0;
-    wire match0;
-    wire match1;
-    wire scaled;
-    reg out0;
-    reg out1;
-
-    // prescaler
-    always @(posedge clk) begin
-        prescaler <= prescaler + 1;
-        if(prescaler == scaleFactor) begin
-            scaled <= 1;
-            prescaler <= 0;
-        end
-        else begin
-            scaled <= 0;
-        end
-    end
-
-    // counter
-    always @(posedge clk) begin
-        if(scaled) begin
-            counter <= counter + 1;
-            if(counterControl[1:0] == 2'b00) begin                  // CTC mode
-                if(match0) begin                            // On match0:
-                    counter <= 0;                           // Reset the counter
-                    out0 <= ~out0;                          // Toggle the output
-                end
-            end
-            else if(counterControl[1:0] == 2'b01) begin              // PWM mode
-                if(counter == 8'd255) begin                 // If finished 255 cycles, on next edge (start of zero), set the outputs to 1
-                    out0 <= 1;
-                    out1 <= 1;
-                end
-                else begin
-                    if(match0) begin                        // On match0:
-                        out0 <= 0;                          // clear out0
-                    end
-                    if(match1) begin                        // On match1:
-                        out1 <= 0;                          // clear out1
-                    end
-                end
-            end
-        end
-    end
-
-    // comparators
-    assign match0 = (counter == cmpr0) ? 1 : 0;
-    assign match1 = (counter == cmpr1) ? 1 : 0;
     //***************************************************************
 endmodule
