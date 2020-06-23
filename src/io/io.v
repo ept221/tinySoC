@@ -10,8 +10,8 @@ module io(input wire clk,
     // Manually Instantiate Pin Primitives For Tri-state Control
     
     // Logic to select counter output or gpio for pins 6 and 7
-    //wire pin_6 = (counterControl[2] == 1) ? out0 : port[6];
-    //wire pin_7 = (counterControl[3] == 1) ? out1 : port[7];
+    wire pin_6 = (counterControl[2] == 1) ? out0 : port[6];
+    wire pin_7 = (counterControl[3] == 1) ? out1 : port[7];
 
     SB_IO #(
         .PIN_TYPE(6'b 1010_01),
@@ -19,7 +19,7 @@ module io(input wire clk,
     ) io_block_instance0 [7:0](
         .PACKAGE_PIN(io_pins),
         .OUTPUT_ENABLE(dir),
-        .D_OUT_0({out1,out0,port[5:0]}),
+        .D_OUT_0({pin_7,pin_6,port[5:0]}),
         .D_IN_0(pins)
     );
     //***************************************************************
