@@ -1,4 +1,4 @@
-lint: src/top.v
+lint: 
 	verilator --lint-only -Wall src/cpu/alu.v src/cpu/control.v src/cpu/cpu.v src/cpu/regFile.v src/gpu/gpu.v src/gpu/pll.v src/gpu/vga.v src/io/io.v src/memory/d_ram.v src/memory/i_ram.v src/soc/top.v
 
 sim: src/top.v src/test_tb.v

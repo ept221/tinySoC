@@ -92,7 +92,6 @@ module top(input wire clk,
     reg IOWriteEn;
     reg IOReadEn;
     wire [7:0] IOOut;
-    wire [7:0] io_pins;
 
     io my_io(.clk(clk),
              .din(dMemIOIn),

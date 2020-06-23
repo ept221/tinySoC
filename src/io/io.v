@@ -4,11 +4,15 @@ module io(input wire clk,
           input wire w_en,
           input wire r_en,
           output wire [7:0] dout,
-          output wire [7:0] io_pins,
+          output wire [7:0] io_pins
 );
     //***************************************************************
     // Manually Instantiate Pin Primitives For Tri-state Control
     
+    // Logic to select counter output or gpio for pins 6 and 7
+    //wire pin_6 = (counterControl[2] == 1) ? out0 : port[6];
+    //wire pin_7 = (counterControl[3] == 1) ? out1 : port[7];
+
     SB_IO #(
         .PIN_TYPE(6'b 1010_01),
         .PULLUP(1'b 0)
@@ -68,7 +72,7 @@ module io(input wire clk,
             counter <= counter + 1;
             if(counterControl[1:0] == 2'b00) begin          // Idle mode
                 counter <= 0;                               // Clear the counter
-                out0 <= 0;                                  // 
+                out0 <= 0;
                 out1 <= 0;
             end
             else if(counterControl[1:0] == 2'b01) begin     // CTC mode
@@ -96,7 +100,7 @@ module io(input wire clk,
 
     // Interrupt flags
     always @(posedge clk) begin
-        if(scaled)
+        if(scaled) begin
             if(counter == 8'd255)
                 top <= 1;
             else
@@ -168,8 +172,6 @@ module io(input wire clk,
                     dout <= cmpr1;
             end
             8'h08: begin                            // counter
-                if(w_en)
-                    counter <= din;
                 if(r_en)
                     dout <= counter;
             end
