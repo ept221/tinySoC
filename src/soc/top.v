@@ -16,7 +16,10 @@ module top(input wire clk,
                .dMemIOIn(dMemIOIn),
                .dMemIOOut(dMemIOOut),
                .dMemIOWriteEn(dMemIOWriteEn),
-               .dMemIOReadEn(dMemIOReadEn)
+               .dMemIOReadEn(dMemIOReadEn),
+               .interrupt_0(top_interrupt),
+               .interrupt_1(cmpr0_interrupt),
+               .interrupt_2(cmpr1_interrupt)
     );
     //***************************************************************
     // Instantiate Instruction Memory
@@ -93,13 +96,20 @@ module top(input wire clk,
     reg IOReadEn;
     wire [7:0] IOOut;
 
+    wire top_interrupt;
+    wire cmpr0_interrupt;
+    wire cmpr1_interrupt;
+
     io my_io(.clk(clk),
              .din(dMemIOIn),
              .address(dMemIOAddress),
              .w_en(IOWriteEn),
              .r_en(IOReadEn),
              .dout(IOOut),
-             .io_pins(io_pins)
+             .io_pins(io_pins),
+             .top_interrupt(top_interrupt),
+             .cmpr0_interrupt(cmpr0_interrupt),
+             .cmpr1_interrupt(cmpr1_interrupt)
     );
     //***************************************************************
     // Instantiate GPU

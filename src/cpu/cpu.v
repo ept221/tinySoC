@@ -8,7 +8,11 @@ module cpu(input wire clk,
            output reg [7:0] dMemIOIn,
            input wire [15:0] dMemIOOut,
            output reg dMemIOWriteEn,
-           output reg dMemIOReadEn
+           output reg dMemIOReadEn,
+
+           input wire interrupt_0,
+           input wire interrupt_1,
+           input wire interrupt_2
 );
     //***************************************************************
     // Instantiate Control Logic
@@ -33,7 +37,10 @@ module cpu(input wire clk,
                   .flagEnable(flagEnable),
                   .iMemAddrSelect(iMemAddrSelect),
                   .iMemReadEnable(iMemReadEnable),
-                  .pcWriteEn(pcWriteEn)
+                  .pcWriteEn(pcWriteEn),
+                  .interrupt_0(interrupt_0),
+                  .interrupt_1(interrupt_1),
+                  .interrupt_2(interrupt_2)
     );
     //***************************************************************
     // Register File Source Mux

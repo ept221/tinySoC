@@ -4,7 +4,10 @@ module io(input wire clk,
           input wire w_en,
           input wire r_en,
           output wire [7:0] dout,
-          output wire [7:0] io_pins
+          output wire [7:0] io_pins,
+          output wire top_interrupt,
+          output wire cmpr0_interrupt,
+          output wire cmpr1_interrupt
 );
     //***************************************************************
     // Manually Instantiate Pin Primitives For Tri-state Control
@@ -45,11 +48,16 @@ module io(input wire clk,
     reg out1;
 
     // Interrupt registers
-    reg top;
-    reg cmpr0_interrupt;
-    reg cmpr1_interrupt;
+    reg top_flag;
+    reg cmpr0_interrupt_flag;
+    reg cmpr1_interrupt_flag;
 
-    // 
+    // Interrupt signals
+    assign top_interrupt = top_flag & counterControl[4];
+    assign cmpr0_interrupt = cmpr0_interrupt_flag & counterControl[5];
+    assign cmpr1_interrupt = cmpr1_interrupt_flag & counterControl[6];
+
+    // Internal signals 
     wire match0;
     wire match1;
     wire scaled;
@@ -102,19 +110,19 @@ module io(input wire clk,
     always @(posedge clk) begin
         if(scaled) begin
             if(counter == 8'd255)
-                top <= 1;
+                top_flag <= 1;
             else
-                top <= 0;
+                top_flag <= 0;
 
             if(counter == cmpr0)
-                cmpr0_interrupt <= 1;
+                cmpr0_interrupt_flag <= 1;
             else 
-                cmpr0_interrupt <= 0;
+                cmpr0_interrupt_flag <= 0;
 
             if(counter == cmpr1)
-                cmpr1_interrupt <= 1;
+                cmpr1_interrupt_flag <= 1;
             else 
-                cmpr1_interrupt <= 0;
+                cmpr1_interrupt_flag <= 0;
         end
     end
 

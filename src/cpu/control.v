@@ -19,7 +19,10 @@ module control(input wire clk,
                output reg flagEnable,
                output reg [2:0] iMemAddrSelect,
                output reg iMemReadEnable,
-               output reg pcWriteEn
+               output reg pcWriteEn,
+               input wire interrupt_0,
+               input wire interrupt_1,
+               input wire interrupt_2
 );
 
     reg [2:0] state = 3'b0;
