@@ -21,6 +21,7 @@ module cpu(input wire clk,
                   .carryFlag(carryFlag),
                   .zeroFlag(zeroFlag),
                   .negativeFlag(negativeFlag),
+                  .interruptEnable(interruptEnable),
                   .regFileSrc(regFileSrc),
                   .regFileOutBSelect(regFileOutBSelect),
                   .regFileWriteEnable(regFileWriteEnable),
@@ -116,13 +117,14 @@ module cpu(input wire clk,
     );
     //***************************************************************
     // Data Memory and I/O Data Mux
-    wire [1:0] dMemDataSelect;                  //*
+    wire [2:0] dMemDataSelect;                  //*
     always @(*) begin
         case(dMemDataSelect)
-            2'b00:  dMemIOIn = pcPlusOne[15:8];   // From MSBs of the PC + 1
-            2'b01:  dMemIOIn = pcPlusOne[7:0];    // From LSBs of the PC + 1
-            2'b10:  dMemIOIn = aluOut;            // From the ALU
-            2'b11:  dMemIOIn = 8'd0;              // Default to zero
+            3'b000:  dMemIOIn = pcPlusOne[15:8];        // From MSBs of the PC + 1
+            3'b001:  dMemIOIn = pcPlusOne[7:0];         // From LSBs of the PC + 1
+            3'b010:  dMemIOIn = aluOut;                 // From the ALU
+            3'b011:  dMemIOIn = current_address[15:8];  // From MSBs of the current address
+            3'b100:  dMemIOIn = current_address[7:0];   // From LSBs of the current address
         endcase
     end
     //***************************************************************
@@ -171,6 +173,14 @@ module cpu(input wire clk,
     always @(posedge clk) begin
         returnReg <= dMemIOOut;
     end 
+    //***************************************************************
+    // Current Address 
+    reg [15:0] current_address = 0;
+    always @(posedge clk) begin
+        if(iMemReadEnable) begin
+            current_address <= iMemAddress;
+        end
+    end
     //***************************************************************
     // Instruction Memory Address Mux
     wire [15:0] interruptVector = 16'h00FF;

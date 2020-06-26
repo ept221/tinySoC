@@ -3,6 +3,7 @@ module control(input wire clk,
                input wire carryFlag,
                input wire zeroFlag,
                input wire negativeFlag,
+               input wire interruptEnable,
                output reg [1:0] regFileSrc,
                output reg [3:0] regFileOutBSelect,
                output reg regFileWriteEnable,  
@@ -59,8 +60,31 @@ module control(input wire clk,
         endcase 
     end
 
+               output reg aluSrcASelect,
+               output reg [1:0] aluSrcBSelect,
+               output reg [3:0] aluMode,
+               output reg [1:0] dMemDataSelect,
+               output reg [1:0] dMemIOAddressSelect,
+               output reg dMemIOWriteEn,
+               output reg dMemIOReadEn,
+               output reg [1:0] statusRegSrcSelect,
+               output reg flagEnable,
+               output reg [2:0] iMemAddrSelect,
+               output reg iMemReadEnable,
+               output reg pcWriteEn,
+
     always @(*) begin
         if(state[0] == 1'b0) begin
+            if(interruptEnable) begin
+                if(interrupt_0_flag || interrupt_1_flag || interrupt_2_flag) begin
+                    regFileSrc = 2'b00;                 // aluOut, doesn't really matter
+                    regFileOutBSelect = 4'b1110;        // lower SP reg
+                    regFileWriteEnable = 1'b0;
+                    regFileIncPair = 1'b0;
+                    regFileDecPair = 1'b1;
+
+                end
+            end
             // [Type R-I]
             if(iMemOut[0] == 1'b1 && (iMemOut[3:1] < 3'b111)) begin
                 regFileSrc = 2'b00;                 // aluOut
