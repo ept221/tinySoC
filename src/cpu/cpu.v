@@ -39,7 +39,7 @@ module cpu(input wire clk,
                   .iMemAddrSelect(iMemAddrSelect),
                   .iMemReadEnable(iMemReadEnable),
                   .pcWriteEn(pcWriteEn),
-                  .interruptControl(interruptControl),
+                  .interruptVector(interruptVector),
                   .interrupt_0(interrupt_0),
                   .interrupt_1(interrupt_1),
                   .interrupt_2(interrupt_2)
@@ -142,13 +142,12 @@ module cpu(input wire clk,
     //***************************************************************
     // Status Register Source Mux
     wire [1:0] statusRegSrcSelect;              //*
-    wire interruptControl;                      //*
     always @(*) begin
         case(statusRegSrcSelect)
         2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
         2'b01:  statusIn = aluOut[3:0];                                         // ALU output
         2'b10:  statusIn = dMemIOOut[3:0];                                      // Data memory output
-        2'b11:  statusIn = {interruptControl,negativeFlag,zeroFlag,carryFlag};  // Configure interrupt enable and save all other flags
+        2'b11:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};              // Disable interrupts and save all other flags
         endcase
     end
     //***************************************************************
@@ -185,7 +184,7 @@ module cpu(input wire clk,
     end
     //***************************************************************
     // Instruction Memory Address Mux
-    wire [15:0] interruptVector = 16'h00FF;
+    wire [15:0] interruptVector;
     wire [2:0] iMemAddrSelect;                  //*
     always @(*) begin
         case(iMemAddrSelect)

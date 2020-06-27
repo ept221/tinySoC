@@ -21,7 +21,7 @@ module control(input wire clk,
                output reg [2:0] iMemAddrSelect,
                output reg iMemReadEnable,
                output reg pcWriteEn,
-               output reg interruptControl,
+               output reg interruptVector,
                input wire interrupt_0,
                input wire interrupt_1,
                input wire interrupt_2
@@ -60,10 +60,20 @@ module control(input wire clk,
         3'b111:    condition = 1'b1;
         endcase 
     end
-               output reg flagEnable,
-               output reg [2:0] iMemAddrSelect,
-               output reg iMemReadEnable,
-               output reg pcWriteEn,
+
+    parameter VECTOR_0 = 10;
+    parameter VECTOR_1 = 20;
+    parameter VECTOR_2 = 30;
+    always @(*) begin
+        if(interrupt_0_flag)
+            interruptVector = VECTOR_0;
+        else if(interrupt_1_flag)
+            interruptVector = VECTOR_1;
+        else if(interrupt_2_flag)
+            interruptVector = VECTOR_2;
+        else
+            interruptVector = 16'b0;
+    end
 
     always @(*) begin
         if(state[0] == 1'b0) begin
@@ -77,15 +87,18 @@ module control(input wire clk,
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                  // Pass B, doesn't really matter
                 dMemDataSelect = 3'b100;            // current_address[7:0]
-                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, SP
                 dMemIOWriteEn = 1'b1;
                 dMemIOReadEn = 1'b0;
-                statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-                flagEnable 
-
+                statusRegSrcSelect = 2'b11;         // Disable interrupts and save all other flags
+                flagEnable = 1'b1;
+                iMemAddrSelect = 3'b001;
+                iMemReadEnable = 1'b0;
+                pcWriteEn = 1'b0;
+                nextState = 3'b101;
             end
             // [Type R-I]
-            if(iMemOut[0] == 1'b1 && (iMemOut[3:1] < 3'b111)) begin
+            else if(iMemOut[0] == 1'b1 && (iMemOut[3:1] < 3'b111)) begin
                 regFileSrc = 2'b00;                 // aluOut
                 regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
                 regFileWriteEnable = 1'b1;
@@ -494,7 +507,7 @@ module control(input wire clk,
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
-            else begin
+            else if(state == 2'b011) begin
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
@@ -511,6 +524,26 @@ module control(input wire clk,
                 regFileDecPair = 1'b1;          // Deincrement the SP
                 dMemIOWriteEn = 1'b1;           // Write the MSBs of the PC to the stack
                 iMemAddrSelect = 3'b011;        // iMemOut, the address of the place we call to
+                pcWriteEn = 1'b1;
+                nextState = 3'b000;
+            end
+            else begin
+                regFileSrc = 2'b00;                 // aluOut, doesnt really matter
+                regFileOutBSelect = 4'b1110;        // lower SP reg
+                regFileWriteEnable = 1'b0;
+                regFileIncPair = 1'b0;
+                regFileDecPair = 1'b1;
+                aluSrcASelect = 1'b1;               // From the register file, doesnt really matter
+                aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
+                aluMode = 4'b0000;                  // Pass B, doesnt really matter
+                dMemDataSelect = 3'b011;            // current_address[15:8]
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, SP
+                dMemIOWriteEn = 1'b1;
+                dMemIOReadEn = 1'b0;
+                statusRegSrcSelect = 2'b11;         // Disable interrupts and save all other flags
+                flagEnable = 1'b0;
+                iMemAddrSelect = 3'b010;            // interruptVector
+                iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
