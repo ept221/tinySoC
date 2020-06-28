@@ -52,7 +52,7 @@ module cpu(input wire clk,
         2'b00:  regFileIn = aluOut;             // From the ALU output
         2'b01:  regFileIn = iMemOut[11:4];      // From the instruction memory output
         2'b10:  regFileIn = dMemIOOut;          // From the data memory output
-        2'b11:  regFileIn = aluOut;             // From the ALU output, for default
+        2'b11:  regFileIn = dMemIOOut;          // From the data memory output, for default
         endcase
     end
     //***************************************************************
