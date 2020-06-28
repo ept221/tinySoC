@@ -33,19 +33,6 @@ module control(input wire clk,
         state <= nextState;
     end
 
-    // Safe any incoming interrupts 
-    reg interrupt_0_flag = 0;
-    reg interrupt_1_flag = 0;
-    reg interrupt_2_flag = 0;
-    always @(posedge clk) begin
-        if(interrupt_0 == 1)
-            interrupt_0_flag <= 1;
-        if(interrupt_1 == 1)
-            interrupt_1_flag <= 1;
-        if(interrupt_2 == 1)
-            interrupt_2_flag <= 1;
-    end
-
     // Logic for jmp, call, and ret conditions
     reg condition;
     always @(*) begin
@@ -61,18 +48,66 @@ module control(input wire clk,
         endcase 
     end
 
-    //parameter VECTOR_0 = 10;
-    //parameter VECTOR_1 = 20;
-    //parameter VECTOR_2 = 30;
+    // Safe any incoming interrupts
+    reg clear_interrupt_0 = 0;
+    reg clear_interrupt_1 = 0;
+    reg clear_interrupt_2 = 0;
+
+    reg interrupt_0_flag = 0;
+    reg interrupt_1_flag = 0;
+    reg interrupt_2_flag = 0;
+    always @(posedge clk) begin
+        if(clear_interrupt_0 == 1)
+            interrupt_0_flag <= 0;
+        else if(interrupt_0 == 1)
+            interrupt_0_flag <= 1;
+
+        if(clear_interrupt_1 == 1)
+            interrupt_1_flag <= 0;    
+        else if(interrupt_1 == 1)
+            interrupt_1_flag <= 1;
+
+        if(clear_interrupt_2 == 1)
+            interrupt_2_flag <= 0;    
+        else if(interrupt_2 == 1)
+            interrupt_2_flag <= 1;
+    end
+
+
     always @(*) begin
         if(interrupt_0_flag)
-            interruptVector = 16'd15;
+            interruptVector = 16'd30;
         else if(interrupt_1_flag)
-            interruptVector = 16'd15;
+            interruptVector = 16'd30;
         else if(interrupt_2_flag)
-            interruptVector = 16'd15;
+            interruptVector = 16'd30;
         else
             interruptVector = 16'b0;
+    end
+
+    always @(*) begin
+        if(state == 3'b101) begin
+            if(interrupt_0_flag) begin
+                clear_interrupt_0 = 1;
+                clear_interrupt_1 = 0;
+                clear_interrupt_2 = 0;
+            end
+            else if(interrupt_1_flag) begin
+                clear_interrupt_0 = 0;
+                clear_interrupt_1 = 1;
+                clear_interrupt_2 = 0;
+            end
+            else begin
+                clear_interrupt_0 = 0;
+                clear_interrupt_1 = 0;
+                clear_interrupt_2 = 1;
+            end    
+        end
+        else begin
+            clear_interrupt_0 = 0;
+            clear_interrupt_1 = 0;
+            clear_interrupt_2 = 0;
+        end
     end
 
     always @(*) begin

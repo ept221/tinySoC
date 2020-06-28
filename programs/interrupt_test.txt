@@ -1,44 +1,46 @@
 		nop
-		ldi r0, 193
-		out r0, 0
+
+		ldi r14, 0xff		// set stack pointer
+
+		ldi r0, 1			
+		out r0, 0			// set pin 1 to output
 
 		ldi r0, 36
-		out r0, 3
+		out r0, 3 			// set LSBs of prescaler
 
 		ldi r0, 244
-		out r0, 4
+		out r0, 4 			// set MSPs of prescaler
 
-		ldi r0, 45
-		out r0, 5
+		ldi r0, 18 			
+		out r0, 5			// set pwm mode, set top interrupt
 
-		ssr 0b1000
+		ssr 8 				// enable interrupts
 
 		hlt
 
-		ldi r0, 1
-		out r0, 1
-		csr 0b0111
+top: 	in r0, 2			// read the status of the led
+		not r0
+		ani r0, 1
+		out r0, 1 			// toggle the led
+		ret
+
 
 
 0000000000000000
-0000110000010001
+1110111111110001
+0000100000010001
 0000000000000100
 0000001001000001
 0000000000110100
 0000111101000001
 0000000001000100
-0000001011010001
+0000000100100001
 0000000001010100
 0000100011011000
 0000000011101000
 
-
-
-
-
-
-
-0000000000010001
+0000000000100010
+0000000001001000
+0000000000010011
 0000000000010100
-0000011111100000
-0000000011101000
+0000000011000000

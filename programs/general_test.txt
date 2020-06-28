@@ -1,0 +1,98 @@
+        nop             // Need to start with a nop to fill fetch pipeline
+
+        ldi r0, 1
+        out r0, 0       // set the first and third pins to output
+
+        ldi r0, 0x00    // setup gpu pointer
+        ldi r1, 0x20
+
+        ldi r14, 0xff   // set stack pointer
+
+        ldi r2, 36
+        out r2, 3       // set LSBs of prescaler
+
+        ldi r2, 244
+        out r2, 4       // set MSPs of prescaler
+
+        ldi r2, 18          
+        out r2, 5       // set pwm mode, set top interrupt
+
+        ssr 8           // enable interrupts
+
+poll:   in r2, 2        // read pin register
+        ani r2, 2       // mask the button
+        sll r2          // get the state of the button in the lsb
+        adi r2, 48      // calculate the ascii (0 or 1) state of the button
+        str r2, p0      // write the char to the screen
+        jmp poll        // poll the button again
+
+
+top:    in r3, 2        // read the status of the led
+        xoi r3, 1       // flip the first bit
+        out r3, 1       // toggle the led
+        ret             // return from isr
+
+
+
+0000000000000000 nop
+
+0000000000010001 ldi r0, 1 
+0000000000000100 out r0, 0
+
+0000000000000001 ldi r0, 0x00
+0001001000000001 ldi r1, 0x20
+
+1110111111110001 ldi r14, 0xff
+
+0010001001000001 ldi r2, 36
+0010000001010100 out r2, 3
+
+0010111101000001 ldi r2, 244
+0010000001000100 out r2, 4
+
+0010000100100001 ldi r2, 18
+0010000001010100 out r2, 5
+
+0000100011011000 ssr 8
+
+0010000000100010 in r2, 2
+0010000000100011 ani r2, 2
+0010000001010000 sll r2
+0010001100001001 adi r2, 48
+0010000001101000 str r2, p0
+0000000010110000 jmp
+0000000000001101 poll
+
+0011000000100010 in r3, 2
+0011000000010111 xoi r3, 4
+0011000000010100 out r3, 1
+0000000011000000 ret
+
+
+
+0000000000000000
+0000000000010001
+0000000000000100
+0000000000000001
+0001001000000001
+1110111111110001
+0010001001000001
+0010000001010100
+0010111101000001
+0010000001000100
+0010000100100001
+0010000001010100
+0000100011011000
+0010000000100010
+0010000000100011
+0010000001010000
+0010001100001001
+0010000001101000
+0000000010110000
+0000000000001101
+
+0011000000100010
+0011000000010111
+0011000000010100
+0000000011000000
+

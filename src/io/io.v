@@ -53,9 +53,26 @@ module io(input wire clk,
     reg cmpr1_interrupt_flag;
 
     // Interrupt signals
-    assign top_interrupt = top_flag & counterControl[4];
-    assign cmpr0_interrupt = cmpr0_interrupt_flag & counterControl[5];
-    assign cmpr1_interrupt = cmpr1_interrupt_flag & counterControl[6];
+    reg r0_0, r1_0;
+    always @(posedge clk) begin
+        r0_0 <= top_flag;
+        r1_0 <= r0_0;
+    end
+    assign top_interrupt = (r0_0 & ~r1_0) && counterControl[4];
+
+    reg r0_1, r1_1;
+    always @(posedge clk) begin
+        r0_1 <= cmpr0_interrupt_flag;
+        r1_1 <= r0_0;
+    end
+    assign cmpr0_interrupt = (r0_1 & ~r1_1) && counterControl[5];
+
+    reg r0_2, r1_2;
+    always @(posedge clk) begin
+        r0_2 <= cmpr1_interrupt_flag;
+        r1_2 <= r0_2;
+    end
+    assign cmpr1_interrupt = (r0_2 & ~r1_2) && counterControl[6];
 
     // Internal signals 
     wire match0;
@@ -64,20 +81,19 @@ module io(input wire clk,
 
     // Prescaler
     always @(posedge clk) begin
-        prescaler <= prescaler + 1;
         if(prescaler == scaleFactor) begin
             scaled <= 1;
             prescaler <= 0;
         end
         else begin
             scaled <= 0;
+            prescaler <= prescaler + 1;
         end
     end
 
     // Counter/Timer
     always @(posedge clk) begin
         if(scaled) begin
-            counter <= counter + 1;
             if(counterControl[1:0] == 2'b00) begin          // Idle mode
                 counter <= 0;                               // Clear the counter
                 out0 <= 0;
@@ -87,6 +103,9 @@ module io(input wire clk,
                 if(match0) begin                            // On match0:
                     counter <= 0;                           // Reset the counter
                     out0 <= ~out0;                          // Toggle the output
+                end
+                else begin
+                    counter <= counter + 1;
                 end
             end
             else if(counterControl[1:0] == 2'b10) begin     // PWM mode
@@ -102,6 +121,7 @@ module io(input wire clk,
                         out1 <= 0;                          // clear out1
                     end
                 end
+                counter <= counter + 1;
             end
         end
     end
