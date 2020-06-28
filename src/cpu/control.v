@@ -21,7 +21,7 @@ module control(input wire clk,
                output reg [2:0] iMemAddrSelect,
                output reg iMemReadEnable,
                output reg pcWriteEn,
-               output reg interruptVector,
+               output reg [15:0] interruptVector,
                input wire interrupt_0,
                input wire interrupt_1,
                input wire interrupt_2
@@ -34,9 +34,9 @@ module control(input wire clk,
     end
 
     // Safe any incoming interrupts 
-    reg interrupt_0_flag;
-    reg interrupt_1_flag;
-    reg interrupt_2_flag;
+    reg interrupt_0_flag = 0;
+    reg interrupt_1_flag = 0;
+    reg interrupt_2_flag = 0;
     always @(posedge clk) begin
         if(interrupt_0 == 1)
             interrupt_0_flag <= 1;
@@ -61,16 +61,16 @@ module control(input wire clk,
         endcase 
     end
 
-    parameter VECTOR_0 = 10;
-    parameter VECTOR_1 = 20;
-    parameter VECTOR_2 = 30;
+    //parameter VECTOR_0 = 10;
+    //parameter VECTOR_1 = 20;
+    //parameter VECTOR_2 = 30;
     always @(*) begin
         if(interrupt_0_flag)
-            interruptVector = VECTOR_0;
+            interruptVector = 16'd15;
         else if(interrupt_1_flag)
-            interruptVector = VECTOR_1;
+            interruptVector = 16'd15;
         else if(interrupt_2_flag)
-            interruptVector = VECTOR_2;
+            interruptVector = 16'd15;
         else
             interruptVector = 16'b0;
     end
@@ -436,8 +436,8 @@ module control(input wire clk,
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
-                if(iMemOut[7:3] == 5'b1101) begin
-                    aluMode = 4'b0010;  // OR
+                if(iMemOut[7:3] == 5'b11011) begin
+                    aluMode = 4'b0010;  // OR 4'b0010
                 end
                 else begin
                     aluMode = 4'b0001;  // AND
@@ -507,7 +507,7 @@ module control(input wire clk,
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
-            else if(state == 2'b011) begin
+            else if(state == 3'b011) begin
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;

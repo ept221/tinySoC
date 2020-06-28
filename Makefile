@@ -1,9 +1,9 @@
 lint: 
 	verilator --lint-only -Wall src/cpu/alu.v src/cpu/control.v src/cpu/cpu.v src/cpu/regFile.v src/gpu/gpu.v src/gpu/pll.v src/gpu/vga.v src/io/io.v src/memory/d_ram.v src/memory/i_ram.v src/soc/top.v
 
-sim: src/top.v src/test_tb.v
+sim:
 	mkdir -p build/sim
-	iverilog -o build/sim/sim.vvp src/top.v test_tb.v
+	iverilog -o build/sim/sim.vvp src/cpu/alu.v src/cpu/control.v src/cpu/cpu.v src/cpu/regFile.v src/cpu/test_tb.v src/memory/d_ram.v src/memory/i_ram.v
 	vvp build/sim/sim.vvp
 	mv test_tb.vcd build/sim/test_tb.vcd
 	open -a Scansion build/sim/test_tb.vcd

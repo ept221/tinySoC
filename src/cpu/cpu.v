@@ -2,13 +2,13 @@ module cpu(input wire clk,
 
            output reg [15:0] iMemAddress,
            input wire [15:0] iMemOut,
-           output reg iMemReadEnable,
+           output wire iMemReadEnable,
 
            output reg [15:0] dMemIOAddress,
            output reg [7:0] dMemIOIn,
            input wire [15:0] dMemIOOut,
-           output reg dMemIOWriteEn,
-           output reg dMemIOReadEn,
+           output wire dMemIOWriteEn,
+           output wire dMemIOReadEn,
 
            input wire interrupt_0,
            input wire interrupt_1,
@@ -43,7 +43,7 @@ module cpu(input wire clk,
                   .interrupt_0(interrupt_0),
                   .interrupt_1(interrupt_1),
                   .interrupt_2(interrupt_2)
-    );
+    );    
     //***************************************************************
     // Register File Source Mux
     wire [1:0] regFileSrc;                      //*
@@ -106,7 +106,7 @@ module cpu(input wire clk,
     wire [7:0] aluOut;
     reg [7:0] dataA;
     reg [7:0] dataB;
-
+    
     alu ALU(.dataA(dataA),
             .dataB(dataB),
             .mode(aluMode),
