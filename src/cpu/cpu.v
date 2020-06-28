@@ -126,6 +126,7 @@ module cpu(input wire clk,
             3'b010:  dMemIOIn = aluOut;                 // From the ALU
             3'b011:  dMemIOIn = current_address[15:8];  // From MSBs of the current address
             3'b100:  dMemIOIn = current_address[7:0];   // From LSBs of the current address
+            default  dMemIOIn = current_address[7:0];
         endcase
     end
     //***************************************************************
@@ -136,7 +137,7 @@ module cpu(input wire clk,
             2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};
             2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};
             2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
-            default  dMemIOAddress = {regFileOutC,regFileOutB};
+            default  dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
         endcase
     end
     //***************************************************************
