@@ -24,6 +24,12 @@ module control(input wire clk,
                output reg [15:0] interruptVector = 0
 );
 
+    //**************************************************
+    // States:
+    // 000 Execute Decoded Instruction
+    // xx0 Execute next parts of longer instructions
+    // 001 JMP address part
+
     reg [2:0] state = 3'b0;
     reg [2:0] nextState;
     always @(posedge clk) begin
@@ -143,14 +149,14 @@ module control(input wire clk,
             else if(iMemOut[7:3] >= 5'b01101 && iMemOut[7:3] < 5'b10011 && iMemOut[2:0] == 3'b000) begin
                 regFileSrc = 2'b00;                         // aluOut
                 regFileOutBSelect = (iMemOut[11:9]*2);      // PPP
-                regFileWriteEnable = iMemOut[7];
+                regFileWriteEnable = iMemOut[7];    // Write if store (takes 2 cycles to get right result)
                 aluSrcASelect = 1'b1;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesnt really matter
                 aluMode = 4'b1101;                  // Pass A
                 dMemDataSelect = 3'b010;            // aluOut
                 dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
-                dMemIOWriteEn = ~iMemOut[7];
-                dMemIOReadEn = iMemOut[7];
+                dMemIOWriteEn = ~iMemOut[7];        // Write if Load
+                dMemIOReadEn = iMemOut[7];          // Read if Store
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
@@ -163,7 +169,7 @@ module control(input wire clk,
                     if(state == 3'b000) begin
                         iMemReadEnable = 1'b0;
                         pcWriteEn = 1'b0;
-                        nextState = 3'b001;
+                        nextState = 3'b010;
                     end
                     else begin
                         iMemReadEnable = 1'b1;

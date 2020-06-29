@@ -32,6 +32,8 @@ module io(input wire clk,
     //***************************************************************
     // 8-bit Counter/Timer
 
+    wire top = (counter == 255);
+
     // Prescaler registeres
     reg [15:0] scaleFactor = 0;
     reg [15:0] prescaler = 0;
