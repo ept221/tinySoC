@@ -2,8 +2,8 @@
 
 		ldi r14, 0xff		// set stack pointer
 
-		ldi r0, 1			
-		out r0, 0			// set pin 1 to output
+		ldi r0, 5			
+		out r0, 0			// set pin 1 and 3 to output
 
 		ldi r0, 36
 		out r0, 3 			// set LSBs of prescaler
@@ -18,9 +18,7 @@
 
 		hlt
 
-top: 	in r0, 2			// read the status of the led
-		not r0
-		ani r0, 1
+		ldi r0, 1
 		out r0, 1 			// toggle the led
 		ret
 
@@ -28,7 +26,7 @@ top: 	in r0, 2			// read the status of the led
 
 0000000000000000
 1110111111110001
-0000100000010001
+0000000000010001
 0000000000000100
 0000001001000001
 0000000000110100
@@ -36,11 +34,9 @@ top: 	in r0, 2			// read the status of the led
 0000000001000100
 0000000100100001
 0000000001010100
-0000100011011000
+0000000011011000
 0000000011101000
 
-0000000000100010
-0000000001001000
-0000000000010011
+0000000000010001
 0000000000010100
 0000000011000000

@@ -8,11 +8,7 @@ module cpu(input wire clk,
            output reg [7:0] dMemIOIn,
            input wire [15:0] dMemIOOut,
            output wire dMemIOWriteEn,
-           output wire dMemIOReadEn,
-
-           input wire interrupt_0,
-           input wire interrupt_1,
-           input wire interrupt_2
+           output wire dMemIOReadEn
 );
     //***************************************************************
     // Instantiate Control Logic
@@ -99,7 +95,7 @@ module cpu(input wire clk,
     always @(*) begin
         case(statusRegSrcSelect)
         2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
-        2'b01:  statusIn = aluOut[3:0];                                         // ALU output
+        2'b01:  statusIn = {aluOut[3:0]};                                       // ALU output
         2'b10:  statusIn = dMemIOOut[3:0];                                      // Data memory output
         2'b11:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};              // Disable interrupts and save all other flags
         endcase
@@ -186,10 +182,7 @@ module cpu(input wire clk,
                   .iMemAddrSelect(iMemAddrSelect),
                   .iMemReadEnable(iMemReadEnable),
                   .pcWriteEn(pcWriteEn),
-                  .interruptVector(interruptVector),
-                  .interrupt_0(interrupt_0),
-                  .interrupt_1(interrupt_1),
-                  .interrupt_2(interrupt_2)
+                  .interruptVector(interruptVector)
     );
     regFile registerFile(.inSelect(iMemOut[15:12]),
                          .outBselect(regFileOutBSelect),
