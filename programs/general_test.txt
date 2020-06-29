@@ -21,7 +21,7 @@
 
 poll:   in r2, 2        // read pin register
         ani r2, 2       // mask the button
-        sll r2          // get the state of the button in the lsb
+        srl r2          // get the state of the button in the lsb
         adi r2, 48      // calculate the ascii (0 or 1) state of the button
         str r2, p0      // write the char to the screen
         jmp poll        // poll the button again
@@ -57,7 +57,7 @@ top:    in r3, 2        // read the status of the led
 
 0010000000100010 in r2, 2
 0010000000100011 ani r2, 2
-0010000001010000 sll r2
+0010000001011000 srl r2
 0010001100001001 adi r2, 48
 0010000001101000 str r2, p0
 0000000010110000 jmp
@@ -82,10 +82,10 @@ top:    in r3, 2        // read the status of the led
 0010000001000100
 0010000100100001
 0010000001010100
-0000100011011000
+0000000011011000
 0010000000100010
 0010000000100011
-0010000001010000
+0010000001011000
 0010001100001001
 0010000001101000
 0000000010110000

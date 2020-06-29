@@ -58,6 +58,13 @@ module test_tb();
             #1 clk = ~clk;
         end
         interrupt_0 = 1;
+        #1 clk = ~clk;
+        #1 clk = ~clk;
+        interrupt_0 = 0;
+        repeat (15) begin
+            #1 clk = ~clk;
+        end
+        interrupt_0 = 1;
         repeat (15) begin
             #1 clk = ~clk;
         end

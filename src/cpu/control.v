@@ -542,7 +542,7 @@ module control(input wire clk,
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
-            else if(state == 3'b011) begin
+            else if(state == 3'b011) begin          // call
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
