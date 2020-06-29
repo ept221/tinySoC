@@ -1,6 +1,8 @@
 module test_tb();
 
     reg clk = 0;
+
+    wire [7:0] io_pins;
     
     wire [15:0] iMemAddress;
     wire [15:0] iMemOut;
