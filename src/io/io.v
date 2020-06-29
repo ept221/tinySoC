@@ -3,12 +3,13 @@ module io(input wire clk,
           input wire [7:0] address,
           input wire w_en,
           input wire r_en,
-          output wire [7:0] dout,
-          output wire [7:0] io_pins
+          output reg [7:0] dout,
+          inout wire [7:0] io_pins
 );
     //***************************************************************
     // Manually Instantiate Pin Primitives For Tri-state Control
     
+    /*
     // Logic to select counter output or gpio for pins 6 and 7
     wire pin_6 = (counterControl[2] == 1) ? out0 : port[6];
     wire pin_7 = (counterControl[3] == 1) ? out1 : port[7];
@@ -22,11 +23,22 @@ module io(input wire clk,
         .D_OUT_0({pin_7,pin_6,port[5:0]}),
         .D_IN_0(pins)
     );
+    */
+
+    assign io_pins[0] = (dir[0] == 1) ? port[0] : 1'bz;
+    assign io_pins[1] = (dir[1] == 1) ? port[1] : 1'bz;
+    assign io_pins[2] = (dir[2] == 1) ? port[2] : 1'bz;
+    assign io_pins[3] = (dir[3] == 1) ? port[3] : 1'bz;
+    assign io_pins[4] = (dir[4] == 1) ? port[4] : 1'bz;
+    assign io_pins[5] = (dir[5] == 1) ? port[5] : 1'bz;
+    assign io_pins[6] = (dir[6] == 1) ? ((counterControl[2] == 1) ? out0 : port[6]) : 1'bz;
+    assign io_pins[7] = (dir[7] == 1) ? ((counterControl[3] == 1) ? out1 : port[7]) : 1'bz;
+
     //***************************************************************
     // GPIO 
-    reg [7:0] dir;
-    reg [7:0] port;
-    wire [7:0] pins;
+    reg [7:0] dir = 0;
+    reg [7:0] port = 0;
+    //wire [7:0] pins;
     //***************************************************************
     // 8-bit Counter/Timer
 
@@ -47,7 +59,7 @@ module io(input wire clk,
     // Internal signals 
     wire match0;
     wire match1;
-    wire scaled;
+    reg scaled;
 
     // Prescaler
     always @(posedge clk) begin
@@ -117,7 +129,7 @@ module io(input wire clk,
             end
             8'h02: begin                            // PINS
                 if(r_en)
-                    dout <= pins;
+                    dout <= io_pins;
             end
             8'h03: begin                            // scaleFactor LSB
                 if(w_en)
