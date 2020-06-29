@@ -33,23 +33,23 @@ module io(input wire clk,
     // 8-bit Counter/Timer
 
     // Prescaler registeres
-    reg [15:0] scaleFactor;
-    reg [15:0] prescaler;
+    reg [15:0] scaleFactor = 0;
+    reg [15:0] prescaler = 0;
 
     // Counter/Timer registers
-    reg [7:0] counterControl;
-    reg [7:0] cmpr0;
-    reg [7:0] cmpr1;
-    reg [7:0] counter;
+    reg [7:0] counterControl = 0;
+    reg [7:0] cmpr0 = 0;
+    reg [7:0] cmpr1 = 0;
+    reg [7:0] counter = 0;
 
     // Output registers
-    reg out0;
-    reg out1;
+    reg out0 = 0;
+    reg out1 = 0;
 
     // Internal signals 
     wire match0;
     wire match1;
-    reg scaled;
+    reg scaled = 0;
 
     // Prescaler
     always @(posedge clk) begin

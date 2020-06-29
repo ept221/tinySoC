@@ -93,7 +93,7 @@ module test_tb();
     initial begin
         $dumpfile("test_tb.vcd");
         $dumpvars(0, my_cpu, my_io);
-        repeat (15) begin
+        repeat (5000) begin
             #1 clk = ~clk;
         end
         $finish;
