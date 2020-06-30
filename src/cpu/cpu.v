@@ -126,7 +126,7 @@ module cpu(input wire clk,
     end 
     //***************************************************************
     // Current Address Register
-    reg [15:0] current_address = 0;
+    reg [15:0] current_address;
     always @(posedge clk) begin
         if(iMemReadEnable) begin
             current_address <= iMemAddress;
@@ -149,7 +149,7 @@ module cpu(input wire clk,
     end
     //***************************************************************
     // PC and pcPlusOne adder
-    reg [15:0] pc = 16'd1;
+    reg [15:0] pc = 16'd0;
     wire [15:0] pcIn = iMemAddress + 1;
     wire [15:0] pcOut = pc;
     wire [15:0] pcPlusOne = pcOut + 1;

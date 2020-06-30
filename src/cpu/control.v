@@ -24,18 +24,20 @@ module control(input wire clk,
                output reg [15:0] interruptVector = 0
 );
 
-    //**************************************************
+    //****************************************************************************************************
     // States:
     // 000 Execute Decoded Instruction
     // xx0 Execute next parts of longer instructions
     // 001 JMP address part
+    // 011 Call address part
+    // 111 Initial Fetch
 
-    reg [2:0] state = 3'b0;
+    reg [2:0] state = 3'b111;
     reg [2:0] nextState;
     always @(posedge clk) begin
         state <= nextState;
     end
-
+    //****************************************************************************************************
     // Logic for jmp, call, and ret conditions
     reg condition;
     always @(*) begin
@@ -50,7 +52,8 @@ module control(input wire clk,
         3'b111:    condition = 1'b1;
         endcase 
     end
-
+    //****************************************************************************************************
+    // Main Decoder
     always @(*) begin
         if(state[0] == 1'b0) begin
             // [Type R-I]
@@ -443,7 +446,27 @@ module control(input wire clk,
             end     
         end
         else begin
-            if(state == 3'b001) begin
+            if(state == 3'b111) begin               // First fetch
+                regFileSrc = 2'b00;                 // aluOut, doesnt really matter
+                regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesnt really matter
+                regFileWriteEnable = 1'b0;
+                regFileIncPair = 1'b0;
+                regFileDecPair = 1'b0;
+                aluSrcASelect = 1'b1;               // regFileOutA
+                aluSrcBSelect = 2'b00;              // regFileOutB
+                aluMode = 4'b0000;                  // Pass B, doesnt really matter
+                dMemDataSelect = 3'b010;            // aluOut, doesnt really matter
+                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesnt really matter
+                dMemIOWriteEn = 1'b0;
+                dMemIOReadEn = 1'b0;
+                statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
+                flagEnable = 1'b0;
+                iMemAddrSelect = 3'b001;            // pcOut
+                iMemReadEnable = 1'b1;
+                pcWriteEn = 1'b1;
+                nextState = 3'b000;
+            end
+            else if(state == 3'b001) begin
                 regFileSrc = 2'b00;                             // aluOut, doesnt really matter
                 regFileOutBSelect = iMemOut[15:12];             // same as inSelect
                 regFileWriteEnable = 1'b0;
@@ -463,7 +486,7 @@ module control(input wire clk,
                 pcWriteEn = 1'b1;
                 nextState = 3'b000;
             end
-            else begin          // call
+            else begin                              // call
                 regFileSrc = 2'b00;                 // aluOut, doesnt really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
