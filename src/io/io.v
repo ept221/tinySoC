@@ -4,7 +4,9 @@ module io(input wire clk,
           input wire w_en,
           input wire r_en,
           output reg [7:0] dout,
-          inout wire [7:0] io_pins
+          inout wire [7:0] io_pins,
+          output reg top_flag = 0,
+          input wire top_flag_clr
 );
     //***************************************************************
     // GPIO 
@@ -32,8 +34,6 @@ module io(input wire clk,
     //***************************************************************
     // 8-bit Counter/Timer
 
-    wire top = (counter == 255);
-
     // Prescaler registeres
     reg [15:0] scaleFactor = 0;
     reg [15:0] prescaler = 0;
@@ -51,6 +51,7 @@ module io(input wire clk,
     // Internal signals 
     wire match0;
     wire match1;
+    wire top;
     reg scaled = 0;
 
     // Prescaler
@@ -101,8 +102,19 @@ module io(input wire clk,
     end
 
     // Comparators
+    assign top = (counter == 255) ? 1 : 0;
     assign match0 = (counter == cmpr0) ? 1 : 0;
     assign match1 = (counter == cmpr1) ? 1 : 0;
+    //***************************************************************
+    // Interrupts
+    always @(posedge clk) begin
+        if(top_flag_clr)
+            top_flag <= 0;
+        else if(address == 8'h09 && w_en)           // Interrupt flag register
+            top_flag <= din[0];
+        else if(top && counterControl[4])
+            top_flag <= 1;
+    end
     //***************************************************************
     // Memory Map
     always @(posedge clk) begin

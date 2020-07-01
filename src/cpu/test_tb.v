@@ -23,8 +23,11 @@ module test_tb();
     reg IOReadEn;
     
 
+    wire top_flag;
+    wire top_flag_clr;
+
     always @(*) begin
-        if(dMemIOAddress >= 16'h0000 && dMemIOAddress <= 16'h07FF) begin                                      // D_MEM
+        if(dMemIOAddress >= 16'h0000 && dMemIOAddress <= 16'h07FF) begin         // D_MEM
             dMemWriteEn = dMemIOWriteEn;
             dMemReadEn = dMemIOReadEn;
             IOWriteEn = 0;
@@ -60,7 +63,10 @@ module test_tb();
                .dMemIOIn(dMemIOIn),
                .dMemIOOut(dMemIOOut),
                .dMemIOWriteEn(dMemIOWriteEn),
-               .dMemIOReadEn(dMemIOReadEn)
+               .dMemIOReadEn(dMemIOReadEn),
+
+               .interrupt_0(top_flag),
+               .interrupt_0_clr(top_flag_clr)
     );
 
     i_ram my_i_ram(.din(16'd0),
@@ -87,7 +93,9 @@ module test_tb();
              .w_en(IOWriteEn),
              .r_en(IOReadEn),
              .dout(IOOut),
-             .io_pins(io_pins)
+             .io_pins(io_pins),
+             .top_flag(top_flag),
+             .top_flag_clr(top_flag_clr)
     );
 
     initial begin
