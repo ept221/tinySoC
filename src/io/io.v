@@ -107,12 +107,14 @@ module io(input wire clk,
     assign match1 = (counter == cmpr1) ? 1 : 0;
     //***************************************************************
     // Interrupts
+    reg top_old;
     always @(posedge clk) begin
+        top_old <= top;                               // Need this to detect edge of top
         if(top_flag_clr)
             top_flag <= 0;
         else if(address == 8'h09 && w_en)           // Interrupt flag register
             top_flag <= din[0];
-        else if(top && counterControl[4])
+        else if(top && (~top_old) && counterControl[4])
             top_flag <= 1;
     end
     //***************************************************************
