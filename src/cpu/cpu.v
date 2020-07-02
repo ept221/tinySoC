@@ -6,7 +6,7 @@ module cpu(input wire clk,
 
            output reg [15:0] dMemIOAddress,
            output reg [7:0] dMemIOIn,
-           input wire [15:0] dMemIOOut,
+           input wire [7:0] dMemIOOut,
            output wire dMemIOWriteEn,
            output wire dMemIOReadEn,
 
