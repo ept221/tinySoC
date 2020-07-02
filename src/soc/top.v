@@ -1,11 +1,8 @@
 module top(input wire clk,
-           output wire h_sync,
-           output wire v_sync,
-           output wire R,
-           output wire G,
-           output wire B,
-           output wire [7:0] io_pins
+           output wire [7:0] io_pins,
+           output wire help
 );
+
     //***************************************************************
     // Instantiate CPU
     cpu my_cpu(.clk(clk),
@@ -18,7 +15,7 @@ module top(input wire clk,
                .dMemIOWriteEn(dMemIOWriteEn),
                .dMemIOReadEn(dMemIOReadEn),
                .interrupt_0(top_flag),
-               .interrupt_0_clr(top_flag_clr)
+               .interrupt_0_clr(top_flag_clr),
     );
     //***************************************************************
     // Instantiate Instruction Memory
@@ -42,7 +39,7 @@ module top(input wire clk,
     wire dMemIOReadEn;
 
     always @(*) begin
-        if(dMemIOAddress >= 16'h0000 && dMemIOAddress <= 16'h07FF) begin                                      // D_MEM
+        if(dMemIOAddress >= 16'h0000 && dMemIOAddress <= 16'h07FF) begin         // D_MEM
             dMemWriteEn = dMemIOWriteEn;
             dMemReadEn = dMemIOReadEn;
             IOWriteEn = 0;
@@ -111,7 +108,7 @@ module top(input wire clk,
     //***************************************************************
     // Instantiate GPU
     reg vMemWriteEn;
-
+    
     gpu my_gpu(.clk(clk),
                .h_syncD2(h_sync),
                .v_syncD2(v_sync),

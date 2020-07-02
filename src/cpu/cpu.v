@@ -15,7 +15,7 @@ module cpu(input wire clk,
 );
     //***************************************************************
     // Instantiate Control Logic
-    
+
     //***************************************************************
     // Register File Source Mux
     wire [1:0] regFileSrc;                      //*
@@ -99,7 +99,7 @@ module cpu(input wire clk,
         case(statusRegSrcSelect)
         2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
         2'b01:  statusIn = {aluOut[3:0]};                                       // ALU output
-        2'b10:  statusIn = dMemIOOut[3:0];                                      // Data memory output
+        2'b10:  statusIn = {dMemIOOut[3:0]};                                      // Data memory output
         2'b11:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};              // Disable interrupts and save all other flags
         endcase
     end
