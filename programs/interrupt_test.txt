@@ -16,7 +16,7 @@
 
 		hlt
 
-isr:    ldi r0, 2			// read pin register
+isr:    in r0, 2			// read pin register
 		xoi r0, 1			// toggle the led bit
 		out r0, 1 			// write to the port register
 		ssr 8				// enable interrupts
