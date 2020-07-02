@@ -66,7 +66,7 @@ module gpu(input wire clk,
 	// a single horizontal slice of a particular glyph.
 	wire [7:0] pixelRow;
 	wire [7:0] upper = char - 8'd32;
-	rom myRom(8'd0,{upper,yD1[3:0]},1'd0,vgaClk,pixelRow);
+	rom myRom(8'd0,{upper[6:0],yD1[3:0]},1'd0,vgaClk,pixelRow);
 
 	// We need to reverse the order of pixelRow to make it easy to index into
 	// because the LSB is the rightmost pixel, but we need it to be the left

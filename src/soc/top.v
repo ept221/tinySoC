@@ -133,7 +133,7 @@ module top(input wire clk,
                .G(G),
                .B(B),
                .data_in(dMemIOIn),
-               .write_address(dMemIOAddress),
+               .write_address(dMemIOAddress[11:0]),
                .w_en(vMemWriteEn));
     //***************************************************************
 endmodule

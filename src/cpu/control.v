@@ -41,7 +41,7 @@ module control(input wire clk,
     parameter START = 3'b111;           // Initial state, wait 40 cycles, and fetch first instruction
 
     reg [2:0] state = START;
-    reg [2:0] nextState = 0;
+    reg [2:0] nextState;
     always @(posedge clk) begin
         state <= nextState;
     end
