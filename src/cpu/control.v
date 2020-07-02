@@ -23,7 +23,11 @@ module control(input wire clk,
                output reg pcWriteEn,
                output reg [15:0] interruptVector,
                input wire interrupt_0,
-               output reg interrupt_0_clr
+               input wire interrupt_1,
+               input wire interrupt_2,
+               output reg interrupt_0_clr,
+               output reg interrupt_1_clr,
+               output reg interrupt_2_clr
 );    
     //****************************************************************************************************
     // States
@@ -34,7 +38,7 @@ module control(input wire clk,
     parameter JMP = 3'b001;             // Fetch address, and perform a jump
     parameter CALL = 3'b011;            // Fetch address, and perform a call
     parameter INTERRUPT = 3'b101;       // Push MSBs of return address, and jump to the ISR
-    parameter START = 3'b111;           // Initial state, wait 255 cycles, and fetch first instruction
+    parameter START = 3'b111;           // Initial state, wait 40 cycles, and fetch first instruction
 
     reg [2:0] state = START;
     reg [2:0] nextState = 0;
@@ -71,9 +75,18 @@ module control(input wire clk,
     end
     //****************************************************************************************************
     // Interrupt vectoring
+
+    wire interrupt = interrupt_0 || interrupt_1 || interrupt_2;
+
     always @(*) begin
         if(interrupt_0) begin
-            interruptVector = 16'd146;
+            interruptVector = 16'd20;
+        end
+        else if(interrupt_1) begin
+            interruptVector = 16'd30;
+        end
+        else if(interrupt_2) begin
+            interruptVector = 16'd40;
         end
         else begin
             interruptVector = 16'd0;
@@ -83,16 +96,30 @@ module control(input wire clk,
     always @(*) begin
         if(state == INTERRUPT && interrupt_0) begin
             interrupt_0_clr = 1;
+            interrupt_1_clr = 0;
+            interrupt_2_clr = 0;
+        end
+        else if(state == INTERRUPT && interrupt_1) begin
+            interrupt_0_clr = 0;
+            interrupt_1_clr = 1;
+            interrupt_2_clr = 0;
+        end
+        else if(state == INTERRUPT && interrupt_2) begin
+            interrupt_0_clr = 0;
+            interrupt_1_clr = 0;
+            interrupt_2_clr = 1;
         end
         else begin
             interrupt_0_clr = 0;
+            interrupt_1_clr = 0;
+            interrupt_2_clr = 0;
         end
     end
     //****************************************************************************************************
     // Main Decoder
     always @(*) begin
         if(state[0] == 1'b0) begin
-            if(interruptEnable && state == PART1 && interrupt_0) begin
+            if(interruptEnable && state == PART1 && interrupt) begin
                 regFileSrc = 2'b00;                 // aluOut
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;

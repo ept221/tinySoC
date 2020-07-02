@@ -15,7 +15,11 @@ module top(input wire clk,
                .dMemIOWriteEn(dMemIOWriteEn),
                .dMemIOReadEn(dMemIOReadEn),
                .interrupt_0(top_flag),
+               .interrupt_1(match0_flag),
+               .interrupt_2(match1_flag),
                .interrupt_0_clr(top_flag_clr),
+               .interrupt_1_clr(match0_flag_clr),
+               .interrupt_2_clr(match1_flag_clr)
     );
     //***************************************************************
     // Instantiate Instruction Memory
@@ -93,7 +97,12 @@ module top(input wire clk,
     wire [7:0] IOOut;
 
     wire top_flag;
+    wire match0_flag;
+    wire match1_flag;
+
     wire top_flag_clr;
+    wire match0_flag_clr;
+    wire match1_flag_clr;
 
     io my_io(.clk(clk),
              .din(dMemIOIn),
@@ -103,7 +112,11 @@ module top(input wire clk,
              .dout(IOOut),
              .io_pins(io_pins),
              .top_flag(top_flag),
-             .top_flag_clr(top_flag_clr)
+             .match0_flag(match0_flag),
+             .match1_flag(match1_flag),
+             .top_flag_clr(top_flag_clr),
+             .match0_flag_clr(match0_flag_clr),
+             .match1_flag_clr(match1_flag_clr)
     );
     //***************************************************************
     // Instantiate GPU

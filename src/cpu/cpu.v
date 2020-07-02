@@ -11,7 +11,11 @@ module cpu(input wire clk,
            output wire dMemIOReadEn,
 
            input wire interrupt_0,
-           output wire interrupt_0_clr
+           input wire interrupt_1,
+           input wire interrupt_2,
+           output wire interrupt_0_clr,
+           output wire interrupt_1_clr,
+           output wire interrupt_2_clr
 );
     //***************************************************************
     // Instantiate Control Logic
@@ -187,7 +191,11 @@ module cpu(input wire clk,
                   .pcWriteEn(pcWriteEn),
                   .interruptVector(interruptVector),
                   .interrupt_0(interrupt_0),
-                  .interrupt_0_clr(interrupt_0_clr)
+                  .interrupt_1(interrupt_1),
+                  .interrupt_2(interrupt_2),
+                  .interrupt_0_clr(interrupt_0_clr),
+                  .interrupt_1_clr(interrupt_1_clr),
+                  .interrupt_2_clr(interrupt_2_clr)
     );
     regFile registerFile(.inSelect(iMemOut[15:12]),
                          .outBselect(regFileOutBSelect),

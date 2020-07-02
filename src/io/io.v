@@ -6,7 +6,11 @@ module io(input wire clk,
           output reg [7:0] dout,
           inout wire [7:0] io_pins,
           output reg top_flag = 0,
-          input wire top_flag_clr
+          output reg match0_flag = 0,
+          output reg match1_flag = 0,
+          input wire top_flag_clr,
+          input wire match0_flag_clr,
+          input wire match1_flag_clr
 );
     //***************************************************************
     // GPIO 
@@ -108,15 +112,39 @@ module io(input wire clk,
     //***************************************************************
     // Interrupts
     reg top_old;
+    reg match0_old;
+    reg match1_old;
     always @(posedge clk) begin
-        top_old <= top;                               // Need this to detect edge of top
+        // Needed to detect edges
+        top_old <= top;
+        match0_old <= match0;
+        match1_old <= match1;
+
+        // Top
         if(top_flag_clr)
             top_flag <= 0;
-        else if(address == 8'h09 && w_en)           // Interrupt flag register
+        else if(address == 8'h09 && w_en)                           // Interrupt flag register
             top_flag <= din[0];
         else if(top && (~top_old) && counterControl[4])
             top_flag <= 1;
+
+        // Match0
+        if(match0_flag_clr)
+            match0_flag <= 0;
+        else if(address == 8'h09 && w_en)                           // Interrupt flag register
+            match0_flag <= din[1];
+        else if(match0 && (~match0_old) && counterControl[5])
+            match0_flag <= 1;
+
+        // Match1
+        if(match1_flag_clr)
+            match1_flag <= 0;
+        else if(address == 8'h09 && w_en)                           // Interrupt flag register
+            match1_flag <= din[2];
+        else if(match1 && (~match1_old) && counterControl[6])
+            match1_flag <= 1;
     end
+
     //***************************************************************
     // Memory Map
     always @(posedge clk) begin
