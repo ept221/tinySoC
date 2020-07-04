@@ -11,7 +11,9 @@ module gpu(input wire clk,
            output reg [7:0] data_out,
 
            output reg blanking_start_interrupt_flag = 0,
-           input wire blanking_start_interrupt_flag_clr
+           input wire blanking_start_interrupt_flag_clr,
+
+           output wire cool
 );
     //*****************************************************************************************************************
     // Create the VGA clock with the PLL
@@ -29,7 +31,7 @@ module gpu(input wire clk,
     // in order for everything to be in sync, we need to produce delayed
     // versions of the control signals from the sync generator.
     reg [9:0] xD1, xD2, yD1;
-    reg h_syncD1, v_syncD1, activeD1, activeD2, frame_endD1, frame_endD2;
+    reg h_syncD1, v_syncD1, activeD1, activeD2, blanking_startD1, blanking_startD2;
     always @(posedge vgaClk) begin
         xD1 <= x;
         xD2 <= xD1;
@@ -63,12 +65,16 @@ module gpu(input wire clk,
     reg green = 1;
     reg blue = 1;
 
+    assign cool = blanking_start_interrupt_flag;
+
     always @(posedge clk) begin
-        if(write_address == 12'h2960 && w_en) begin
+        if(write_address == 12'h2400 && w_en) begin
             {blue, green, red} <= data_in[4:2];
+            blanking_start_interrupt_enable <= data_in[1];
         end
-        else if(write_address == 12'h2960 && r_en) begin
+        else if(write_address == 12'h2400 && r_en) begin
             data_out[4:2] <= {blue, green, red};
+            data_out[7:5] <= 0;
         end
     end
 
@@ -115,17 +121,22 @@ module gpu(input wire clk,
         edgeFlop <= &sync_to_clk; 
     end
 
-    reg blanking_start_interrupt_clr = 0;
+    reg blanking_start_interrupt_enable = 0;
     always @(posedge clk) begin
-        if(blanking_start_flag_clr) begin
+        if(blanking_start_interrupt_flag_clr) begin
             blanking_start_interrupt_flag <= 0;
         end
-        else if(write_address == 12'h2960 && w_en) begin
+        else if(write_address == 12'h2400 && w_en) begin
             blanking_start_interrupt_flag <= data_in[0];
-            blanking_start_interrupt_enable <= data_in[1];
         end
         else if(&sync_to_clk && ~edgeFlop && blanking_start_interrupt_enable) begin
             blanking_start_interrupt_flag <= 1;
+        end
+    end
+
+    always @(posedge clk) begin
+        if(write_address == 12'h2400 && r_en) begin
+            data_out[1:0] <= {blanking_start_interrupt_enable,blanking_start_interrupt_flag};
         end
     end
 
@@ -135,10 +146,11 @@ module gpu(input wire clk,
     reg [7:0] char;
     wire [11:0] address = (x[9:3] + (y[9:4]*80));
     wire readRamActive = (address < 12'd2400) ? 1 : 0;
+    wire writeRamActive = (write_address < 12'd2400) ? 1 : 0;
     ram myRam(
               .din(data_in),
               .w_addr(write_address),
-              .w_en(w_en),
+              .w_en(w_en&&writeRamActive),
               .r_addr(address),
               .r_en(readRamActive),
               .w_clk(vgaClk),

@@ -127,6 +127,7 @@ module control(input wire clk,
             interrupt_0_clr = 0;
             interrupt_1_clr = 0;
             interrupt_2_clr = 0;
+            interrupt_3_clr = 0;
         end
     end
     //****************************************************************************************************
