@@ -19,14 +19,14 @@ module top(input wire clk,
                .dMemIOOut(dMemIOOut),
                .dMemIOWriteEn(dMemIOWriteEn),
                .dMemIOReadEn(dMemIOReadEn),
-               .interrupt_0(top_flag),
-               .interrupt_1(match0_flag),
-               .interrupt_2(match1_flag),
-               .interrupt_3(blanking_start_interrupt_flag),
-               .interrupt_0_clr(top_flag_clr),
-               .interrupt_1_clr(match0_flag_clr),
-               .interrupt_2_clr(match1_flag_clr),
-               .interrupt_3_clr(blanking_start_interrupt_flag_clr)
+               .interrupt_0(blanking_start_interrupt_flag),
+               .interrupt_1(top_flag),
+               .interrupt_2(match0_flag),
+               .interrupt_3(match1_flag),
+               .interrupt_0_clr(blanking_start_interrupt_flag_clr),
+               .interrupt_1_clr(top_flag_clr),
+               .interrupt_2_clr(match0_flag_clr),
+               .interrupt_3_clr(match1_flag_clr)
     );
     //***************************************************************
     // Instantiate Instruction Memory

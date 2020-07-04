@@ -78,8 +78,6 @@ module control(input wire clk,
     //****************************************************************************************************
     // Interrupt vectoring
 
-    wire interrupt = interrupt_0 || interrupt_1 || interrupt_2 || interrupt_3;
-
     always @(*) begin
         if(interrupt_0) begin
             interruptVector = 16'd20;
@@ -130,11 +128,18 @@ module control(input wire clk,
             interrupt_3_clr = 0;
         end
     end
+
+    wire interrupt = interrupt_0 || interrupt_1 || interrupt_2 || interrupt_3;
+
+    // The HLT instruction cannot be interrupted, and neither can the clear status register
+    // instruction (CSR), if it is clearing the global interrupt enable flag.
+    wire uninterruptible = (iMemOut == 16'h00e8) || (iMemOut[7:0] == 8'he0 && iMemOut[11] == 1'b0);
+
     //****************************************************************************************************
     // Main Decoder
     always @(*) begin
         if(state[0] == 1'b0) begin
-            if(interruptEnable && state == PART1 && interrupt) begin
+            if(interruptEnable && state == PART1 && interrupt && ~uninterruptible) begin
                 regFileSrc = 2'b00;                 // aluOut
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
