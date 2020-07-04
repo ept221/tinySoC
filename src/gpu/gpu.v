@@ -1,14 +1,17 @@
 module gpu(input wire clk,
+
+           input wire [7:0] din,
+           input wire [11:0] address,
+           input wire v_w_en,
+           input wire io_w_en,
+           input wire io_r_en,
+           output reg [7:0] dout,
+
            output reg h_syncD2,
            output reg v_syncD2,
            output wire R,
            output wire G,
            output wire B,
-           input wire [7:0] data_in,
-           input wire [11:0] write_address,
-           input wire w_en,
-           input wire r_en,
-           output reg [7:0] data_out,
 
            output reg blanking_start_interrupt_flag = 0,
            input wire blanking_start_interrupt_flag_clr,
@@ -59,7 +62,6 @@ module gpu(input wire clk,
     // *--------*--------*--------*--------*--------*--------*----------------------------*--------------------------*
     //     7        6        5        4        3        2                  1                           0 
     //*****************************************************************************************************************
-    // Color Control
 
     reg red = 1;
     reg green = 1;
@@ -68,13 +70,14 @@ module gpu(input wire clk,
     assign cool = blanking_start_interrupt_flag;
 
     always @(posedge clk) begin
-        if(write_address == 12'h2400 && w_en) begin
-            {blue, green, red} <= data_in[4:2];
-            blanking_start_interrupt_enable <= data_in[1];
+        if(address == 12'h080 && io_w_en) begin
+            {blue, green, red} <= din[4:2];
+            blanking_start_interrupt_enable <= din[1];
         end
-        else if(write_address == 12'h2400 && r_en) begin
-            data_out[4:2] <= {blue, green, red};
-            data_out[7:5] <= 0;
+        else if(address == 12'h080 && io_r_en) begin
+            dout[1:0] <= {blanking_start_interrupt_enable,blanking_start_interrupt_flag};
+            dout[4:2] <= {blue, green, red};
+            dout[7:5] <= 0;
         end
     end
 
@@ -126,17 +129,11 @@ module gpu(input wire clk,
         if(blanking_start_interrupt_flag_clr) begin
             blanking_start_interrupt_flag <= 0;
         end
-        else if(write_address == 12'h2400 && w_en) begin
-            blanking_start_interrupt_flag <= data_in[0];
+        else if(address == 12'h080 && io_w_en) begin
+            blanking_start_interrupt_flag <= din[0];
         end
         else if(&sync_to_clk && ~edgeFlop && blanking_start_interrupt_enable) begin
             blanking_start_interrupt_flag <= 1;
-        end
-    end
-
-    always @(posedge clk) begin
-        if(write_address == 12'h2400 && r_en) begin
-            data_out[1:0] <= {blanking_start_interrupt_enable,blanking_start_interrupt_flag};
         end
     end
 
@@ -146,11 +143,11 @@ module gpu(input wire clk,
     reg [7:0] char;
     wire [11:0] current_char_address = (x[9:3] + (y[9:4]*80));
     wire readRamActive = (current_char_address < 12'd2400) ? 1 : 0;
-    wire writeRamActive = (write_address < 12'd2400) ? 1 : 0;
+    wire writeRamActive = (address < 12'd2400) ? 1 : 0;
     ram myRam(
-              .din(data_in),
-              .w_addr(write_address),
-              .w_en(w_en&&writeRamActive),
+              .din(din),
+              .w_addr(address),
+              .w_en(v_w_en&&writeRamActive),
               .r_addr(current_char_address),
               .r_en(readRamActive),
               .w_clk(vgaClk),
