@@ -7,6 +7,8 @@ module gpu(input wire clk,
            input wire [7:0] data_in,
            input wire [11:0] write_address,
            input wire w_en,
+           input wire r_en,
+           output reg [7:0] data_out,
 
            output reg blanking_start_interrupt_flag = 0,
            input wire blanking_start_interrupt_flag_clr

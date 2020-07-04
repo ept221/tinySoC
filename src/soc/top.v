@@ -55,6 +55,7 @@ module top(input wire clk,
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = 0;
+            vMemReadEn = 0;
             dMemIOOut = dMemOut;
         end
         else if(dMemIOAddress >= 16'h1000 && dMemIOAddress <= 16'h10FF) begin    // I/O
@@ -63,6 +64,7 @@ module top(input wire clk,
             IOWriteEn = dMemIOWriteEn;
             IOReadEn = dMemIOReadEn;
             vMemWriteEn = 0;
+            vMemReadEn = 0;
             dMemIOOut = IOOut;
         end
         else if(dMemIOAddress >= 16'h2000 && dMemIOAddress <= 16'h2960) begin    // V_MEM
@@ -71,7 +73,8 @@ module top(input wire clk,
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = dMemIOWriteEn;
-            dMemIOOut = 0;
+            vMemReadEn = dMemIOReadEn;
+            dMemIOOut = vMemOut;
         end
         else begin
             dMemWriteEn = 0;
@@ -79,6 +82,7 @@ module top(input wire clk,
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = 0;
+            vMemReadEn = dMemIOReadEn;
             dMemIOOut = 0;
         end
     end
@@ -127,8 +131,11 @@ module top(input wire clk,
     //***************************************************************
     // Instantiate GPU
     reg vMemWriteEn;
+    reg vMemReadEn;
+    wire [7:0] vMemOut;
     wire blanking_start_interrupt_flag;
     wire blanking_start_interrupt_flag_clr;
+
     gpu my_gpu(.clk(clk),
                .h_syncD2(h_sync),
                .v_syncD2(v_sync),
@@ -136,8 +143,10 @@ module top(input wire clk,
                .G(G),
                .B(B),
                .data_in(dMemIOIn),
+               .data_out(vMemOut),
                .write_address(dMemIOAddress[11:0]),
                .w_en(vMemWriteEn),
+               .r_en(vMemReadEn),
                .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
                .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
     );
