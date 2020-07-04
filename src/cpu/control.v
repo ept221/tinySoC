@@ -25,9 +25,11 @@ module control(input wire clk,
                input wire interrupt_0,
                input wire interrupt_1,
                input wire interrupt_2,
+               input wire interrupt_3,
                output reg interrupt_0_clr,
                output reg interrupt_1_clr,
-               output reg interrupt_2_clr
+               output reg interrupt_2_clr,
+               output reg interrupt_3_clr
 );    
     //****************************************************************************************************
     // States
@@ -76,7 +78,7 @@ module control(input wire clk,
     //****************************************************************************************************
     // Interrupt vectoring
 
-    wire interrupt = interrupt_0 || interrupt_1 || interrupt_2;
+    wire interrupt = interrupt_0 || interrupt_1 || interrupt_2 || interrupt_3;
 
     always @(*) begin
         if(interrupt_0) begin
@@ -88,6 +90,9 @@ module control(input wire clk,
         else if(interrupt_2) begin
             interruptVector = 16'd40;
         end
+        else if(interrupt_3) begin
+            interruptVector = 16'd50;
+        end
         else begin
             interruptVector = 16'd0;
         end
@@ -98,16 +103,25 @@ module control(input wire clk,
             interrupt_0_clr = 1;
             interrupt_1_clr = 0;
             interrupt_2_clr = 0;
+            interrupt_3_clr = 0;
         end
         else if(state == INTERRUPT && interrupt_1) begin
             interrupt_0_clr = 0;
             interrupt_1_clr = 1;
             interrupt_2_clr = 0;
+            interrupt_3_clr = 0;
         end
         else if(state == INTERRUPT && interrupt_2) begin
             interrupt_0_clr = 0;
             interrupt_1_clr = 0;
             interrupt_2_clr = 1;
+            interrupt_3_clr = 0;
+        end
+        else if(state == INTERRUPT && interrupt_3) begin
+            interrupt_0_clr = 0;
+            interrupt_1_clr = 0;
+            interrupt_2_clr = 0;
+            interrupt_3_clr = 1;
         end
         else begin
             interrupt_0_clr = 0;

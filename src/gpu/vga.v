@@ -2,7 +2,7 @@ module vga(input wire clk,
 		   output wire h_sync,
 		   output wire v_sync,
 		   output wire active,
-		   output wire animate,
+		   output wire blanking_start,
 		   output reg [9:0] x,
 		   output reg [9:0] y
 );
@@ -19,7 +19,7 @@ module vga(input wire clk,
 	assign v_sync = ~((y >= VS_START) & (y < VS_END));
 
 	assign active = (x < 640 && y < 480);
-	assign animate = (y == 479) && (x == 799);
+	assign blanking_start = (y == 480) && (x == 0);
 
 	always @(posedge clk) begin
 

@@ -21,9 +21,11 @@ module top(input wire clk,
                .interrupt_0(top_flag),
                .interrupt_1(match0_flag),
                .interrupt_2(match1_flag),
+               .interrupt_3(blanking_start_interrupt_flag),
                .interrupt_0_clr(top_flag_clr),
                .interrupt_1_clr(match0_flag_clr),
-               .interrupt_2_clr(match1_flag_clr)
+               .interrupt_2_clr(match1_flag_clr),
+               .interrupt_3_clr(blanking_start_interrupt_flag_clr)
     );
     //***************************************************************
     // Instantiate Instruction Memory
@@ -125,7 +127,8 @@ module top(input wire clk,
     //***************************************************************
     // Instantiate GPU
     reg vMemWriteEn;
-    
+    wire blanking_start_interrupt_flag;
+    wire blanking_start_interrupt_flag_clr;
     gpu my_gpu(.clk(clk),
                .h_syncD2(h_sync),
                .v_syncD2(v_sync),
@@ -134,6 +137,9 @@ module top(input wire clk,
                .B(B),
                .data_in(dMemIOIn),
                .write_address(dMemIOAddress[11:0]),
-               .w_en(vMemWriteEn));
+               .w_en(vMemWriteEn),
+               .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
+               .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
+    );
     //***************************************************************
 endmodule
