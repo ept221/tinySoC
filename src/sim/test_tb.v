@@ -21,7 +21,6 @@ module test_tb();
     wire dMemIOWriteEn;
     wire dMemIOReadEn;
     reg vMemWriteEn;
-    reg vMemReadEn;
     wire [7:0] vMemOut;
     always @(*) begin
         if(dMemIOAddress >= 16'h0000 && dMemIOAddress <= 16'h07FF) begin         // D_MEM
@@ -30,7 +29,6 @@ module test_tb();
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = 0;
-            vMemReadEn = 0;
             dMemIOOut = dMemOut;
         end
         else if(dMemIOAddress >= 16'h1000 && dMemIOAddress <= 16'h10FF) begin    // I/O
@@ -39,8 +37,12 @@ module test_tb();
             IOWriteEn = dMemIOWriteEn;
             IOReadEn = dMemIOReadEn;
             vMemWriteEn = 0;
-            vMemReadEn = 0;
-            dMemIOOut = IOOut;
+            if(dMemIOAddress == 16'h1080) begin
+                dMemIOOut = vMemOut;
+            end
+            else begin
+                dMemIOOut = IOOut;
+            end
         end
         else if(dMemIOAddress >= 16'h2000 && dMemIOAddress <= 16'h2960) begin    // V_MEM
             dMemWriteEn = 0;
@@ -48,7 +50,6 @@ module test_tb();
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = dMemIOWriteEn;
-            vMemReadEn = dMemIOReadEn;
             dMemIOOut = vMemOut;
         end
         else begin
@@ -57,7 +58,6 @@ module test_tb();
             IOWriteEn = 0;
             IOReadEn = 0;
             vMemWriteEn = 0;
-            vMemReadEn = dMemIOReadEn;
             dMemIOOut = 0;
         end
     end
