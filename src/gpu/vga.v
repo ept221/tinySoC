@@ -7,7 +7,7 @@ module vga(input wire clk,
 		   output reg [9:0] y
 );
 
-	parameter HS_START = 640 + 16 - 1;
+	parameter HS_START = 640 + 15 - 1;
 	parameter HS_END = 640 + 16 + 96 - 1;
 	parameter VS_START = 480 + 10 - 1;
 	parameter VS_END = 480 + 10 + 2 - 1;
