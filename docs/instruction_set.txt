@@ -8,7 +8,7 @@ ADI     DDDD IIIIIIII 1001      Add register immediate
 ACI     DDDD IIIIIIII 1011      Add register with carry immediate
 CPI     DDDD IIIIIIII 1101      compare immediate
 ***********************************************
-Type: R-L    
+Type: R-L   
 IN      DDDD LLLLLLLL 0010      data at L gets put into D
 OUT     SSSS LLLLLLLL 0100
 ***********************************************
@@ -76,8 +76,10 @@ RNN     1100 0000 11000000
 
 PUS     0000 0000 11001000
 POS     0000 0000 11010000
-SSR     0000 MMMM 11011000
-CSR     0000 MMMM 11100000
 HLT     0000 0000 11101000
 NOP     0000 0000 00000000
+***********************************************
+Type: Mask
+SSR     0000 MMMM 11011000
+CSR     0000 MMMM 11100000
 ***********************************************
