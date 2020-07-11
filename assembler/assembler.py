@@ -4,6 +4,21 @@ import sys
 import table
 
 ##############################################################################################################
+# Support Classes
+class Symbol:
+
+    def __init__(self):
+        self.labelDefs = {}
+        self.expr = []
+
+class Code:
+
+    def __init__(self):
+        self.data = []
+        self.address = 0
+        self.label = ""
+
+##############################################################################################################
 # File reading functions
 
 def read(name):
@@ -29,7 +44,7 @@ def read(name):
         line = line.upper()
         if(line):
             block = []
-            rest = [] 													# The input line without the comment
+            rest = [] 												   # The input line without the comment
             comment = ''
             commentIndex = line.find(";")
             if(commentIndex != -1):
@@ -55,10 +70,9 @@ def read(name):
 ##############################################################################################################
 def lexer(lines):
     tokens = []
-    code_lines = [x for x in lines if len(x[1])]
-    for line in code_lines:
-        #print(line)
-        tl = []
+    code_lines = [x for x in lines if len(x[1])]                # code_lines only includes lines with code,
+    for line in code_lines:                                     # so if a line only has comments, then
+        tl = []                                                 # then it's out
         for word in line[1]:
             word = word.strip()
             if word in table.mnm_r_i:
@@ -109,9 +123,77 @@ def lexer(lines):
 
     return [code_lines, tokens]
 ##############################################################################################################
+def error(message, line):
+    print("Error at line " + str(line[0][0]) + ": " + message)
+##############################################################################################################
+def parse_lbl_def(tokens, symbols, code, line):
+    er = ["<error>"]
+    if not tokens:
+        return 0
+    if(tokens[0][0] == "<lbl_def>"):
+        lbl = tokens[0][1]
+        if lbl[:-1] in symbols.labelDefs:
+            error("Label already in use!",line)
+            return er
+        elif lbl[:-1] in table.reserved:
+            error("Label cannot be keyword!",line)
+            return er
+        elif re.match(r'^(0X)[0-9A-F]+$',lbl[:-1] or
+             re.match(r'^[0-9]+$',lbl[:-1]) or
+             re.match(r'^(0B)[0-1]+$')):
+            error("Label cannot be number!",line)
+            return er
+    else:
+        return 0
 
+##############################################################################################################
+# Grammar:
+#
+# <line> ::= <lbl_def> [<drct>] [<code>]
+#          | <drct> [<code>]
+#          | <code>
+#
+# <code> ::= <mnm_r_i> <reg> "," <expr>
+#          | <mnm_r_l> <reg> "," <expr>
+#          | <mnm_r_r> <reg> "," <reg>
+#          | <mnm_r> <reg>
+#          | <mnm_r_rp> <reg> "," <reg_even>
+#          | <mnm_rp> <reg_even>
+#          | <mnm_a> <expr>
+#          | <mnm_n>
+#          | <mnm_m> <expr>
+#
+# <reg>  ::= <reg_even>
+#          | <reg_odd>
+#
+# <expr> ::= [ (<plus> | <minus>) ] <numb> { (<plus> | <minus>) <numb> }
+#
+# <drct> ::= <drct_1> <expr>
+#          | <drct_p> <expr> { ","  <expr> }
+#
+# <numb> ::= <hex_num> | <dec_num> | <bin_num> | <symbol> | <lc>
+##############################################################################################################
+def parse_line():
+    data = ["<line>"]
+    er = ["<error>"]
+    if(len(tokens) == 0):
+        return 0
+    ################################
+    # [lbl_def]
+    lbl_def = parse_lbl_def(tokens, symbols, code, line)
+    if(lbl_def):
+        if(lbl_def == er):
+            return er
+        data.append(lbl_def)
+
+
+##############################################################################################################
 code_lines, tokens = lexer(read("programs/demo.asm"));
 
-for x in tokens:
-    print(x)
+if(code_lines == 0)
+    sys.exit(1)
+
+tree = []
+
+
 

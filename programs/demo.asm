@@ -1,10 +1,10 @@
         ldi r0, 1               ; set pin 1 to output
         out r0, 0 
 
-        ldi r14, 0xff             ; setup the stack pointer
+        ldi r14, 0xff           ; setup the stack pointer
 
 
-        ldi r0, 0b00011110        ; setup the gpu control register
+        ldi r0, 0b00011110      ; setup the gpu control register
         out r0, 0b10000000
 
         ldi r2, 0x00            ; setup the vram pointer
