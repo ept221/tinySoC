@@ -154,10 +154,10 @@ def parse_expr(tokens, symbols, code, line):
     return data
 ##############################################################################################################
 def parse_lbl_def(tokens, symbols, code, line):
-    data = ["<lbl_def>"]
     er = ["<error>"]
     if not tokens:
         return 0
+    ##################################################
     if(tokens[0][0] == "<lbl_def>"):
         lbl = tokens[0][1]
         if lbl[:-1] in symbols.labelDefs:
@@ -206,6 +206,47 @@ def parse_drct(tokens, symbols, code, line):
         if not status:
             return er
         return data
+##############################################################################################################
+def parse_code(tokens, symbols, code, line):
+    args = [tokens, symbols, code, line]
+    data = ["<code>"]
+    er = ["<error>"]
+    if not tokens:
+        return 0
+    ##################################################
+    # [mnm_r_i]
+    if(tokens[0][0] == "mnm_r_i"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            error("Instruction has a bad register!",line)
+            return er
+        reg = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and argument!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            if(tokens[0][0] not in {"<hex_num>","<dec_num>","<bin_num>","<symbol>"}):
+                error("Instruction has bad argument!",line)
+                return er
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing argument!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad argument!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        instStr = inst + " " + "reg"
 ##############################################################################################################
 # Grammar:
 #
@@ -276,7 +317,6 @@ def parse_line():
     ###############################
     # everything's good
     return data
-
 ##############################################################################################################
 code_lines, tokens = lexer(read("programs/demo.asm"));
 
@@ -284,6 +324,3 @@ if(code_lines == 0)
     sys.exit(1)
 
 tree = []
-
-
-
