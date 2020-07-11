@@ -185,7 +185,37 @@ def parse_line():
         if(lbl_def == er):
             return er
         data.append(lbl_def)
-
+    ################################
+    # [drct]
+    drct = parse_drct(tokens, symbols, code, line)
+    if(drct):
+        if(drct == er):
+            return er
+        data.append(drct)
+    ################################
+    # [code]
+    code = parse_code(tokens, symbols, code, line)
+    if(code):
+        if(code == er):
+            return er
+        data.append(code)
+    ###############################
+    # check to see that we have at
+    # least one of lbl_def, drct,
+    # or code
+    if(let(data) < 2):
+        tokens.pop(0)
+        error("Bad Initial Identifier!",line)
+        return er
+    ###############################
+    # check to see if we have any
+    # tokens left
+    if(len(tokens)):   
+        error("Bad Final Identifier(s)!",line)
+        return er
+    ###############################
+    # everything's good
+    return data
 
 ##############################################################################################################
 code_lines, tokens = lexer(read("programs/demo.asm"));
