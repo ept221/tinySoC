@@ -126,7 +126,35 @@ def lexer(lines):
 def error(message, line):
     print("Error at line " + str(line[0][0]) + ": " + message)
 ##############################################################################################################
+def parse_expr(tokens, symbols, code, line):
+    data = ["<expr>"]
+    er = ["<error>"]
+    if not tokens:
+        return 0
+    ##################################################
+    while(tokens):
+        if(tokens[0][0] in {"<plus>", "<minus>"}):
+            data.append(tokens.pop(0))
+        elif(len(data) > 1):
+            return data
+        if(len(data) > 1 and (not tokens)):
+            error("Expression missing number/symbol!",line)
+            return er
+        if(tokens[0][0] not in {"<hex_num>", "<dec_num>", "<bin_num>", "<symbol>", "<lc>"}):
+            if(tokens[0][0] not in {"<plus>", "<minus>"}):
+                if(len(data) > 1):
+                    error("Expression has bad identifier!",line)
+                    return er
+                else:
+                    return 0
+            else:
+                error("Expression has extra operator!",line)
+                return er
+        data.append(tokens.pop(0))
+    return data
+##############################################################################################################
 def parse_lbl_def(tokens, symbols, code, line):
+    data = ["<lbl_def>"]
     er = ["<error>"]
     if not tokens:
         return 0
@@ -143,9 +171,41 @@ def parse_lbl_def(tokens, symbols, code, line):
              re.match(r'^(0B)[0-1]+$')):
             error("Label cannot be number!",line)
             return er
+        elif lbl[:-1] in (symbols.defs):
+            error("Label conflicts with previous symbol definition",line)
+            return er
+        else:
+            symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.address,4)
+            code.label = lbl
+        return tokens.pop(0)
     else:
         return 0
-
+##############################################################################################################
+def parse_drct(tokens, symbols, code, line):
+    args = [tokens, symbols, code, line]
+    data = ["<drct>"]
+    er = ["<error>"]
+    if not tokens:
+        return 0
+    ##################################################
+    # [drct_1]
+    if(tokens[0][0] == "<drct_1>"):
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Directive missing argument!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Directive has bad argument!", line)
+            return er
+        if(expr == er):
+            return er
+        data.append(expr)
+        arg = data[2][1:]
+        status = directives[data[1][1]][0](arg,symbols,code,line)
+        if not status:
+            return er
+        return data
 ##############################################################################################################
 # Grammar:
 #
