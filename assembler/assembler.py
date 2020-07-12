@@ -127,6 +127,39 @@ def lexer(lines):
 def error(message, line):
     print("Error at line " + str(line[0][0]) + ": " + message)
 ##############################################################################################################
+def evaluate(expr, symbols, address):
+    sign, pop, result = 1, 2, 0
+    while(expr):
+        ##################################################
+        if(len(expr) >= 2):
+            pop = 2
+            if(expr[-2][0] == "<plus>"):
+                sign = 1
+            else:
+                sign = -1
+        else:
+            pop = 1
+            sign = 1
+        ##################################################
+        if(expr[-1][0] == "<hex_num>"):
+            result += sign*int(expr[-1][1], base=16)
+            expr = expr[:-pop]
+        elif(expr[-1][0] == "<dec_num>"):
+            result += sign*int(expr[-1][1], base=10)
+            expr = expr[:-pop]
+        elif(expr[-1][0] == "bin_num"):
+            result += sign*int(expr[-1][1], base=2)
+            expr = expr[:-pop]
+        elif(expr[-1][0] == "<lc>"):
+            result += sign*(address)
+            expr = expr[:-pop]
+        else:
+            expr += [["<plus>", "+"],["<numb>",hex(result)]]
+            return expr
+        ##################################################
+    return [result]
+    
+##############################################################################################################
 def parse_expr(tokens, symbols, code, line):
     data = ["<expr>"]
     er = ["<error>"]
