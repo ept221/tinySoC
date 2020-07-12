@@ -70,8 +70,8 @@ def read(name):
 ##############################################################################################################
 def lexer(lines):
     tokens = []
-    code_lines = [x for x in lines if len(x[1])]                # code_lines only includes lines with code,
-    for line in code_lines:                                     # so if a line only has comments, then
+    codeLines = [x for x in lines if len(x[1])]                # codeLines only includes lines with code,
+    for line in codeLines:                                     # so if a line only has comments, then
         tl = []                                                 # then it's out
         for word in line[1]:
             word = word.strip()
@@ -121,7 +121,7 @@ def lexer(lines):
 
         tokens.append(tl)
 
-    return [code_lines, tokens]
+    return [codeLines, tokens]
 ##############################################################################################################
 def error(message, line):
     print("Error at line " + str(line[0][0]) + ": " + message)
@@ -434,9 +434,20 @@ def parse_line():
     # everything's good
     return data
 ##############################################################################################################
-code_lines, tokens = lexer(read("programs/demo.asm"));
+def parse(lines, symbols, code):
 
-if(code_lines == 0)
-    sys.exit(1)
+    codeLines, tokenLines = lexer(lines)
+    if(codeLines == 0):
+        sys.exit(1)
+
+    tree = []
+
+    for tokens, line in zip(tokenLines, codeLines):
+        parsedLine = parse_line(tokens, symbols, code, line)
+        if(parsedLine[0] == "<error>"):
+            sys.exit(1)
+        tree.append(parsedLine) 
+##############################################################################################################
+parse(read("programs/demo.asm"),symbols,code)
 
 tree = []
