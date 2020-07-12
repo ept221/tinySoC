@@ -10,6 +10,7 @@ class Symbol:
     def __init__(self):
         self.labelDefs = {}
         self.expr = []
+        self.defs = []
 
 class Code:
 
@@ -216,8 +217,6 @@ def parse_code(tokens, symbols, code, line):
     ##################################################
     # [mnm_r_i] or [mnm_r_l]
     if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
-        print("<mnm_r_i> or <mnm_r_l>")
-        print(tokens)
         inst = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
@@ -225,7 +224,6 @@ def parse_code(tokens, symbols, code, line):
             return er
         if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
-            print(tokens[0][0])
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -423,7 +421,7 @@ def parse_line(tokens, symbols, code, line):
     # check to see that we have at
     # least one of lbl_def, drct,
     # or code
-    if(let(data) < 2):
+    if(len(data) < 2):
         tokens.pop(0)
         error("Bad Initial Identifier!",line)
         return er
@@ -449,7 +447,8 @@ def parse(lines, symbols, code):
         parsedLine = parse_line(tokens, symbols, code, line)
         tree.append(parsedLine)
         if(parsedLine[0] == "<error>"):
-            print(tree)
+            for x in tree:
+                print(x)
             sys.exit(1)
 ##############################################################################################################
 
