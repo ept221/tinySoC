@@ -246,10 +246,9 @@ def parse_code(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        instStr = inst + " " + reg1
     ##################################################
     # [mnm_r_r]
-    if(tokens[0][0] == "<mnm_r_r>")
+    if(tokens[0][0] == "<mnm_r_r>"):
         inst = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
@@ -278,7 +277,63 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
-        instStr = inst + " " + reg1 + ", " + reg2
+    ##################################################
+    # [mnm_r]
+    if(tokens[0][0] == "<mnm_r>"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            error("Instruction has a bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+    ##################################################
+    # [mnm_r_rp]
+    if(tokens[0][0] == "<mnm_r_rp>"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            error("Instruction has a bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and register!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            if(tokens[0][0] != "<reg_even>")
+                error("Instruction has a bad rp register!",line)
+                return er
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>")
+            error("Instruction has a bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+    ##################################################
+    # [mnm_rp]
+    if(tokens[0][0] == "<mnm_rp>"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>")
+            error("Instruction has a bad rp register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
 ##############################################################################################################
 # Grammar:
 #
