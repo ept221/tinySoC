@@ -214,8 +214,8 @@ def parse_code(tokens, symbols, code, line):
     if not tokens:
         return 0
     ##################################################
-    # [mnm_r_i]
-    if(tokens[0][0] == "mnm_r_i"):
+    # [mnm_r_i] || [mnm_r_l]
+    if(tokens[0][0] == "<mnm_r_i>" || tokens[0][0] == "<mnm_r_l>"):
         inst = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
@@ -224,7 +224,7 @@ def parse_code(tokens, symbols, code, line):
         if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
             error("Instruction has a bad register!",line)
             return er
-        reg = tokens[0][1]
+        reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing comma and argument!",line)
@@ -246,7 +246,39 @@ def parse_code(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        instStr = inst + " " + "reg"
+        instStr = inst + " " + reg1
+    ##################################################
+    # [mnm_r_r]
+    if(tokens[0][0] == "<mnm_r_r>")
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            error("Instruction has a bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and register!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+                error("Instruction has a bad register!",line)
+                return er
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            error("Instruction has a bad register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        instStr = inst + " " + reg1 + ", " + reg2
 ##############################################################################################################
 # Grammar:
 #
