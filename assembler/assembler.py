@@ -246,6 +246,7 @@ def parse_code(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
+        return data
     ##################################################
     # [mnm_r_r]
     if(tokens[0][0] == "<mnm_r_r>"):
@@ -277,6 +278,7 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
+        return data
     ##################################################
     # [mnm_r]
     if(tokens[0][0] == "<mnm_r>"):
@@ -290,6 +292,7 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
+        return data
     ##################################################
     # [mnm_r_rp]
     if(tokens[0][0] == "<mnm_r_rp>"):
@@ -321,6 +324,7 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
+        return data
     ##################################################
     # [mnm_rp]
     if(tokens[0][0] == "<mnm_rp>"):
@@ -334,6 +338,31 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
+        return data
+    ##################################################
+    # [mnm_a] || [mnm_m]
+    if(tokens[0][0] == "<mnm_a>" || tokens[0][0] == "<mnm_m>"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing argument!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad argument!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        return data
+    ##################################################
+    # [mnm_n]
+    if(tokens[0][0] == "<mnm_n>"):
+        inst = tokens[0][1]
+        data.append(tokens.pop(0))
+        return data
+
+    return 0
 ##############################################################################################################
 # Grammar:
 #
