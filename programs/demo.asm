@@ -23,3 +23,4 @@ isr:    in r0, 2                ; read pin 1
         str r0, r2
         ssr 8                   ; enable interrupts
         ret                     ; return
+        "This is a test."

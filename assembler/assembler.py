@@ -42,7 +42,7 @@ def read(name):
     
     for lineNumber, line in enumerate(file, start = 1):
         line = line.strip()
-        line = line.upper()
+        #line = line.upper()
         if(line):
             block = []
             rest = [] 												   # The input line without the comment
@@ -56,8 +56,7 @@ def read(name):
 
             block.append([lineNumber, pc])
             if(rest): 												   # If we have code after we strip any comment out
-                split_rest = re.split(r'([-+,\s]\s*)', rest)
-                split_rest = [word for word in split_rest if not re.match(r'^\s*$',word)]
+                split_rest = re.split(r'([-+,"\s]\s*)', rest)
                 split_rest = list(filter(None, split_rest))
                 block.append(split_rest)
             else:
@@ -71,55 +70,68 @@ def read(name):
 ##############################################################################################################
 def lexer(lines):
     tokens = []
+    string = ""
+    stringCapture = False
     codeLines = [x for x in lines if len(x[1])]                # codeLines only includes lines with code,
     for line in codeLines:                                     # so if a line only has comments, then
         tl = []                                                 # then it's out
         for word in line[1]:
-            word = word.strip()
-            if word in table.mnm_r_i:
-                tl.append(["<mnm_r_i>", word])
-            elif word in table.mnm_r_l:
-                tl.append(["<mnm_r_l>", word])
-            elif word in table.mnm_r_r:
-                tl.append(["<mnm_r_r>", word])
-            elif word in table.mnm_r:
-                tl.append(["<mnm_r>", word])
-            elif word in table.mnm_r_rp:
-                tl.append(["<mnm_r_rp>", word])
-            elif word in table.mnm_rp:
-                tl.append(["<mnm_rp>", word])
-            elif word in table.mnm_a:
-                tl.append(["<mnm_a>", word])
-            elif word in table.mnm_n:
-                tl.append(["<mnm_n>", word])
-            elif word in table.mnm_m:
-                tl.append(["<mnm_m>", word])
-            elif word == ",":
-                tl.append(["<comma>", word])
-            elif word == "+":
-                tl.append(["<plus>", word])
-            elif word == "-":
-                tl.append(["<minus>", word])
-            elif re.match(r'^R((1*)[02468])|16$',word):
-                tl.append(["<reg_even>", word])
-            elif re.match(r'^R((1*)[13579])|15$',word):
-                tl.append(["<reg_odd>", word])
-            elif re.match(r'^.+:$',word):
-                tl.append(["<lbl_def>", word])
-            elif(re.match(r'^(0X)[0-9A-F]+$', word)):
-                tl.append(["<hex_num>", word])
-            elif(re.match(r'^[0-9]+$', word)):
-                tl.append(["<dec_num>", word])
-            elif(re.match(r'^(0B)[0-1]+$', word)):
-                tl.append(["<bin_num>", word])    
-            elif(re.match(r'^[A-Z_]+[A-Z_]*$', word)):
-                tl.append(["<symbol>", word])
-            elif word == "$":
-                tl.append(["<lc>", word])
+            if(stringCapture == False):
+                word = word.strip()
+                word = word.upper()
+                if word == "\"":
+                    stringCapture = True
+                elif(re.match(r'^\s*$',word)):
+                    continue
+                elif word in table.mnm_r_i:
+                    tl.append(["<mnm_r_i>", word])
+                elif word in table.mnm_r_l:
+                    tl.append(["<mnm_r_l>", word])
+                elif word in table.mnm_r_r:
+                    tl.append(["<mnm_r_r>", word])
+                elif word in table.mnm_r:
+                    tl.append(["<mnm_r>", word])
+                elif word in table.mnm_r_rp:
+                    tl.append(["<mnm_r_rp>", word])
+                elif word in table.mnm_rp:
+                    tl.append(["<mnm_rp>", word])
+                elif word in table.mnm_a:
+                    tl.append(["<mnm_a>", word])
+                elif word in table.mnm_n:
+                    tl.append(["<mnm_n>", word])
+                elif word in table.mnm_m:
+                    tl.append(["<mnm_m>", word])
+                elif word == ",":
+                    tl.append(["<comma>", word])
+                elif word == "+":
+                    tl.append(["<plus>", word])
+                elif word == "-":
+                    tl.append(["<minus>", word])
+                elif re.match(r'^R((1*)[02468])|16$',word):
+                    tl.append(["<reg_even>", word])
+                elif re.match(r'^R((1*)[13579])|15$',word):
+                    tl.append(["<reg_odd>", word])
+                elif re.match(r'^.+:$',word):
+                    tl.append(["<lbl_def>", word])
+                elif(re.match(r'^(0X)[0-9A-F]+$', word)):
+                    tl.append(["<hex_num>", word])
+                elif(re.match(r'^[0-9]+$', word)):
+                    tl.append(["<dec_num>", word])
+                elif(re.match(r'^(0B)[0-1]+$', word)):
+                    tl.append(["<bin_num>", word])    
+                elif(re.match(r'^[A-Z_]+[A-Z_]*$', word)):
+                    tl.append(["<symbol>", word])
+                elif word == "$":
+                    tl.append(["<lc>", word])
+                else:
+                    tl.append(["<idk_man>", word])
+                    return [0 , 0]
             else:
-                tl.append(["<idk_man>", word])
-                return [0 , 0]
-
+                if(word.strip() == "\""):
+                    stringCapture = False
+                    tl.append(["<string>", string])
+                else:
+                    string += word
         tokens.append(tl)
 
     return [codeLines, tokens]
@@ -158,7 +170,7 @@ def evaluate(expr, symbols, address):
             return expr
         ##################################################
     return [result]
-    
+
 ##############################################################################################################
 def parse_expr(tokens, symbols, code, line):
     data = ["<expr>"]
