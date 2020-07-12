@@ -214,15 +214,18 @@ def parse_code(tokens, symbols, code, line):
     if not tokens:
         return 0
     ##################################################
-    # [mnm_r_i] || [mnm_r_l]
-    if(tokens[0][0] == "<mnm_r_i>" || tokens[0][0] == "<mnm_r_l>"):
+    # [mnm_r_i] or [mnm_r_l]
+    if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
+        print("<mnm_r_i> or <mnm_r_l>")
+        print(tokens)
         inst = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
+            print(tokens[0][0])
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -255,7 +258,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -264,7 +267,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+            if(tokens[0][0] != "<reg_even>" or tokens[0][0] != "<reg_odd>"):
                 error("Instruction has a bad register!",line)
                 return er
             error("Instruction missing comma!",line)
@@ -273,7 +276,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
             return er
         reg2 = tokens[0][1]
@@ -287,7 +290,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -301,7 +304,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" || tokens[0][0] != "<reg_odd>")
+        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -310,7 +313,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg_even>")
+            if(tokens[0][0] != "<reg_even>"):
                 error("Instruction has a bad rp register!",line)
                 return er
             error("Instruction missing comma!",line)
@@ -319,7 +322,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing rp register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>")
+        if(tokens[0][0] != "<reg_even>"):
             error("Instruction has a bad rp register!",line)
             return er
         reg2 = tokens[0][1]
@@ -333,15 +336,15 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing rp register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>")
+        if(tokens[0][0] != "<reg_even>"):
             error("Instruction has a bad rp register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         return data
     ##################################################
-    # [mnm_a] || [mnm_m]
-    if(tokens[0][0] == "<mnm_a>" || tokens[0][0] == "<mnm_m>"):
+    # [mnm_a] or [mnm_m]
+    if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_m>"):
         inst = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
@@ -390,7 +393,7 @@ def parse_code(tokens, symbols, code, line):
 #
 # <numb> ::= <hex_num> | <dec_num> | <bin_num> | <symbol> | <lc>
 ##############################################################################################################
-def parse_line():
+def parse_line(tokens, symbols, code, line):
     data = ["<line>"]
     er = ["<error>"]
     if(len(tokens) == 0):
@@ -444,10 +447,15 @@ def parse(lines, symbols, code):
 
     for tokens, line in zip(tokenLines, codeLines):
         parsedLine = parse_line(tokens, symbols, code, line)
+        tree.append(parsedLine)
         if(parsedLine[0] == "<error>"):
+            print(tree)
             sys.exit(1)
-        tree.append(parsedLine) 
 ##############################################################################################################
-parse(read("programs/demo.asm"),symbols,code)
+
+code = Code()
+symbols = Symbol()
+
+parse(read("../programs/demo.asm"),symbols,code)
 
 tree = []
