@@ -19,6 +19,10 @@ class Code:
         self.address = 0
         self.label = ""
 
+        self.codeSegment = False
+        self.dataSegment = False
+        self.mode = ""
+
 ##############################################################################################################
 # File reading functions
 
@@ -42,7 +46,6 @@ def read(name):
     
     for lineNumber, line in enumerate(file, start = 1):
         line = line.strip()
-        #line = line.upper()
         if(line):
             block = []
             rest = [] 												   # The input line without the comment
@@ -101,6 +104,8 @@ def lexer(lines):
                     tl.append(["<mnm_n>", word])
                 elif word in table.mnm_m:
                     tl.append(["<mnm_m>", word])
+                elif word in table.drct_0:
+                    tl.append(["<drct_0>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -125,6 +130,7 @@ def lexer(lines):
                     tl.append(["<lc>", word])
                 else:
                     tl.append(["<idk_man>", word])
+                    error("Unknown token: " + word, line)
                     return [0 , 0]
             else:
                 if(word.strip() == "\""):
@@ -227,12 +233,47 @@ def parse_lbl_def(tokens, symbols, code, line):
     else:
         return 0
 ##############################################################################################################
+def setCodeSegment(tokens, symbols, code, line):
+    if(code.codeSegment or code.mode == "code"):
+        error("Code segment already defined!",line);
+        return 0
+    else:
+        code.codeSegment = True
+        code.mode = "code"
+        return 1
+
+def setDataSegment(tokens, symbols, code, line):
+    if(code.dataSegment or code.mode == "data"):
+        error("Data segment already defined!",line);
+        return 0
+    else:
+        code.dataSegment = True
+        code.mode = "data"
+        return 1
+##############################################################################################################
+directives = {
+    # Format:
+    # [function, min_args, max_args, name]
+    # -1 means no bound
+
+    ".CODE": [setCodeSegment, 0, 0, "CODE"],
+    ".DATA": [setDataSegment, 0, 0, "DATA"]
+}
+##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
     args = [tokens, symbols, code, line]
     data = ["<drct>"]
     er = ["<error>"]
     if not tokens:
         return 0
+    ##################################################
+    # [drct_0]
+    if(tokens[0][0] == "<drct_0>"):
+        data.append(tokens.pop(0))
+        status = directives[data[1][1]][0](0,symbols,code,line)
+        if not status:
+            return er
+        return data
     ##################################################
     # [drct_1]
     if(tokens[0][0] == "<drct_1>"):
@@ -483,6 +524,7 @@ def parse_line(tokens, symbols, code, line):
 def parse(lines, symbols, code):
 
     codeLines, tokenLines = lexer(lines)
+
     if(codeLines == 0):
         sys.exit(1)
 

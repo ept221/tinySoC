@@ -88,4 +88,9 @@ mnm_m = {
 	'CSR',
 }
 
-reserved = mnm_r_i | mnm_r_l | mnm_r_r | mnm_r | mnm_r_rp | mnm_rp | mnm_a | mnm_n | mnm_m
+drct_0 = {
+	'.CODE',
+	'.DATA',
+}
+
+reserved = mnm_r_i | mnm_r_l | mnm_r_r | mnm_r | mnm_r_rp | mnm_rp | mnm_a | mnm_n | mnm_m | drct_0

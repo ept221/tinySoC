@@ -1,3 +1,5 @@
+        .code
+
         ldi r0, 1               ; set pin 1 to output
         out r0, 0 
 
@@ -23,4 +25,4 @@ isr:    in r0, 2                ; read pin 1
         str r0, r2
         ssr 8                   ; enable interrupts
         ret                     ; return
-        "This is a test."
+        ;"This is a test."
