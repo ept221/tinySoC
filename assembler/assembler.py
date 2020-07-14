@@ -15,8 +15,10 @@ class Symbol:
 class Code:
 
     def __init__(self):
-        self.data = []
-        self.address = 0
+        self.code_data = []
+        self.code_address = 0
+        self.data_data = []
+        self.data_address = 0
         self.label = ""
 
         self.codeSegment = False
@@ -211,6 +213,9 @@ def parse_lbl_def(tokens, symbols, code, line):
         return 0
     ##################################################
     if(tokens[0][0] == "<lbl_def>"):
+        if(not code.segment):
+            error("Label cannot be defined outside memory segment!", line)
+            return ["<error>"]
         lbl = tokens[0][1]
         if lbl[:-1] in symbols.labelDefs:
             error("Label already in use!",line)
@@ -227,7 +232,10 @@ def parse_lbl_def(tokens, symbols, code, line):
             error("Label conflicts with previous symbol definition",line)
             return er
         else:
-            symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.address,4)
+            if(code.segment == "code"):
+                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.code_address,4)
+            else:
+                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.data_address,4)
             code.label = lbl
         return tokens.pop(0)
     else:
@@ -257,7 +265,7 @@ directives = {
     # -1 means no bound
 
     ".CODE": [setCodeSegment, 0, 0, "CODE"],
-    ".DATA": [setDataSegment, 0, 0, "DATA"]
+    ".DATA": [setDataSegment, 0, 0, "DATA"],
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -302,7 +310,9 @@ def parse_code(tokens, symbols, code, line):
         return 0
     ##################################################
     # Check if inside the code segment
-    if(not (code.segment == "code")):
+    if(tokens[0][0] in {"<mnm_r_i>","<mnm_r_l>","<mnm_r_r>","<mnm_r>",
+                        "<mnm_r_rp>","<mnm_rp>","<mnm_a>","<mnm_m>","<mnm_n>"}
+                        and not (code.segment == "code")):
         error("Instructions must be inside the code segment!", line)
         return ["<error>"]
     ##################################################
