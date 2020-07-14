@@ -21,7 +21,7 @@ class Code:
 
         self.codeSegment = False
         self.dataSegment = False
-        self.mode = ""
+        self.segment = ""
 
 ##############################################################################################################
 # File reading functions
@@ -234,21 +234,21 @@ def parse_lbl_def(tokens, symbols, code, line):
         return 0
 ##############################################################################################################
 def setCodeSegment(tokens, symbols, code, line):
-    if(code.codeSegment or code.mode == "code"):
+    if(code.codeSegment or code.segment == "code"):
         error("Code segment already defined!",line);
         return 0
     else:
         code.codeSegment = True
-        code.mode = "code"
+        code.segment = "code"
         return 1
 
 def setDataSegment(tokens, symbols, code, line):
-    if(code.dataSegment or code.mode == "data"):
+    if(code.dataSegment or code.segment == "data"):
         error("Data segment already defined!",line);
         return 0
     else:
         code.dataSegment = True
-        code.mode = "data"
+        code.segment = "data"
         return 1
 ##############################################################################################################
 directives = {
@@ -300,6 +300,11 @@ def parse_code(tokens, symbols, code, line):
     er = ["<error>"]
     if not tokens:
         return 0
+    ##################################################
+    # Check if inside the code segment
+    if(not (code.segment == "code")):
+        error("Instructions must be inside the code segment!", line)
+        return ["<error>"]
     ##################################################
     # [mnm_r_i] or [mnm_r_l]
     if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
