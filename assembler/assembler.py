@@ -371,6 +371,7 @@ def parse_code(tokens, symbols, code, line):
                     instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
         else:
             print("we have a problem, sir!" + str(val))
+            return er
         print(instruction)
         return data
     ##################################################
@@ -506,23 +507,33 @@ def parse_code(tokens, symbols, code, line):
         instruction = ""
         if(inst_tkn == "<mnm_a>"):
             instruction = table.mnm_a[inst_str]
+            print(instruction)
+            address = ""
+            val = evaluate(expr[1:],symbols,code.code_address)
+            if(len(val) == 1):
+                numb = val[0]
+                if(numb < 0 or numb > 65535):
+                    error("Address must be >= 0 and <= 65535",line)
+                    return er
+                else:
+                    address = format(numb,'016b')
+            else:
+                print("we have a problem, sir!" + str(val))
+                return er
+            print(address)
         else:
             instruction = table.mnm_m[inst_str]
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
                 numb = val[0]
-                if(numb < -8 or numb > 16):
-                    error("Mask must be >= -8 and <= 16",line)
+                if(numb < 0 or numb > 16):
+                    error("Mask must be >= 0 and <= 16",line)
                     return er
                 else:
-                    if(numb >= 0):
-                        instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
-                    else:
-                        numb = 16 - abs(numb) + 1;
-                        instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+                    instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
             else:
                 print("we have a problem, sir!" + str(val))
-        print(instruction)
+            print(instruction)
         return data
     ##################################################
     # [mnm_n]
