@@ -356,7 +356,7 @@ def parse_code(tokens, symbols, code, line):
             instruction = table.mnm_r_i[inst_str]
         else:
             instruction = table.mnm_r_l[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + instruction[5:]
+        instruction = format(int(reg1[-1]),'04b') + instruction[4:]
         val = evaluate(expr[1:],symbols,code.code_address)
         if(len(val) == 1):
             numb = val[0]
@@ -416,7 +416,7 @@ def parse_code(tokens, symbols, code, line):
     ##################################################
     # [mnm_r]
     if(tokens[0][0] == "<mnm_r>"):
-        inst = tokens[0][1]
+        inst_str = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
@@ -426,11 +426,16 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r[inst_str]
+        instruction = format(int(reg1[-1]),'04b') + instruction[4:]
+        print(instruction)
         return data
     ##################################################
     # [mnm_r_rp]
     if(tokens[0][0] == "<mnm_r_rp>"):
-        inst = tokens[0][1]
+        inst_str = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
@@ -458,6 +463,11 @@ def parse_code(tokens, symbols, code, line):
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r_rp[inst_str]
+        instruction = format(int(reg1[-1]),'04b') + format(int(reg2[-1]),'04b') + instruction[8:]
+        print(instruction)
         return data
     ##################################################
     # [mnm_rp]
