@@ -25,6 +25,14 @@ class Code:
         self.dataSegment = False
         self.segment = ""
 
+    def write_code(self, line, data, code_string):
+
+        if(self.code_address > 65535):
+            error("Cannot write past 0xFFFF. Out of program memory!",line)
+            sys.exit(2)
+
+        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'), data, code_string])
+        self.code_address += 1
 ##############################################################################################################
 # File reading functions
 
@@ -147,6 +155,43 @@ def lexer(lines):
 def error(message, line):
     print("Error at line " + str(line[0][0]) + ": " + message)
 ##############################################################################################################
+def parse_expr(tokens, symbols, code, line):
+    data = ["<expr>"]
+    er = ["<error>"]
+    if not tokens:
+        return 0
+    ##################################################
+    while(tokens):
+        if(tokens[0][0] in {"<plus>", "<minus>"}):
+            data.append(tokens.pop(0))
+        elif(len(data) > 1):
+            return data
+        if(len(data) > 1 and (not tokens)):
+            error("Expression missing number/symbol!",line)
+            return er
+        if(tokens[0][0] not in {"<hex_num>", "<dec_num>", "<bin_num>", "<symbol>", "<lc>"}):
+            if(tokens[0][0] not in {"<plus>", "<minus>"}):
+                if(len(data) > 1):
+                    error("Expression has bad identifier!",line)
+                    return er
+                else:
+                    return 0
+            else:
+                error("Expression has extra operator!",line)
+                return er
+        data.append(tokens.pop(0))
+    return data
+##############################################################################################################
+def expr_to_str(expr):
+    expr_str = expr[0][1]
+    if(expr[0][0] != "<plus>" and expr[0][0] != "<minus>" and len(expr) != 1):
+        expr_str = expr_str + " "
+    for x in expr[1:-1]:
+        expr_str = expr_str + x[1] + " "
+    if(len(expr) != 1):
+        expr_str = expr_str + expr[-1][1]
+    return expr_str
+##############################################################################################################
 def evaluate(expr, symbols, address):
     sign, pop, result = 1, 2, 0
     while(expr):
@@ -178,34 +223,6 @@ def evaluate(expr, symbols, address):
             return expr
         ##################################################
     return [result]
-
-##############################################################################################################
-def parse_expr(tokens, symbols, code, line):
-    data = ["<expr>"]
-    er = ["<error>"]
-    if not tokens:
-        return 0
-    ##################################################
-    while(tokens):
-        if(tokens[0][0] in {"<plus>", "<minus>"}):
-            data.append(tokens.pop(0))
-        elif(len(data) > 1):
-            return data
-        if(len(data) > 1 and (not tokens)):
-            error("Expression missing number/symbol!",line)
-            return er
-        if(tokens[0][0] not in {"<hex_num>", "<dec_num>", "<bin_num>", "<symbol>", "<lc>"}):
-            if(tokens[0][0] not in {"<plus>", "<minus>"}):
-                if(len(data) > 1):
-                    error("Expression has bad identifier!",line)
-                    return er
-                else:
-                    return 0
-            else:
-                error("Expression has extra operator!",line)
-                return er
-        data.append(tokens.pop(0))
-    return data
 ##############################################################################################################
 def parse_lbl_def(tokens, symbols, code, line):
     er = ["<error>"]
@@ -372,7 +389,8 @@ def parse_code(tokens, symbols, code, line):
         else:
             print("we have a problem, sir!" + str(val))
             return er
-        print(instruction)
+        code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
+        code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_r_r]
@@ -409,7 +427,8 @@ def parse_code(tokens, symbols, code, line):
         # Code Generation
         instruction = table.mnm_r_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
-        print(instruction)
+        code_string = inst_str + " " + reg1 + ", " + reg2
+        code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_r]
@@ -428,7 +447,8 @@ def parse_code(tokens, symbols, code, line):
         # Code Generation
         instruction = table.mnm_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
-        print(instruction)
+        code_string = inst_str + " " + reg1
+        code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_r_rp]
@@ -465,7 +485,8 @@ def parse_code(tokens, symbols, code, line):
         # Code Generation
         instruction = table.mnm_r_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
-        print(instruction)
+        code_string = inst_str + " " + reg1 + ", " + reg2
+        code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_rp]
@@ -484,7 +505,8 @@ def parse_code(tokens, symbols, code, line):
         # Code Generation
         instruction = table.mnm_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
-        print(instruction)
+        code_string = inst_str + " " + reg1
+        code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_a] or [mnm_m]
@@ -520,7 +542,9 @@ def parse_code(tokens, symbols, code, line):
             else:
                 print("we have a problem, sir!" + str(val))
                 return er
-            print(address)
+            code_string = inst_str + " " + expr_to_str(expr[1:])
+            code.write_code(line,instruction,code_string)
+            code.write_code(line,address,"")
         else:
             instruction = table.mnm_m[inst_str]
             val = evaluate(expr[1:],symbols,code.code_address)
@@ -533,7 +557,8 @@ def parse_code(tokens, symbols, code, line):
                     instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
             else:
                 print("we have a problem, sir!" + str(val))
-            print(instruction)
+            code_string = inst_str + " " + expr_to_str(expr[1:])
+            code.write_code(line,instruction,code_string)
         return data
     ##################################################
     # [mnm_n]
@@ -543,7 +568,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_n[inst_str]
-        print(instruction)
+        code.write_code(line,instruction,inst_str)
         return data
 
     return 0
@@ -633,7 +658,13 @@ def parse(lines, symbols, code):
         if(parsedLine[0] == "<error>"):
             for x in tree:
                 print(x)
+            print(symbols.labelDefs)
+            for x in code.code_data:
+                print(x)
             sys.exit(1)
+            
+    for x in code.code_data:
+                print(x)
 ##############################################################################################################
 
 code = Code()
