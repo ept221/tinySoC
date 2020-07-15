@@ -356,7 +356,7 @@ def parse_code(tokens, symbols, code, line):
             instruction = table.mnm_r_i[inst_str]
         else:
             instruction = table.mnm_r_l[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + instruction[4:]
+        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         val = evaluate(expr[1:],symbols,code.code_address)
         if(len(val) == 1):
             numb = val[0]
@@ -410,7 +410,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_r_r[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + format(int(reg2[-1]),'04b') + instruction[8:]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         print(instruction)
         return data
     ##################################################
@@ -429,7 +429,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_r[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + instruction[4:]
+        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         print(instruction)
         return data
     ##################################################
@@ -466,7 +466,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_r_rp[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + format(int(reg2[-1]),'04b') + instruction[8:]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         print(instruction)
         return data
     ##################################################
@@ -485,7 +485,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_rp[inst_str]
-        instruction = format(int(reg1[-1]),'04b') + instruction[4:]
+        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         print(instruction)
         return data
     ##################################################
