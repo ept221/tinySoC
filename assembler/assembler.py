@@ -31,7 +31,8 @@ class Code:
             error("Cannot write past 0xFFFF. Out of program memory!",line)
             sys.exit(2)
 
-        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'), data, code_string])
+        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string])
+        self.label = ""
         self.code_address += 1
 ##############################################################################################################
 # File reading functions
@@ -217,6 +218,9 @@ def evaluate(expr, symbols, address):
             expr = expr[:-pop]
         elif(expr[-1][0] == "<lc>"):
             result += sign*(address)
+            expr = expr[:-pop]
+        elif(expr[-1][1] in symbols.labelDefs):
+            result += sign*int(symbols.labelDefs[expr[-1][1]],base=16)
             expr = expr[:-pop]
         else:
             expr += [["<plus>", "+"],["<numb>",hex(result)]]
@@ -529,7 +533,6 @@ def parse_code(tokens, symbols, code, line):
         instruction = ""
         if(inst_tkn == "<mnm_a>"):
             instruction = table.mnm_a[inst_str]
-            print(instruction)
             address = ""
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
@@ -656,13 +659,11 @@ def parse(lines, symbols, code):
         parsedLine = parse_line(tokens, symbols, code, line)
         tree.append(parsedLine)
         if(parsedLine[0] == "<error>"):
-            for x in tree:
-                print(x)
             print(symbols.labelDefs)
             for x in code.code_data:
                 print(x)
             sys.exit(1)
-            
+
     for x in code.code_data:
                 print(x)
 ##############################################################################################################

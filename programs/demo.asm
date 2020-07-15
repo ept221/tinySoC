@@ -13,7 +13,7 @@
         ldi r3, 0x20
 
         ssr 8                   ; enable interrupts
-;loop:   jmp loop                ; do nothing and wait for an interrupt
+loop:   jmp loop                ; do nothing and wait for an interrupt
 
 
 
