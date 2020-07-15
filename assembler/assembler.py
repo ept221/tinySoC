@@ -167,7 +167,7 @@ def evaluate(expr, symbols, address):
         elif(expr[-1][0] == "<dec_num>"):
             result += sign*int(expr[-1][1], base=10)
             expr = expr[:-pop]
-        elif(expr[-1][0] == "bin_num"):
+        elif(expr[-1][0] == "<bin_num>"):
             result += sign*int(expr[-1][1], base=2)
             expr = expr[:-pop]
         elif(expr[-1][0] == "<lc>"):
@@ -318,7 +318,8 @@ def parse_code(tokens, symbols, code, line):
     ##################################################
     # [mnm_r_i] or [mnm_r_l]
     if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
-        inst = tokens[0][1]
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
@@ -348,6 +349,32 @@ def parse_code(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = ""
+        if(inst_tkn == "<mnm_r_i>"):
+            instruction = table.mnm_r_i[inst_str]
+        else:
+            instruction = table.mnm_r_l[inst_str]
+        instruction = format(int(reg1[-1]),'04b') + instruction[5:]
+        val = evaluate(expr[1:],symbols,code.code_address)
+        if(len(val) == 1):
+            numb = val[0]
+            if(numb < -128):
+                error("Argument must be >= -128 and <= 255",line)
+                return er
+            elif(numb > 255):
+                error("Argument must be >= -128 and <= 255",line)
+                return er
+            else:
+                if(numb >= 0):
+                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                else:
+                    numb = 255 - abs(numb) + 1;
+                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+        else:
+            print("we have a problem, sir!" + str(val))
+        print(instruction)
         return data
     ##################################################
     # [mnm_r_r]
