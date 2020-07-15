@@ -507,8 +507,12 @@ def parse_code(tokens, symbols, code, line):
     ##################################################
     # [mnm_n]
     if(tokens[0][0] == "<mnm_n>"):
-        inst = tokens[0][1]
+        inst_str = tokens[0][1]
         data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_n[inst_str]
+        print(instruction)
         return data
 
     return 0
