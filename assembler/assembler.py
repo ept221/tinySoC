@@ -378,6 +378,7 @@ def parse_code(tokens, symbols, code, line):
         else:
             instruction = table.mnm_r_l[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
+        code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
         val = evaluate(expr[1:],symbols,code.code_address)
         if(len(val) == 1):
             numb = val[0]
@@ -390,11 +391,10 @@ def parse_code(tokens, symbols, code, line):
                 else:
                     numb = 255 - abs(numb) + 1;
                     instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                code.write_code(line,instruction,code_string,0)
         else:
-            print("we have a problem, sir!" + str(val))
-            return er
-        code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
-        code.write_code(line,instruction,code_string,1)
+            code.write_code(line,instruction,code_string,[inst_tkn,val])
+
         return data
     ##################################################
     # [mnm_r_r]
@@ -432,7 +432,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
-        code.write_code(line,instruction,code_string,1)
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_r]
@@ -452,7 +452,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1
-        code.write_code(line,instruction,code_string,1)
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_r_rp]
@@ -490,7 +490,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
-        code.write_code(line,instruction,code_string,1)
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_rp]
@@ -510,7 +510,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1
-        code.write_code(line,instruction,code_string,1)
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_a] or [mnm_m]
@@ -531,9 +531,11 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = ""
+        code_string = inst_str + " " + expr_to_str(expr[1:])
         if(inst_tkn == "<mnm_a>"):
             instruction = table.mnm_a[inst_str]
             address = ""
+            code.write_code(line,instruction,code_string,0)
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
                 numb = val[0]
@@ -542,12 +544,9 @@ def parse_code(tokens, symbols, code, line):
                     return er
                 else:
                     address = format(numb,'016b')
+                code.write_code(line,address,"",0)
             else:
-                print("we have a problem, sir!" + str(val))
-                return er
-            code_string = inst_str + " " + expr_to_str(expr[1:])
-            code.write_code(line,instruction,code_string,1)
-            code.write_code(line,address,"",1)
+                code.write_code(line,"AAAAAAAAAAAAAAAA","",[inst_tkn,val])
         else:
             instruction = table.mnm_m[inst_str]
             val = evaluate(expr[1:],symbols,code.code_address)
@@ -558,10 +557,10 @@ def parse_code(tokens, symbols, code, line):
                     return er
                 else:
                     instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+                code.write_code(line,instruction,code_string,0)
             else:
-                print("we have a problem, sir!" + str(val))
-            code_string = inst_str + " " + expr_to_str(expr[1:])
-            code.write_code(line,instruction,code_string,1)
+                code.write_code(line,instruction,code_string,[inst_tkn,val])
+
         return data
     ##################################################
     # [mnm_n]
@@ -571,7 +570,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_n[inst_str]
-        code.write_code(line,instruction,inst_str,1)
+        code.write_code(line,instruction,inst_str,0)
         return data
 
     return 0
