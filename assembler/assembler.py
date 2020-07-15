@@ -25,13 +25,13 @@ class Code:
         self.dataSegment = False
         self.segment = ""
 
-    def write_code(self, line, data, code_string):
+    def write_code(self, line, data, code_string, status):
 
         if(self.code_address > 65535):
             error("Cannot write past 0xFFFF. Out of program memory!",line)
             sys.exit(2)
 
-        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string])
+        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string, status])
         self.label = ""
         self.code_address += 1
 ##############################################################################################################
@@ -394,7 +394,7 @@ def parse_code(tokens, symbols, code, line):
             print("we have a problem, sir!" + str(val))
             return er
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
-        code.write_code(line,instruction,code_string)
+        code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_r_r]
@@ -432,7 +432,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
-        code.write_code(line,instruction,code_string)
+        code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_r]
@@ -452,7 +452,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1
-        code.write_code(line,instruction,code_string)
+        code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_r_rp]
@@ -490,7 +490,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
-        code.write_code(line,instruction,code_string)
+        code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_rp]
@@ -510,7 +510,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_rp[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1
-        code.write_code(line,instruction,code_string)
+        code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_a] or [mnm_m]
@@ -546,8 +546,8 @@ def parse_code(tokens, symbols, code, line):
                 print("we have a problem, sir!" + str(val))
                 return er
             code_string = inst_str + " " + expr_to_str(expr[1:])
-            code.write_code(line,instruction,code_string)
-            code.write_code(line,address,"")
+            code.write_code(line,instruction,code_string,1)
+            code.write_code(line,address,"",1)
         else:
             instruction = table.mnm_m[inst_str]
             val = evaluate(expr[1:],symbols,code.code_address)
@@ -561,7 +561,7 @@ def parse_code(tokens, symbols, code, line):
             else:
                 print("we have a problem, sir!" + str(val))
             code_string = inst_str + " " + expr_to_str(expr[1:])
-            code.write_code(line,instruction,code_string)
+            code.write_code(line,instruction,code_string,1)
         return data
     ##################################################
     # [mnm_n]
@@ -571,7 +571,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_n[inst_str]
-        code.write_code(line,instruction,inst_str)
+        code.write_code(line,instruction,inst_str,1)
         return data
 
     return 0
@@ -665,7 +665,7 @@ def parse(lines, symbols, code):
             sys.exit(1)
 
     for x in code.code_data:
-                print(x)
+        print(x[0] + "\t" + x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t\t" + str(x[5])) 
 ##############################################################################################################
 
 code = Code()
