@@ -114,9 +114,9 @@ def lexer(lines):
                     tl.append(["<plus>", word])
                 elif word == "-":
                     tl.append(["<minus>", word])
-                elif re.match(r'^R((1*)[02468])|16$',word):
+                elif re.match(r'^R((1*)[02468])|(R16)$',word):
                     tl.append(["<reg_even>", word])
-                elif re.match(r'^R((1*)[13579])|15$',word):
+                elif re.match(r'^R((1*)[13579])|(R15)$',word):
                     tl.append(["<reg_odd>", word])
                 elif re.match(r'^.+:$',word):
                     tl.append(["<lbl_def>", word])
@@ -360,10 +360,7 @@ def parse_code(tokens, symbols, code, line):
         val = evaluate(expr[1:],symbols,code.code_address)
         if(len(val) == 1):
             numb = val[0]
-            if(numb < -128):
-                error("Argument must be >= -128 and <= 255",line)
-                return er
-            elif(numb > 255):
+            if(numb < -128 or numb > 255):
                 error("Argument must be >= -128 and <= 255",line)
                 return er
             else:
@@ -491,7 +488,8 @@ def parse_code(tokens, symbols, code, line):
     ##################################################
     # [mnm_a] or [mnm_m]
     if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_m>"):
-        inst = tokens[0][1]
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing argument!",line)
@@ -503,6 +501,28 @@ def parse_code(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = ""
+        if(inst_tkn == "<mnm_a>"):
+            instruction = table.mnm_a[inst_str]
+        else:
+            instruction = table.mnm_m[inst_str]
+            val = evaluate(expr[1:],symbols,code.code_address)
+            if(len(val) == 1):
+                numb = val[0]
+                if(numb < -8 or numb > 16):
+                    error("Mask must be >= -8 and <= 16",line)
+                    return er
+                else:
+                    if(numb >= 0):
+                        instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+                    else:
+                        numb = 16 - abs(numb) + 1;
+                        instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+            else:
+                print("we have a problem, sir!" + str(val))
+        print(instruction)
         return data
     ##################################################
     # [mnm_n]
