@@ -117,6 +117,8 @@ def lexer(lines):
                     tl.append(["<mnm_m>", word])
                 elif word in table.drct_0:
                     tl.append(["<drct_0>", word])
+                elif word in table.drct_1:
+                    tl.append(["<drct_1>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -265,7 +267,7 @@ def parse_lbl_def(tokens, symbols, code, line):
     else:
         return 0
 ##############################################################################################################
-def setCodeSegment(tokens, symbols, code, line):
+def setCodeSegment(arg, symbols, code, line):
     if(code.codeSegment or code.segment == "code"):
         error("Code segment already defined!",line);
         return 0
@@ -273,8 +275,8 @@ def setCodeSegment(tokens, symbols, code, line):
         code.codeSegment = True
         code.segment = "code"
         return 1
-
-def setDataSegment(tokens, symbols, code, line):
+##############################################################################################################
+def setDataSegment(arg, symbols, code, line):
     if(code.dataSegment or code.segment == "data"):
         error("Data segment already defined!",line);
         return 0
@@ -283,13 +285,39 @@ def setDataSegment(tokens, symbols, code, line):
         code.segment = "data"
         return 1
 ##############################################################################################################
+def org(arg, symbols, code, line):
+    address = 0
+    if(code.segment == "code"):
+        address = code.code_address
+    else:
+        address = code.data_address
+
+    if(arg < 0):
+        error("Expression must be positive!",line)
+        return 0
+    elif(arg < address):
+        error("Cannot move origin backwards!",line)
+        return 0
+    elif(arg > 65535):
+        error("Cannot set origin past 0xFFFF",line)
+        return 0
+    else:
+        if(code.segment == "code"):
+            code.code_address = arg
+        else:
+            code.data_address = arg
+        if(code.label):
+            symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
+    return 1
+##############################################################################################################
 directives = {
     # Format:
     # [function, min_args, max_args, name]
     # -1 means no bound
 
-    ".CODE": [setCodeSegment, 0, 0, "CODE"],
-    ".DATA": [setDataSegment, 0, 0, "DATA"],
+    ".CODE": [setCodeSegment, 0, 0, ".CODE"],
+    ".DATA": [setDataSegment, 0, 0, ".DATA"],
+    ".ORG":  [org, 1, 1, ".ORG"]
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -309,6 +337,15 @@ def parse_drct(tokens, symbols, code, line):
     ##################################################
     # [drct_1]
     if(tokens[0][0] == "<drct_1>"):
+        address = 0
+        if(code.segment == "code"):
+            address = code.code_address
+        elif(code.segment == "data"):
+            address = code.data_address
+        else:
+            error("Directive must be inside either the code segment or data segment!",line)
+            return er
+
         data.append(tokens.pop(0))
         if(not tokens):
             error("Directive missing argument!",line)
@@ -319,11 +356,14 @@ def parse_drct(tokens, symbols, code, line):
             return er
         if(expr == er):
             return er
+        val = evaluate(expr[1:],symbols,address)
         data.append(expr)
-        arg = data[2][1:]
-        status = directives[data[1][1]][0](arg,symbols,code,line)
-        if not status:
-            return er
+        if(len(val) == 1):
+            status = directives[data[1][1]][0](val[0],symbols,code,line)
+            if(not status):
+                return er
+        else:
+            error("Directive relies upon unresolved symbol!",line)
         return data
 ##############################################################################################################
 def parse_code(tokens, symbols, code, line):
@@ -642,7 +682,7 @@ def parse_line(tokens, symbols, code, line):
     # check to see if we have any
     # tokens left
     if(len(tokens)):   
-        error("Bad Final Identifier(s)!",line)
+        error("Bad Final Identifier(s)! " + str(tokens),line)
         return er
     ###############################
     # everything's good
