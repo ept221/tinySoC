@@ -31,7 +31,7 @@ class Code:
             error("Cannot write past 0xFFFF. Out of program memory!",line)
             sys.exit(2)
 
-        self.code_data.append([str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string, status])
+        self.code_data.append([line, str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string, status])
         self.label = ""
         self.code_address += 1
 ##############################################################################################################
@@ -223,7 +223,7 @@ def evaluate(expr, symbols, address):
             result += sign*int(symbols.labelDefs[expr[-1][1]],base=16)
             expr = expr[:-pop]
         else:
-            expr += [["<plus>", "+"],["<numb>",hex(result)]]
+            expr += [["<plus>", "+"],["<hex_num>",hex(result)]]
             return expr
         ##################################################
     return [result]
@@ -645,6 +645,55 @@ def parse_line(tokens, symbols, code, line):
     # everything's good
     return data
 ##############################################################################################################
+# Second pass
+def second_pass(symbols, code):
+    i = 0
+    while i < len(code.code_data):
+        code_line = code.code_data[i]
+        line = code_line[0]
+        if(code_line[-1]):
+            val = evaluate(code_line[-1][1],symbols,code_line[2])
+            if(len(val) == 1):
+                numb = val[0]
+                ##################################################
+                # [mnm_r_i] or [mnm_r_l]
+                if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_l>"):
+                    instruction = code_line[4]
+                    if(numb < -128 or numb > 255):
+                        error("Argument must be >= -128 and <= 255",line)
+                        return 0
+                    else:
+                        if(numb >= 0):
+                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        else:
+                            numb = 255 - abs(numb) + 1;
+                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
+                ##################################################
+                # [mnm_a]
+                elif(code_line[-1][0] == "<mnm_a>"):
+                    if(numb < 0 or numb > 65535):
+                        error("Address must be >= 0 and <= 65535",line)
+                        return er
+                    else:
+                        code_line[4] = format(numb,'016b')
+                        code_line[-1] = 0
+                ##################################################
+                # [mnm_m]
+                elif(code_line[-1][0] == "<mnm_m>"):
+                    instruction = code_line[4]
+                    if(numb < 0 or numb > 16):
+                        error("Mask must be >= 0 and <= 16",line)
+                        return 0
+                    else:
+                        instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+            else:
+                error("Expression relies on unresolved symbol!",line)
+                return 0
+        i += 1
+    return 1
+##############################################################################################################
 def parse(lines, symbols, code):
 
     codeLines, tokenLines = lexer(lines)
@@ -664,7 +713,12 @@ def parse(lines, symbols, code):
             sys.exit(1)
 
     for x in code.code_data:
-        print(x[0] + "\t" + x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t\t" + str(x[5])) 
+        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5] + "\t\t" + str(x[6]))
+
+    second_pass(symbols, code)
+    print("\n\n\n\n")
+    for x in code.code_data:
+        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5] + "\t\t" + str(x[6]))
 ##############################################################################################################
 
 code = Code()
