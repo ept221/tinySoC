@@ -234,11 +234,14 @@ def parse_lbl_def(tokens, symbols, code, line):
         return 0
     ##################################################
     if(tokens[0][0] == "<lbl_def>"):
+        lbl = tokens[0][1]
         if(not code.segment):
             error("Label cannot be defined outside memory segment!", line)
-            return ["<error>"]
-        lbl = tokens[0][1]
-        if lbl[:-1] in symbols.labelDefs:
+            return er
+        elif code.label:
+            error("Label cannot come after another label, before the first one is bound!",line)
+            return er
+        elif lbl[:-1] in symbols.labelDefs:
             error("Label already in use!",line)
             return er
         elif lbl[:-1] in table.reserved:
@@ -712,13 +715,9 @@ def parse(lines, symbols, code):
                 print(x)
             sys.exit(1)
 
-    for x in code.code_data:
-        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5] + "\t\t" + str(x[6]))
-
     second_pass(symbols, code)
-    print("\n\n\n\n")
     for x in code.code_data:
-        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5] + "\t\t" + str(x[6]))
+        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5])
 ##############################################################################################################
 
 code = Code()

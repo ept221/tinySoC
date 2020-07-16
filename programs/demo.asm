@@ -1,6 +1,6 @@
         .code
 
-        ldi r0, -1  + 7             ; set pin 1 to output
+        ldi r0, 1               ; set pin 1 to output
         out r0, 0 
 
         ldi r14, 0xff           ; setup the stack pointer
@@ -13,7 +13,7 @@
         ldi r3, 0x20
 
         ssr 8                   ; enable interrupts
-loop:   jmp isr                ; do nothing and wait for an interrupt
+loop:   jmp loop                ; do nothing and wait for an interrupt
 
 
 
