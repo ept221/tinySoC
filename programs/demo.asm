@@ -1,6 +1,3 @@
-        
-        .define foo, 12 + $
-
         .code
 
         ldi r0, 1               ; set pin 1 to output
@@ -16,7 +13,8 @@
 
         ssr 8                   ; enable interrupts
 loop:   jmp loop                ; do nothing and wait for an interrupt
-
+        .define foo,5
+        ldi r0, foo
 
 
         .org 0x20

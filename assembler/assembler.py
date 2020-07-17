@@ -10,7 +10,7 @@ class Symbol:
     def __init__(self):
         self.labelDefs = {}
         self.expr = []
-        self.defs = []
+        self.defs = {}
 
 class Code:
 
@@ -225,6 +225,9 @@ def evaluate(expr, symbols, address):
         elif(expr[-1][1] in symbols.labelDefs):
             result += sign*int(symbols.labelDefs[expr[-1][1]],base=16)
             expr = expr[:-pop]
+        elif(expr[-1][1] in symbols.defs):
+            result += sign*int(symbols.defs[expr[-1][1]],base=16)
+            expr = expr[:-pop]
         else:
             expr += [["<plus>", "+"],["<hex_num>",hex(result)]]
             return expr
@@ -314,16 +317,15 @@ def org(arg, symbols, code, line):
             symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
     return 1
 ##############################################################################################################
-def define(arg, symbols, code, line):
-    print("define()")
-    address = 0
-    if(code.segment == "code"):
-        address = code.code_address
-    else:
-        address = code.data_address
+def define(args, symbols, code, line):
+    if(args[0] in symbols.labelDefs):
+        error("Symbol definition conflicts with label def!",line)
+        return 0
+    if(args[0] in symbols.defs):
+        error("Symbol definition conflicts with previous definition!",line)
+        return 0
+    symbols.defs[args[0]] = hex(args[1])
     return 1
-
-
 ##############################################################################################################
 directives = {
     # Format:
@@ -392,6 +394,7 @@ def parse_drct(tokens, symbols, code, line):
         if(tokens[0][0] != "<symbol>"):
             error("Directive has bad argument!",line)
             return er
+        symbol = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Directive missing comma and argument!",line)
@@ -416,7 +419,7 @@ def parse_drct(tokens, symbols, code, line):
         val = evaluate(expr[1:],symbols,address)
         data.append(expr)
         if(len(val) == 1):
-            status = directives[data[1][1]][0](val[0],symbols,code,line)
+            status = directives[data[1][1]][0]([symbol,val[0]],symbols,code,line)
             if(not status):
                 return er
         else:
