@@ -97,6 +97,10 @@ drct_1 = {
 	'.ORG'
 }
 
+drct_2 = {
+	'.DEFINE'
+}
+
 reserved_mnm_r_i = {key for key in mnm_r_i}
 reserved_mnm_r_l = {key for key in mnm_r_l}
 reserved_mnm_r_r = {key for key in mnm_r_r}

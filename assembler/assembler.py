@@ -36,7 +36,6 @@ class Code:
         self.code_address += 1
 ##############################################################################################################
 # File reading functions
-
 def read(name):
     # This function reads in lines from the asm file
     # It processes them and puts them into the form:
@@ -119,6 +118,8 @@ def lexer(lines):
                     tl.append(["<drct_0>", word])
                 elif word in table.drct_1:
                     tl.append(["<drct_1>", word])
+                elif word in table.drct_2:
+                    tl.append(["<drct_2>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -287,7 +288,10 @@ def setDataSegment(arg, symbols, code, line):
 ##############################################################################################################
 def org(arg, symbols, code, line):
     address = 0
-    if(code.segment == "code"):
+    if(not code.segment):
+        error("Directive must be within code or data segment!",line)
+        return 0
+    elif(code.segment == "code"):
         address = code.code_address
     else:
         address = code.data_address
@@ -310,6 +314,17 @@ def org(arg, symbols, code, line):
             symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
     return 1
 ##############################################################################################################
+def define(arg, symbols, code, line):
+    print("define()")
+    address = 0
+    if(code.segment == "code"):
+        address = code.code_address
+    else:
+        address = code.data_address
+    return 1
+
+
+##############################################################################################################
 directives = {
     # Format:
     # [function, min_args, max_args, name]
@@ -317,7 +332,8 @@ directives = {
 
     ".CODE": [setCodeSegment, 0, 0, ".CODE"],
     ".DATA": [setDataSegment, 0, 0, ".DATA"],
-    ".ORG":  [org, 1, 1, ".ORG"]
+    ".ORG":  [org, 1, 1, ".ORG"],
+    ".DEFINE": [define, 2, 2, ".DEFINE"],
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -337,16 +353,12 @@ def parse_drct(tokens, symbols, code, line):
     ##################################################
     # [drct_1]
     if(tokens[0][0] == "<drct_1>"):
+        data.append(tokens.pop(0))
         address = 0
         if(code.segment == "code"):
             address = code.code_address
         elif(code.segment == "data"):
             address = code.data_address
-        else:
-            error("Directive must be inside either the code segment or data segment!",line)
-            return er
-
-        data.append(tokens.pop(0))
         if(not tokens):
             error("Directive missing argument!",line)
             return er
@@ -364,6 +376,52 @@ def parse_drct(tokens, symbols, code, line):
                 return er
         else:
             error("Directive relies upon unresolved symbol!",line)
+        return data
+    ##################################################
+    # [drct_2]
+    if(tokens[0][0] == "<drct_2>"):
+        data.append(tokens.pop(0))
+        address = 0
+        if(code.segment == "code"):
+            address = code.code_address
+        elif(code.segment == "data"):
+            address = code.data_address
+        if(not tokens):
+            error("Directive missing argument!",line)
+            return er
+        if(tokens[0][0] != "<symbol>"):
+            error("Directive has bad argument!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Directive missing comma and argument!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            if(tokens[0][0] not in {"<hex_num>","<dec_num>","<bin_num>","<symbol>"}):
+                error("Directive has bad argument!",line)
+                return er
+            error("Directive missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Directive missing argument!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Directive has bad argument!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        val = evaluate(expr[1:],symbols,address)
+        data.append(expr)
+        if(len(val) == 1):
+            status = directives[data[1][1]][0](val[0],symbols,code,line)
+            if(not status):
+                return er
+        else:
+            error("Directive relies upon unresolved symbol!",line)
+            return er
         return data
 ##############################################################################################################
 def parse_code(tokens, symbols, code, line):
