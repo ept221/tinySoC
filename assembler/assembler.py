@@ -34,6 +34,10 @@ class Code:
         self.code_data.append([line, str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string, status])
         self.label = ""
         self.code_address += 1
+
+    def write_data(self, data):
+        self.data_data.append([format(self.code_address,'04X'),data])
+        self.data_address += 1
 ##############################################################################################################
 # File reading functions
 def read(name):
@@ -120,6 +124,8 @@ def lexer(lines):
                     tl.append(["<drct_1>", word])
                 elif word in table.drct_2:
                     tl.append(["<drct_2>", word])
+                elif word in table.drct_m:
+                    tl.append(["<drct_m>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -273,7 +279,7 @@ def parse_lbl_def(tokens, symbols, code, line):
 ##############################################################################################################
 def setCodeSegment(arg, symbols, code, line):
     if(code.codeSegment or code.segment == "code"):
-        error("Code segment already defined!",line);
+        error("Code segment already defined!",line)
         return 0
     else:
         code.codeSegment = True
@@ -282,7 +288,7 @@ def setCodeSegment(arg, symbols, code, line):
 ##############################################################################################################
 def setDataSegment(arg, symbols, code, line):
     if(code.dataSegment or code.segment == "data"):
-        error("Data segment already defined!",line);
+        error("Data segment already defined!",line)
         return 0
     else:
         code.dataSegment = True
@@ -327,15 +333,32 @@ def define(args, symbols, code, line):
     symbols.defs[args[0]] = hex(args[1])
     return 1
 ##############################################################################################################
+def db(args, symbols, code, line):
+    if(code.segment != "data"):
+        error("Directive must be within data segment!",line)
+        return 0
+
+    for arg in args:
+        if(arg < -128 or arg > 255):
+            error("Argument must be >= -128 and <= 255",line)
+            return er
+        if(arg < 0):
+            arg = 255 - abs(arg) + 1
+
+        code.write_data(format(arg, '02X'))
+
+    return 1
+##############################################################################################################
 directives = {
     # Format:
     # [function, min_args, max_args, name]
     # -1 means no bound
 
-    ".CODE": [setCodeSegment, 0, 0, ".CODE"],
-    ".DATA": [setDataSegment, 0, 0, ".DATA"],
-    ".ORG":  [org, 1, 1, ".ORG"],
-    ".DEFINE": [define, 2, 2, ".DEFINE"],
+    ".CODE": setCodeSegment,
+    ".DATA": setDataSegment,
+    ".ORG":  org,
+    ".DEFINE": define,
+    ".DB":  db,
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -347,14 +370,16 @@ def parse_drct(tokens, symbols, code, line):
     ##################################################
     # [drct_0]
     if(tokens[0][0] == "<drct_0>"):
+        drct_0 = tokens[0][1]
         data.append(tokens.pop(0))
-        status = directives[data[1][1]][0](0,symbols,code,line)
+        status = directives[drct_0](0,symbols,code,line)
         if not status:
             return er
         return data
     ##################################################
     # [drct_1]
     if(tokens[0][0] == "<drct_1>"):
+        drct_1 = tokens[0][1]
         data.append(tokens.pop(0))
         address = 0
         if(code.segment == "code"):
@@ -373,7 +398,7 @@ def parse_drct(tokens, symbols, code, line):
         val = evaluate(expr[1:],symbols,address)
         data.append(expr)
         if(len(val) == 1):
-            status = directives[data[1][1]][0](val[0],symbols,code,line)
+            status = directives[drct_1](val[0],symbols,code,line)
             if(not status):
                 return er
         else:
@@ -382,6 +407,7 @@ def parse_drct(tokens, symbols, code, line):
     ##################################################
     # [drct_2]
     if(tokens[0][0] == "<drct_2>"):
+        drct_2 = tokens[0][1]
         data.append(tokens.pop(0))
         address = 0
         if(code.segment == "code"):
@@ -417,13 +443,68 @@ def parse_drct(tokens, symbols, code, line):
             return er
         data.append(expr)
         val = evaluate(expr[1:],symbols,address)
-        data.append(expr)
         if(len(val) == 1):
-            status = directives[data[1][1]][0]([symbol,val[0]],symbols,code,line)
+            status = directives[drct_2]([symbol,val[0]],symbols,code,line)
             if(not status):
                 return er
         else:
             error("Directive relies upon unresolved symbol!",line)
+            return er
+        return data
+    ##################################################
+    # [drct_m]
+    if(tokens[0][0] == "<drct_m>"):
+        drct_m = tokens[0][1]
+        d_args = []
+        data.append(tokens.pop(0))
+
+        address = 0
+        if(code.segment == "code"):
+            address = code.code_address
+        elif(code.segment == "data"):
+            address = code.data_address
+
+        if(not tokens):
+            error("Directive missing argument!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Directive has bad argumet!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        val = evaluate(expr[1:],symbols,address)
+        if(len(val) == 1):
+            d_args.append(val[0])
+        else:
+            error("Directive relies upon unresolved symbol!",line)
+            return er
+
+        while(tokens):
+            if(tokens[0][0] != "<comma>"):
+                error("Missing comma!",line)
+                return er
+            data.append(tokens.pop(0))
+            if(not tokens):
+                error("Directive missing last argument or has extra comma!",line)
+                return er
+            expr = parse_expr(*args)
+            if(not expr):
+                error("Directive has bad argument!",line)
+                return er
+            data.append(expr)
+            if(expr == error):
+                return er
+            data.append(expr)
+            val = evaluate(expr[1:],symbols,address)
+            if(len(val) == 1):
+                d_args.append(val[0])
+            else:
+                error("Directive relies upon unresolved symbol!",line)
+                return er
+        status = directives[drct_m](d_args,symbols,code,line)
+        if not status:
             return er
         return data
 ##############################################################################################################
@@ -493,7 +574,7 @@ def parse_code(tokens, symbols, code, line):
                 if(numb >= 0):
                     instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                 else:
-                    numb = 255 - abs(numb) + 1;
+                    numb = 255 - abs(numb) + 1
                     instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
@@ -770,7 +851,7 @@ def second_pass(symbols, code):
                         if(numb >= 0):
                             instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                         else:
-                            numb = 255 - abs(numb) + 1;
+                            numb = 255 - abs(numb) + 1
                             instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                         code_line[4] = instruction
                         code_line[-1] = 0
@@ -817,8 +898,12 @@ def parse(lines, symbols, code):
             sys.exit(1)
 
     second_pass(symbols, code)
+    print("code:")
     for x in code.code_data:
         print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5])
+    print("data:")
+    for x in code.data_data:
+        print(x[0] + "\t" + x[1] + "\t" + x[2])
 ##############################################################################################################
 
 code = Code()
