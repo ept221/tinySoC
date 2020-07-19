@@ -2,7 +2,7 @@
 import re
 import sys
 import table
-
+import argparse
 ##############################################################################################################
 # Support Classes
 class Symbol:
@@ -19,7 +19,8 @@ class Code:
         self.code_address = 0
         self.data_data = []
         self.data_address = 0
-        self.label = ""
+        self.code_label = ""
+        self.data_label = ""
 
         self.codeSegment = False
         self.dataSegment = False
@@ -31,12 +32,13 @@ class Code:
             error("Cannot write past 0xFFFF. Out of program memory!",line)
             sys.exit(2)
 
-        self.code_data.append([line, str(line[0][0]), format(self.code_address,'04X'),self.label,data, code_string, status])
-        self.label = ""
+        self.code_data.append([line, str(line[0][0]), format(self.code_address,'04X'),self.code_label,data, code_string, status])
+        self.code_label = ""
         self.code_address += 1
 
     def write_data(self, line, data):
-        self.data_data.append([line, str(line[0][0]), format(self.data_address,'04X'),data])
+        self.data_data.append([line, str(line[0][0]), format(self.data_address,'04X'),self.data_label,data])
+        self.data_label = ""
         self.data_address += 1
 ##############################################################################################################
 # File reading functions
@@ -298,7 +300,7 @@ def parse_lbl_def(tokens, symbols, code, line):
         if(not code.segment):
             error("Label cannot be defined outside memory segment!", line)
             return er
-        elif code.label:
+        if((code.segment == "code" and code.code_label) or (code.segment == "data" and code.data_label)):
             error("Label cannot come after another label, before the first one is bound!",line)
             return er
         elif lbl[:-1] in symbols.labelDefs:
@@ -318,9 +320,10 @@ def parse_lbl_def(tokens, symbols, code, line):
         else:
             if(code.segment == "code"):
                 symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.code_address,4)
+                code.code_label = lbl
             else:
                 symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(code.data_address,4)
-            code.label = lbl
+                code.data_label = lbl
         return tokens.pop(0)
     else:
         return 0
@@ -365,10 +368,12 @@ def org(arg, symbols, code, line):
     else:
         if(code.segment == "code"):
             code.code_address = arg
+            if(code.code_label):
+                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
         else:
             code.data_address = arg
-        if(code.label):
-            symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
+            if(code.data_label):
+                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
     return 1
 ##############################################################################################################
 def define(args, symbols, code, line):
@@ -989,23 +994,39 @@ def parse(lines, symbols, code):
         parsedLine = parse_line(tokens, symbols, code, line)
         tree.append(parsedLine)
         if(parsedLine[0] == "<error>"):
-            print(symbols.labelDefs)
-            for x in code.code_data:
-                print(x)
             sys.exit(1)
 
-    second_pass(symbols, code)
-    print("code:")
-    for x in code.code_data:
-        print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5])
-    print("data:")
-    for x in code.data_data:
-        print(x[1] + "\t" + x[2] + "\t" + x[3])
+    result = second_pass(symbols, code)
+    if(not result):
+        sys.exit(1)
+##############################################################################################################
+def output(code, file_name, args):
+    code_file = open(file_name + "_code",'w') if file_name else sys.stdout
+    data_file = open(file_name + "_data",'w') if file_name else sys.stdout
+    if(args.debug == True):
+        print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource")
+        print("----------------------------------------------------------------------------------------------------")
+        for x in code.code_data:
+            print(x[1] + "\t\t" + x[2] + "\t\t" + x[3] + "\t\t" + x[4] + "\t" + x[5])
+        print()
+        print("Line Number\tAddress\t\tLabel\t\tData")
+        print("----------------------------------------------------------------------------------------------------")
+        for x in code.data_data:
+            print(x[1] + "\t\t" + x[2] + "\t\t" + x[3] + "\t\t" + x[4])
 ##############################################################################################################
 
 code = Code()
 symbols = Symbol()
 
-parse(read("../programs/demo.asm"),symbols,code)
+discription = 'A simple 8085 assembler.'
+p = argparse.ArgumentParser(description = discription)
+p.add_argument("source", help="source file")
+p.add_argument("-o", "--out", help="output file name (stdout, if not specified)", action="store_true")
+p.add_argument("-d", "--debug", help="outputs debugging information", action="store_true")
+args = p.parse_args();
 
-tree = []
+if(args.source):
+    outFile = args.source
+
+parse(read(args.source),symbols,code)
+output(code, (args.out if args.out else ""), args)
