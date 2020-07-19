@@ -1004,17 +1004,25 @@ def output(code, file_name, args):
     code_file = open(file_name + "_code",'w') if file_name else sys.stdout
     data_file = open(file_name + "_data",'w') if file_name else sys.stdout
     if(args.debug == True):
-        print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource")
-        print("----------------------------------------------------------------------------------------------------")
+        print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource",file=code_file)
+        print("----------------------------------------------------------------------------------------------------",file=code_file)
         for x in code.code_data:
-            print(x[1] + "\t\t" + x[2] + "\t\t" + x[3] + "\t\t" + x[4] + "\t" + x[5])
-        print()
-        print("Line Number\tAddress\t\tLabel\t\tData")
+            print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0b"+x[4] + "\t" + x[5],file=code_file)
+        if(not file_name):
+            print()
+        print("Line Number\tAddress\t\tLabel\t\tData",file=data_file)
         print("----------------------------------------------------------------------------------------------------")
         for x in code.data_data:
-            print(x[1] + "\t\t" + x[2] + "\t\t" + x[3] + "\t\t" + x[4])
+            print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0x"+x[4],file=data_file)
+    else:
+        for x in code.code_data:
+            print("0x"+x[2] + "," + "0b"+x[4],file=code_file)
+        if(not file_name):
+            print()
+        for x in code.data_data:
+            print("0x"+x[2] + "," + "0x"+x[4],file=data_file)
 ##############################################################################################################
-
+# Main
 code = Code()
 symbols = Symbol()
 
