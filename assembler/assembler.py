@@ -1011,7 +1011,7 @@ def output(code, file_name, args):
         if(not file_name):
             print()
         print("Line Number\tAddress\t\tLabel\t\tData",file=data_file)
-        print("----------------------------------------------------------------------------------------------------")
+        print("----------------------------------------------------------------------------------------------------",file=data_file)
         for x in code.data_data:
             print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0x"+x[4],file=data_file)
     else:
@@ -1029,7 +1029,7 @@ symbols = Symbol()
 discription = 'A simple 8085 assembler.'
 p = argparse.ArgumentParser(description = discription)
 p.add_argument("source", help="source file")
-p.add_argument("-o", "--out", help="output file name (stdout, if not specified)", action="store_true")
+p.add_argument("-o", "--out", help="output file name (stdout, if not specified)")
 p.add_argument("-d", "--debug", help="outputs debugging information", action="store_true")
 args = p.parse_args();
 
