@@ -94,19 +94,49 @@ drct_0 = {
 }
 
 drct_1 = {
-	'.ORG'
+	'.ORG',
 }
 
 drct_2 = {
-	'.DEFINE'
+	'.DEFINE',
 }
 
 drct_m = {
-	'.DB'
+	'.DB',
 }
 
 drct_s = {
 	'.STRING',
+}
+
+registers = {
+	'R0',
+	'R1',
+	'R2',
+	'R3',
+	'R4',
+	'R5',
+	'R6',
+	'R7',
+	'R8',
+	'R9',
+	'R10',
+	'R11',
+	'R12',
+	'R13',
+	'R14',
+	'R15',
+}
+
+pairs = {
+	'P0',
+	'P2',
+	'P4',
+	'P6',
+	'P8',
+	'P10',
+	'P12',
+	'P14'
 }
 
 reserved_mnm_r_i = {key for key in mnm_r_i}
@@ -117,14 +147,9 @@ reserved_mnm_rp = {key for key in mnm_rp}
 reserved_mnm_a = {key for key in mnm_a}
 reserved_mnm_n = {key for key in mnm_n}
 reserved_mnm_m = {key for key in mnm_m}
-reserved_drct_0 = {key[1:] for key in drct_0}
-reserved_drct_1 = {key[1:] for key in drct_1}
-reserved_drct_2 = {key[1:] for key in drct_2}
-reserved_drct_m = {key[1:] for key in drct_m}
-reserved_drct_s = {key[1:] for key in drct_s}
 
 reserved = (reserved_mnm_r_i | reserved_mnm_r_l | reserved_mnm_r_r |
             reserved_mnm_r_rp | reserved_mnm_rp | reserved_mnm_a |
-            reserved_mnm_n | reserved_mnm_m | drct_0 | reserved_drct_0 |
-            reserved_drct_1 | reserved_drct_2 | reserved_drct_m | reserved_drct_s
+            reserved_mnm_n | reserved_mnm_m | drct_0 | drct_0 |
+            drct_1 | drct_2 | drct_m | drct_s | registers | pairs
             )

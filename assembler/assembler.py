@@ -139,10 +139,10 @@ def lexer(lines):
                     tl.append(["<plus>", word])
                 elif word == "-":
                     tl.append(["<minus>", word])
-                elif re.match(r'^R((1*)[02468])|(R16)$',word):
-                    tl.append(["<reg_even>", word])
-                elif re.match(r'^R((1*)[13579])|(R15)$',word):
-                    tl.append(["<reg_odd>", word])
+                elif word in table.registers:
+                    tl.append(["<reg>", word])
+                elif word in table.pairs:
+                    tl.append(["<pair>", word])
                 elif re.match(r'^.+:$',word):
                     tl.append(["<lbl_def>", word])
                 elif(re.match(r'^(0X)[0-9A-F]+$', word)):
@@ -628,7 +628,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
+        if(tokens[0][0] != "<reg>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -687,7 +687,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
+        if(tokens[0][0] != "<reg>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -696,7 +696,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg_even>" or tokens[0][0] != "<reg_odd>"):
+            if(tokens[0][0] != "<reg>"):
                 error("Instruction has a bad register!",line)
                 return er
             error("Instruction missing comma!",line)
@@ -705,7 +705,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
+        if(tokens[0][0] != "<reg>"):
             error("Instruction has a bad register!",line)
             return er
         reg2 = tokens[0][1]
@@ -725,7 +725,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
+        if(tokens[0][0] != "<reg>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -745,7 +745,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>" and tokens[0][0] != "<reg_odd>"):
+        if(tokens[0][0] != "<reg>"):
             error("Instruction has a bad register!",line)
             return er
         reg1 = tokens[0][1]
@@ -754,7 +754,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg_even>"):
+            if(tokens[0][0] != "<pair>"):
                 error("Instruction has a bad rp register!",line)
                 return er
             error("Instruction missing comma!",line)
@@ -763,7 +763,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing rp register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>"):
+        if(tokens[0][0] != "<pair>"):
             error("Instruction has a bad rp register!",line)
             return er
         reg2 = tokens[0][1]
@@ -783,7 +783,7 @@ def parse_code(tokens, symbols, code, line):
         if(not tokens):
             error("Instruction missing rp register!",line)
             return er
-        if(tokens[0][0] != "<reg_even>"):
+        if(tokens[0][0] != "<pair>"):
             error("Instruction has a bad rp register!",line)
             return er
         reg1 = tokens[0][1]
@@ -868,14 +868,11 @@ def parse_code(tokens, symbols, code, line):
 #          | <mnm_r_l> <reg> <comma> <expr>
 #          | <mnm_r_r> <reg> <comma> <reg>
 #          | <mnm_r> <reg>
-#          | <mnm_r_rp> <reg> <comma> <reg_even>
-#          | <mnm_rp> <reg_even>
+#          | <mnm_r_rp> <reg> <comma> <pair>
+#          | <mnm_rp> <pair>
 #          | <mnm_a> <expr>
 #          | <mnm_n>
 #          | <mnm_m> <expr>
-#
-# <reg>  ::= <reg_even>
-#          | <reg_odd>
 #
 # <expr> ::= [ (<plus> | <minus>) ] <numb> [ <selector> ] { (<plus> | <minus>) <numb> [ <selector> ]}
 #

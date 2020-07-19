@@ -25,7 +25,7 @@ loop:   jmp loop                ; do nothing and wait for an interrupt
         xoi r0, 1               ; flip the bit
         out r0, port_reg        ; toggle pin 1
         ldi r0, 65
-        str r0, r2
+        str r0, p2
         ssr 8                   ; enable interrupts
         ret                     ; return
 
