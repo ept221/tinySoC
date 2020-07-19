@@ -117,11 +117,11 @@ reserved_mnm_rp = {key for key in mnm_rp}
 reserved_mnm_a = {key for key in mnm_a}
 reserved_mnm_n = {key for key in mnm_n}
 reserved_mnm_m = {key for key in mnm_m}
-reserved_drct_0 = {key for key in drct_0}
-reserved_drct_1 = {key for key in drct_1}
-reserved_drct_2 = {key for key in drct_2}
-reserved_drct_m = {key for key in drct_m}
-reserved_drct_s = {key for key in drct_s}
+reserved_drct_0 = {key[1:] for key in drct_0}
+reserved_drct_1 = {key[1:] for key in drct_1}
+reserved_drct_2 = {key[1:] for key in drct_2}
+reserved_drct_m = {key[1:] for key in drct_m}
+reserved_drct_s = {key[1:] for key in drct_s}
 
 reserved = (reserved_mnm_r_i | reserved_mnm_r_l | reserved_mnm_r_r |
             reserved_mnm_r_rp | reserved_mnm_rp | reserved_mnm_a |
