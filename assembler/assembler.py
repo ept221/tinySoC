@@ -73,7 +73,7 @@ def read(name):
 
             block.append([lineNumber, pc])
             if(rest): 												   # If we have code after we strip any comment out
-                split_rest = re.split(r'(\+|-|,|"|\s|\[|\])\s*', rest)
+                split_rest = re.split(r'(\+|-|,|"|\s|(?:\[(?:l|L|h|H)\]))\s*', rest)
                 split_rest = list(filter(None, split_rest))
                 block.append(split_rest)
             else:
@@ -129,10 +129,8 @@ def lexer(lines):
                     tl.append(["<drct_m>", word])
                 elif word in table.drct_s:
                     tl.append(["<drct_s>", word])
-                elif word == "[":
-                    tl.append(["<bracket_l>", word])
-                elif word == "]":
-                    tl.append(["<bracket_r>", word])
+                elif word == "[L]" or word == "[H]":
+                    tl.append(["<selector>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -187,87 +185,102 @@ def parse_expr(tokens, symbols, code, line):
         return 0
     ##################################################
     while(tokens):
-        if(tokens[0][0] in {"<plus>", "<minus>"}):
-            data.append(tokens.pop(0))
-        elif(len(data) > 1):
+        if(tokens[0][0] in {"<plus>", "<minus>"}):              # If we have an operator
+            data.append(tokens.pop(0))                          # Get the operator
+        elif(len(data) > 1):                                    # Else if we have a valid expression but the token we looked at wasn't an operator 
             return data
-        if(len(data) > 1 and (not tokens)):
+        if(len(data) > 1 and (not tokens)):                     # If we just saw an operator or don't have an expression yet, but we have no tokens
             error("Expression missing number/symbol!",line)
             return er
-        if(tokens[0][0] not in {"<hex_num>", "<dec_num>", "<bin_num>", "<symbol>", "<lc>"}):
-            if(tokens[0][0] not in {"<plus>", "<minus>"}):
-                if(len(data) > 1):
-                    error("Expression has bad identifier!",line)
-                    return er
-                else:
-                    return 0
-            else:
+        if(tokens[0][0] not in {"<hex_num>", "<dec_num>", "<bin_num>", "<symbol>", "<lc>"}): # If we just saw an operator or don't have an expression yet, but next token isn't a number
+            if(tokens[0][0] in {"<plus>", "<minus>"}):
                 error("Expression has extra operator!",line)
                 return er
-        data.append(tokens.pop(0))
+            if(tokens[0][0] == "<selector>"):
+                error("Expression has bad selector!",line)
+                return er
+            if(len(data) > 1):
+                error("Expression has bad identifier!",line)
+                return er
+            else:
+                return 0
+        data.append(tokens.pop(0))                              # Get the number
+        if(tokens and tokens[0][0] == "<selector>"):
+            data.append(tokens.pop(0))
+
     return data
 ##############################################################################################################
 def expr_to_str(expr):
     expr_str = expr[0][1]
-    if(expr[0][0] != "<plus>" and expr[0][0] != "<minus>" and len(expr) != 1):
+    if(expr[0][0] != "<plus>" and expr[0][0] != "<minus>" and len(expr) != 1 and expr[1][0] != "<selector>"):
         expr_str = expr_str + " "
-    for x in expr[1:-1]:
-        expr_str = expr_str + x[1] + " "
+
+    for i, x in enumerate(expr[1:-1], start = 1):
+        expr_str = expr_str + x[1]
+        if(expr[i+1][0] != "<selector>"):
+            expr_str += " "
     if(len(expr) != 1):
         expr_str = expr_str + expr[-1][1]
     return expr_str
 ##############################################################################################################
 def evaluate(expr, symbols, address):
-
     ##################################################
     def modify(val, selector):
         if(selector == "[L]"):
-            return int(format(155, '016b')[8:16],base=2)
+            return int(format(val, '016b')[8:16],base=2)
         elif(selector == "[H]"):
-            return int(format(155, '016b')[0:8],base=2)
+            return int(format(val, '016b')[0:8],base=2)
         else:
             return val
     ##################################################
 
-    sign, pop, result = 1, 2, 0
+    sign, pop, numpos, result = 1, 2, -1, 0
     while(expr):
         ##################################################
         if(len(expr) >= 3 and expr[-1][0] == "<selector>"):
             pop = 3
+            numpos = -2
             selector = expr[-1][1]
             if(expr[-3][0] == "<plus>"):
                 sign = 1
             else:
                 sign = -1
+        elif(len(expr) == 2 and expr[-1][0] == "<selector>"):
+            pop = 2
+            numpos = -2
+            selector = expr[-1][1]
+            sign = 1
         elif(len(expr) >= 2):
             pop = 2
+            numpos = -1
             selector = ""
-            if(expr[-3][0] == "<plus>"):
+            if(expr[-2][0] == "<plus>"):
                 sign = 1
             else:
                 sign = -1
         else:
             pop = 1
+            numpos = -1
             selector = ""
             sign = 1
         ##################################################
-        if(expr[-1][0] == "<hex_num>"):
-            result += sign*modify(int(expr[-1][1], base=16),selector)
+        if(expr[numpos][0] == "<hex_num>"):
+            result += sign*modify(int(expr[numpos][1], base=16),selector)
             expr = expr[:-pop]
-        elif(expr[-1][0] == "<dec_num>"):
-            result += sign*modify(int(expr[-1][1], base=10),selector)
+        elif(expr[numpos][0] == "<dec_num>"):
+            result += sign*modify(int(expr[numpos][1], base=10),selector)
             expr = expr[:-pop]
-        elif(expr[-1][0] == "<bin_num>"):
-            result += sign*modify(int(expr[-1][1], base=2),selector)
+        elif(expr[numpos][0] == "<bin_num>"):
+            result += sign*modify(int(expr[numpos][1], base=2),selector)
             expr = expr[:-pop]
-        elif(expr[-1][0] == "<lc>"):
+        elif(expr[numpos][0] == "<lc>"):
             result += sign*modify((address),selector)
             expr = expr[:-pop]
-        elif(expr[-1][1] in symbols.labelDefs):
-            result += sign*modify(int(symbols.labelDefs[expr[-1][1]],base=16),selector)
+        elif(expr[numpos][1] in symbols.labelDefs):
+            result += sign*modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)
             expr = expr[:-pop]
-        elif(expr[-1][1] in symbols.defs):
-            result += sign*modify(int(symbols.defs[expr[-1][1]],base=16),selector)
+        elif(expr[numpos][1] in symbols.defs):
+            result += sign*modify(int(symbols.defs[expr[numpos][1]],base=16),selector)
             expr = expr[:-pop]
         else:
             expr += [["<plus>", "+"],["<hex_num>",hex(result)]]
@@ -869,7 +882,6 @@ def parse_code(tokens, symbols, code, line):
 #
 # <numb> ::= <hex_num> | <dec_num> | <bin_num> | <symbol> | <lc>
 #
-# <selector> ::= <bracket_l> ("H" | "L") <bracket_r>
 ##############################################################################################################
 def parse_line(tokens, symbols, code, line):
     data = ["<line>"]
@@ -945,7 +957,7 @@ def second_pass(symbols, code):
                 elif(code_line[-1][0] == "<mnm_a>"):
                     if(numb < 0 or numb > 65535):
                         error("Address must be >= 0 and <= 65535",line)
-                        return er
+                        return 0
                     else:
                         code_line[4] = format(numb,'016b')
                         code_line[-1] = 0
