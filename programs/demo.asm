@@ -7,7 +7,7 @@
         .define gpu_isr_vector, 0x20
 ;******************************************************************************
         .code
-
+        
         ldi r0, 1               ; set pin 1 to output
         out r0, dir_reg 
 
@@ -32,7 +32,6 @@ loop:   jmp loop                ; do nothing and wait for an interrupt
         ssr 8                   ; enable interrupts
         ret                     ; return
 
-        lda
 ;******************************************************************************
         .data
 

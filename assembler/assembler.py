@@ -73,7 +73,7 @@ def read(name):
 
             block.append([lineNumber, pc])
             if(rest): 												   # If we have code after we strip any comment out
-                split_rest = re.split(r'([-+,"\s]\s*)', rest)
+                split_rest = re.split(r'(\+|-|,|"|\s|\[|\])\s*', rest)
                 split_rest = list(filter(None, split_rest))
                 block.append(split_rest)
             else:
@@ -129,6 +129,10 @@ def lexer(lines):
                     tl.append(["<drct_m>", word])
                 elif word in table.drct_s:
                     tl.append(["<drct_s>", word])
+                elif word == "[":
+                    tl.append(["<bracket_l>", word])
+                elif word == "]":
+                    tl.append(["<bracket_r>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -146,7 +150,7 @@ def lexer(lines):
                 elif(re.match(r'^[0-9]+$', word)):
                     tl.append(["<dec_num>", word])
                 elif(re.match(r'^(0B)[0-1]+$', word)):
-                    tl.append(["<bin_num>", word])    
+                    tl.append(["<bin_num>", word]) 
                 elif(re.match(r'^[A-Z_]+[A-Z_]*$', word)):
                     tl.append(["<symbol>", word])
                 elif word == "$":
@@ -171,7 +175,6 @@ def lexer(lines):
                 else:
                     tl.append(["<string_seg>", word])
         tokens.append(tl)
-        #print(tokens)
     return [codeLines, tokens]
 ##############################################################################################################
 def error(message, line):
@@ -215,36 +218,56 @@ def expr_to_str(expr):
     return expr_str
 ##############################################################################################################
 def evaluate(expr, symbols, address):
+
+    ##################################################
+    def modify(val, selector):
+        if(selector == "[L]"):
+            return int(format(155, '016b')[8:16],base=2)
+        elif(selector == "[H]"):
+            return int(format(155, '016b')[0:8],base=2)
+        else:
+            return val
+    ##################################################
+
     sign, pop, result = 1, 2, 0
     while(expr):
         ##################################################
-        if(len(expr) >= 2):
+        if(len(expr) >= 3 and expr[-1][0] == "<selector>"):
+            pop = 3
+            selector = expr[-1][1]
+            if(expr[-3][0] == "<plus>"):
+                sign = 1
+            else:
+                sign = -1
+        elif(len(expr) >= 2):
             pop = 2
-            if(expr[-2][0] == "<plus>"):
+            selector = ""
+            if(expr[-3][0] == "<plus>"):
                 sign = 1
             else:
                 sign = -1
         else:
             pop = 1
+            selector = ""
             sign = 1
         ##################################################
         if(expr[-1][0] == "<hex_num>"):
-            result += sign*int(expr[-1][1], base=16)
+            result += sign*modify(int(expr[-1][1], base=16),selector)
             expr = expr[:-pop]
         elif(expr[-1][0] == "<dec_num>"):
-            result += sign*int(expr[-1][1], base=10)
+            result += sign*modify(int(expr[-1][1], base=10),selector)
             expr = expr[:-pop]
         elif(expr[-1][0] == "<bin_num>"):
-            result += sign*int(expr[-1][1], base=2)
+            result += sign*modify(int(expr[-1][1], base=2),selector)
             expr = expr[:-pop]
         elif(expr[-1][0] == "<lc>"):
-            result += sign*(address)
+            result += sign*modify((address),selector)
             expr = expr[:-pop]
         elif(expr[-1][1] in symbols.labelDefs):
-            result += sign*int(symbols.labelDefs[expr[-1][1]],base=16)
+            result += sign*modify(int(symbols.labelDefs[expr[-1][1]],base=16),selector)
             expr = expr[:-pop]
         elif(expr[-1][1] in symbols.defs):
-            result += sign*int(symbols.defs[expr[-1][1]],base=16)
+            result += sign*modify(int(symbols.defs[expr[-1][1]],base=16),selector)
             expr = expr[:-pop]
         else:
             expr += [["<plus>", "+"],["<hex_num>",hex(result)]]
@@ -372,7 +395,7 @@ def store_string(arg, symbols, code, line):
             return 0
 
     new_str = bytes(arg,"utf-8").decode("unicode_escape")
-    
+
     for char in new_str:
         code.write_data(line,format(ord(char),'02X'))
 
@@ -836,7 +859,7 @@ def parse_code(tokens, symbols, code, line):
 # <reg>  ::= <reg_even>
 #          | <reg_odd>
 #
-# <expr> ::= [ (<plus> | <minus>) ] <numb> { (<plus> | <minus>) <numb> }
+# <expr> ::= [ (<plus> | <minus>) ] <numb> [ <selector> ] { (<plus> | <minus>) <numb> [ <selector> ]}
 #
 # <drct> ::= <drct_0> 
 #          | <drct_1> <expr>
@@ -845,6 +868,8 @@ def parse_code(tokens, symbols, code, line):
 #          | <drct_s> <quote> { <string_seg> } <quote>
 #
 # <numb> ::= <hex_num> | <dec_num> | <bin_num> | <symbol> | <lc>
+#
+# <selector> ::= <bracket_l> ("H" | "L") <bracket_r>
 ##############################################################################################################
 def parse_line(tokens, symbols, code, line):
     data = ["<line>"]
