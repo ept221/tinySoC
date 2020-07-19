@@ -35,8 +35,8 @@ class Code:
         self.label = ""
         self.code_address += 1
 
-    def write_data(self, data):
-        self.data_data.append([format(self.code_address,'04X'),data])
+    def write_data(self, line, data):
+        self.data_data.append([line, str(line[0][0]), format(self.data_address,'04X'),data])
         self.data_address += 1
 ##############################################################################################################
 # File reading functions
@@ -97,6 +97,7 @@ def lexer(lines):
                 word = word.strip()
                 word = word.upper()
                 if word == "\"":
+                    tl.append(["<quote>", word])
                     stringCapture = True
                 elif(re.match(r'^\s*$',word)):
                     continue
@@ -126,6 +127,8 @@ def lexer(lines):
                     tl.append(["<drct_2>", word])
                 elif word in table.drct_m:
                     tl.append(["<drct_m>", word])
+                elif word in table.drct_s:
+                    tl.append(["<drct_s>", word])
                 elif word == ",":
                     tl.append(["<comma>", word])
                 elif word == "+":
@@ -153,13 +156,22 @@ def lexer(lines):
                     error("Unknown token: " + word, line)
                     return [0 , 0]
             else:
-                if(word.strip() == "\""):
-                    stringCapture = False
-                    tl.append(["<string>", string])
+                slash_count = 0
+                if(word == "\""):
+                    for x in reversed(tl[-1][1]):
+                        if x == "\\":
+                            slash_count += 1
+                        else:
+                            break
+                    if(slash_count % 2 == 0):
+                        tl.append(["<quote>", word])
+                        stringCapture = False
+                    else:
+                        tl.append(["<string_seg>", word])
                 else:
-                    string += word
+                    tl.append(["<string_seg>", word])
         tokens.append(tl)
-
+        #print(tokens)
     return [codeLines, tokens]
 ##############################################################################################################
 def error(message, line):
@@ -341,11 +353,28 @@ def db(args, symbols, code, line):
     for arg in args:
         if(arg < -128 or arg > 255):
             error("Argument must be >= -128 and <= 255",line)
-            return er
+            return 0
         if(arg < 0):
             arg = 255 - abs(arg) + 1
 
-        code.write_data(format(arg, '02X'))
+        code.write_data(line, format(arg, '02X'))
+
+    return 1
+
+def store_string(arg, symbols, code, line):
+    if(code.segment != "data"):
+        error("Directive must be within data segment!",line)
+        return 0
+
+    for char in arg:
+        if(int(ord(char)) > 128):
+            error("Unsupported character in string!",line)
+            return 0
+
+    new_str = bytes(arg,"utf-8").decode("unicode_escape")
+    
+    for char in new_str:
+        code.write_data(line,format(ord(char),'02X'))
 
     return 1
 ##############################################################################################################
@@ -359,6 +388,7 @@ directives = {
     ".ORG":  org,
     ".DEFINE": define,
     ".DB":  db,
+    ".STRING": store_string
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -504,6 +534,33 @@ def parse_drct(tokens, symbols, code, line):
                 error("Directive relies upon unresolved symbol!",line)
                 return er
         status = directives[drct_m](d_args,symbols,code,line)
+        if not status:
+            return er
+        return data
+    ##################################################
+    # [drct_s]
+    if(tokens[0][0] == "<drct_s>"):
+        drct_s = tokens[0][1]
+        data.append(tokens.pop(0))
+        string = ""
+        if(not tokens):
+            error("Directive missing argument!",line)
+            return er
+        if(tokens[0][0] != "<quote>"):
+            error("Directive missing start quote!",line)
+            return er
+        data.append(tokens.pop(0))
+
+        while(len(tokens) and tokens[0][0] != "<quote>"):
+            string += tokens[0][1]
+            data.append(tokens.pop(0))
+
+        if(not tokens or tokens[0][0] != "<quote>"):
+            error("Directive missing end quote!",line)
+            return er
+        data.append(tokens.pop(0))
+
+        status = directives[drct_s](string,symbols,code,line)
         if not status:
             return er
         return data
@@ -766,11 +823,11 @@ def parse_code(tokens, symbols, code, line):
 #          | <drct> [<code>]
 #          | <code>
 #
-# <code> ::= <mnm_r_i> <reg> "," <expr>
-#          | <mnm_r_l> <reg> "," <expr>
-#          | <mnm_r_r> <reg> "," <reg>
+# <code> ::= <mnm_r_i> <reg> <comma> <expr>
+#          | <mnm_r_l> <reg> <comma> <expr>
+#          | <mnm_r_r> <reg> <comma> <reg>
 #          | <mnm_r> <reg>
-#          | <mnm_r_rp> <reg> "," <reg_even>
+#          | <mnm_r_rp> <reg> <comma> <reg_even>
 #          | <mnm_rp> <reg_even>
 #          | <mnm_a> <expr>
 #          | <mnm_n>
@@ -781,8 +838,11 @@ def parse_code(tokens, symbols, code, line):
 #
 # <expr> ::= [ (<plus> | <minus>) ] <numb> { (<plus> | <minus>) <numb> }
 #
-# <drct> ::= <drct_1> <expr>
-#          | <drct_p> <expr> { ","  <expr> }
+# <drct> ::= <drct_0> 
+#          | <drct_1> <expr>
+#          | <drct_2> <expr> <comma> <expr>
+#          | <drct_m> <expr> { <comma>  <expr> }
+#          | <drct_s> <quote> { <string_seg> } <quote>
 #
 # <numb> ::= <hex_num> | <dec_num> | <bin_num> | <symbol> | <lc>
 ##############################################################################################################
@@ -903,7 +963,7 @@ def parse(lines, symbols, code):
         print(x[1] + "\t" + x[2] + "\t" + x[3] + "\t" + x[4] + "\t" + x[5])
     print("data:")
     for x in code.data_data:
-        print(x[0] + "\t" + x[1] + "\t" + x[2])
+        print(x[1] + "\t" + x[2] + "\t" + x[3])
 ##############################################################################################################
 
 code = Code()
