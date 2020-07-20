@@ -998,8 +998,8 @@ def parse(lines, symbols, code):
         sys.exit(1)
 ##############################################################################################################
 def output(code, file_name, args):
-    code_file = open(file_name + "_code",'w') if file_name else sys.stdout
-    data_file = open(file_name + "_data",'w') if file_name else sys.stdout
+    code_file = open(file_name + ".instructions",'w') if file_name else sys.stdout
+    data_file = open(file_name + ".data",'w') if file_name else sys.stdout
     if(args.debug == True):
         print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource",file=code_file)
         print("----------------------------------------------------------------------------------------------------",file=code_file)
