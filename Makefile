@@ -17,12 +17,12 @@ pnr: build/synth/hardware.json
 	mkdir -p build/pnr
 	nextpnr-ice40 --lp8k --package cm81 --json build/synth/hardware.json --pcf src/soc/pins.pcf --asc build/pnr/hardware.asc  --pcf-allow-unconstrained --freq 16
 
-pack: build/pnr/hardware.asc
+pack: build/pnr/upload.asc
 	mkdir -p build/binary
-	icepack build/pnr/hardware.asc build/binary/hardware.bin
+	icepack build/pnr/upload.asc build/binary/upload.bin
 
-upload: build/binary/hardware.bin
-	tinyprog -p build/binary/hardware.bin
+upload: build/binary/upload.bin
+	tinyprog -p build/binary/upload.bin
 
 clean:
 	rm -rf build
