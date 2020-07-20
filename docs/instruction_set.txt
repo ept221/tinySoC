@@ -1,70 +1,84 @@
-***********************************************
+**********************************************************************************************
 Type: R-I
-LDI     DDDD IIIIIIII 0001      Load register immediate 
-ANI     DDDD IIIIIIII 0011      AND register immediate
-ORI     DDDD IIIIIIII 0101      OR register immediate
-XOI     DDDD IIIIIIII 0111      XOR register immediate
-ADI     DDDD IIIIIIII 1001      Add register immediate
-ACI     DDDD IIIIIIII 1011      Add register with carry immediate
+LDI     DDDD IIIIIIII 0001      rd <= i 
+ANI     DDDD IIIIIIII 0011      rd <= rd & i
+ORI     DDDD IIIIIIII 0101      rd <= rd | i
+XOI     DDDD IIIIIIII 0111      rd <= rd ^ i
+ADI     DDDD IIIIIIII 1001      rd <= rd + i
+ACI     DDDD IIIIIIII 1011      rd <= rd + i + cin
 CPI     DDDD IIIIIIII 1101      compare immediate
-***********************************************
+**********************************************************************************************
 Type: R-L   
-IN      DDDD LLLLLLLL 0010      data at L gets put into D
-OUT     SSSS LLLLLLLL 0100
-***********************************************
+IN      DDDD LLLLLLLL 0010      rd <= *l
+OUT     SSSS LLLLLLLL 0100		*l <= rd
+**********************************************************************************************
 Type: R-R
-AND     DDDD SSSS 00001000
-OR      DDDD SSSS 00010000
-XOR     DDDD SSSS 00011000
-ADD     DDDD SSSS 00100000
-ADC     DDDD SSSS 00101000
-CMP     DDDD SSSS 00110000
-SUB     DDDD SSSS 00111000
-SBB     DDDD SSSS 01000000
-***********************************************
+AND     DDDD SSSS 00001000		rd <= rd & rs
+OR      DDDD SSSS 00010000		rd <= rd | rs
+XOR     DDDD SSSS 00011000		rd <= rd ^ rs
+ADD     DDDD SSSS 00100000		rd <= rd + rs
+ADC     DDDD SSSS 00101000		rd <= rd + rs + carryFlag
+CMP     DDDD SSSS 00110000		
+SUB     DDDD SSSS 00111000		rd <= rd - rs
+SBB     DDDD SSSS 01000000		rd <= rd - rs - carryFlag
+**********************************************************************************************
 Type: R
-NOT     DDDD 0000 01001000
-SLL     DDDD 0000 01010000
-SRL     DDDD 0000 01011000
-SRA     DDDD 0000 01100000
-***********************************************
+NOT     DDDD 0000 01001000		rd <= ~rd
+SLL     DDDD 0000 01010000		rd <= rd << 1
+SRL     DDDD 0000 01011000		rd <= rd >> 1
+SRA     DDDD 0000 01100000		rd <= rd >>> 1
+**********************************************************************************************
 Type: R-RP
-STR     SSSS PPPP 01101000
-SRI     SSSS PPPP 01110000
-SRD     SSSS PPPP 01111000
-LDR     DDDD PPPP 10000000
-LRI     DDDD PPPP 10001000
-LRD     DDDD PPPP 10010000
-***********************************************
+STR     SSSS PPPP 01101000		*p <= rs
+SRI     SSSS PPPP 01110000		*p <= rs, p <= p + 1
+SRD     SSSS PPPP 01111000		*p <= rs, p <= p - 1
+LDR     DDDD PPPP 10000000		rd <= *p
+LRI     DDDD PPPP 10001000		rd <= *p, p <= p + 1
+LRD     DDDD PPPP 10010000		rd <= *p, p <= p - 1
+**********************************************************************************************
 Type: RP
-IRP     0000 PPPP 10011000
-DRP     0000 PPPP 10100000
+IRP     0000 PPPP 10011000		p <= p + 1
+DRP     0000 PPPP 10100000		p <= p - 1
 
-JMPI    0000 PPPP 10101000
-JCI     0010 PPPP 10101000
-JNCI    0100 PPPP 10101000
-JZI     0110 PPPP 10101000
-JNZI    1000 PPPP 10101000
-JNI     1010 PPPP 10101000
-JNNI    1100 PPPP 10101000
-***********************************************
+JMPI    0000 PPPP 10101000		pc <= p
+JCI     0010 PPPP 10101000		pc <= (carryFlag) ? p : pc
+JNCI    0100 PPPP 10101000		pc <= (!carryFlag) ? p : pc
+JZI     0110 PPPP 10101000		pc <= (zeroFlag) ? p : pc
+JNZI    1000 PPPP 10101000		pc <= (!zeroFlag) ? p : pc
+JNI     1010 PPPP 10101000		pc <= (negativeFlag) ? p : pc
+JNNI    1100 PPPP 10101000		pc <= (!negativeFlag) ? p : pc
+**********************************************************************************************
 Type: Absolute Address
-JMP     0000 0000 10110000 AAAAAAAAAAAAAAAA
-JC      0010 0000 10110000 AAAAAAAAAAAAAAAA
-JNC     0100 0000 10110000 AAAAAAAAAAAAAAAA
-JZ      0110 0000 10110000 AAAAAAAAAAAAAAAA
-JNZ     1000 0000 10110000 AAAAAAAAAAAAAAAA
-JN      1010 0000 10110000 AAAAAAAAAAAAAAAA
-JNN     1100 0000 10110000 AAAAAAAAAAAAAAAA
+JMP     0000 0000 10110000		pc <= a
+		AAAA AAAA AAAAAAAA 
+JC      0010 0000 10110000 		pc <= (carryFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
+JNC     0100 0000 10110000 		pc <= (!carryFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
+JZ      0110 0000 10110000 		pc <= (zeroFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
+JNZ     1000 0000 10110000 		pc <= (!zeroFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
+JN      1010 0000 10110000 		pc <= (negativeFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
+JNN     1100 0000 10110000 		pc <= (!negativeFlag) ? a : pc
+		AAAA AAAA AAAAAAAA
 
-CALL    0000 0000 10111000 AAAAAAAAAAAAAAAA
-CC      0010 0000 10111000 AAAAAAAAAAAAAAAA
-CNC     0100 0000 10111000 AAAAAAAAAAAAAAAA
-CZ      0110 0000 10111000 AAAAAAAAAAAAAAAA
-CNZ     1000 0000 10111000 AAAAAAAAAAAAAAAA
-CN      1010 0000 10111000 AAAAAAAAAAAAAAAA
-CNN     1100 0000 10111000 AAAAAAAAAAAAAAAA
-***********************************************
+CALL    0000 0000 10111000
+		AAAA AAAA AAAAAAAA
+CC      0010 0000 10111000
+		AAAA AAAA AAAAAAAA
+CNC     0100 0000 10111000
+		AAAA AAAA AAAAAAAA
+CZ      0110 0000 10111000
+		AAAA AAAA AAAAAAAA
+CNZ     1000 0000 10111000
+		AAAA AAAA AAAAAAAA
+CN      1010 0000 10111000
+		AAAA AAAA AAAAAAAA
+CNN     1100 0000 10111000
+		AAAA AAAA AAAAAAAA
+**********************************************************************************************
 Type: No Args
 RET     0000 0000 11000000
 RC      0010 0000 11000000
@@ -78,8 +92,8 @@ PUS     0000 0000 11001000
 POS     0000 0000 11010000
 HLT     0000 0000 11101000
 NOP     0000 0000 00000000
-***********************************************
+**********************************************************************************************
 Type: Mask
 SSR     0000 MMMM 11011000
 CSR     0000 MMMM 11100000
-***********************************************
+**********************************************************************************************

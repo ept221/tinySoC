@@ -53,7 +53,7 @@ set_io --warn-no-port io_pins[6] J1
 set_io --warn-no-port io_pins[7] H2
 
 # Right side of board
-set_io --warn-no-port cool H9
+set_io --warn-no-port PIN_14 H9
 set_io --warn-no-port PIN_15 D9
 set_io --warn-no-port PIN_16 D8
 set_io --warn-no-port PIN_17 C9
