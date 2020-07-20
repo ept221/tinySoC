@@ -31,9 +31,23 @@ def gen(in_file,out_file,length,convert_base,hex_width):
 				print("0"*hex_width,file=out_file)
 		address += 1
 ####################################################################################################
-instruction_file = open("test.instructions",'r')
-gen(instruction_file,i_ram_len,2,4)
 
-data_file = open("test.data",'r')
-gen(data_file,d_ram_len,16,2)
+discription = 'A memory image generator for tinySoC'
+p = argparse.ArgumentParser(description = discription)
+p.add_argument("source", help="source file name")
+args = p.parse_args()
+
+try:
+	instruction_file = open(args.source+".instructions",'r')
+	data_file = open(args.source+".data",'r')
+
+except FileNotFoundError:
+    print("File not found!")
+    sys.exit(2)
+
+i_ram_image = open(args.source+"_i_ram_image.hex",'w')
+d_ram_image = open(args.source+"_d_ram_image.hex",'w')
+
+gen(instruction_file,i_ram_image,i_ram_len,2,4)
+gen(data_file,d_ram_image,d_ram_len,16,2)
 ####################################################################################################

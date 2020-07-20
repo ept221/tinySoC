@@ -55,7 +55,11 @@ def read(name):
 
     # [[Line_number, Program_Counter] [body] 'comment']
     
-    file = open(name, 'r')
+    try:
+        file = open(name, 'r')
+    except FileNotFoundError:
+        print("File not found!")
+        sys.exit(2)
     lines = []
     lineNumber = 0
     pc = 0
@@ -1023,12 +1027,12 @@ def output(code, file_name, args):
 code = Code()
 symbols = Symbol()
 
-discription = 'A simple 8085 assembler.'
+discription = 'An assembler for tinySoC'
 p = argparse.ArgumentParser(description = discription)
 p.add_argument("source", help="source file")
 p.add_argument("-o", "--out", help="output file name (stdout, if not specified)")
 p.add_argument("-d", "--debug", help="outputs debugging information", action="store_true")
-args = p.parse_args();
+args = p.parse_args()
 
 if(args.source):
     outFile = args.source
