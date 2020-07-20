@@ -10,74 +10,74 @@ CPI     DDDD IIIIIIII 1101      compare immediate
 **********************************************************************************************
 Type: R-L   
 IN      DDDD LLLLLLLL 0010      rd <= *l
-OUT     SSSS LLLLLLLL 0100		*l <= rd
+OUT     SSSS LLLLLLLL 0100      *l <= rd
 **********************************************************************************************
 Type: R-R
-AND     DDDD SSSS 00001000		rd <= rd & rs
-OR      DDDD SSSS 00010000		rd <= rd | rs
-XOR     DDDD SSSS 00011000		rd <= rd ^ rs
-ADD     DDDD SSSS 00100000		rd <= rd + rs
-ADC     DDDD SSSS 00101000		rd <= rd + rs + carryFlag
-CMP     DDDD SSSS 00110000		
-SUB     DDDD SSSS 00111000		rd <= rd - rs
-SBB     DDDD SSSS 01000000		rd <= rd - rs - carryFlag
+AND     DDDD SSSS 00001000      rd <= rd & rs
+OR      DDDD SSSS 00010000      rd <= rd | rs
+XOR     DDDD SSSS 00011000      rd <= rd ^ rs
+ADD     DDDD SSSS 00100000      rd <= rd + rs
+ADC     DDDD SSSS 00101000      rd <= rd + rs + carryFlag
+CMP     DDDD SSSS 00110000      
+SUB     DDDD SSSS 00111000      rd <= rd - rs
+SBB     DDDD SSSS 01000000      rd <= rd - rs - carryFlag
 **********************************************************************************************
 Type: R
-NOT     DDDD 0000 01001000		rd <= ~rd
-SLL     DDDD 0000 01010000		rd <= rd << 1
-SRL     DDDD 0000 01011000		rd <= rd >> 1
-SRA     DDDD 0000 01100000		rd <= rd >>> 1
+NOT     DDDD 0000 01001000      rd <= ~rd
+SLL     DDDD 0000 01010000      rd <= rd << 1
+SRL     DDDD 0000 01011000      rd <= rd >> 1
+SRA     DDDD 0000 01100000      rd <= rd >>> 1
 **********************************************************************************************
 Type: R-RP
-STR     SSSS PPPP 01101000		*p <= rs
-SRI     SSSS PPPP 01110000		*p <= rs, p <= p + 1
-SRD     SSSS PPPP 01111000		*p <= rs, p <= p - 1
-LDR     DDDD PPPP 10000000		rd <= *p
-LRI     DDDD PPPP 10001000		rd <= *p, p <= p + 1
-LRD     DDDD PPPP 10010000		rd <= *p, p <= p - 1
+STR     SSSS PPPP 01101000      *p <= rs
+SRI     SSSS PPPP 01110000      *p <= rs, p <= p + 1
+SRD     SSSS PPPP 01111000      *p <= rs, p <= p - 1
+LDR     DDDD PPPP 10000000      rd <= *p
+LRI     DDDD PPPP 10001000      rd <= *p, p <= p + 1
+LRD     DDDD PPPP 10010000      rd <= *p, p <= p - 1
 **********************************************************************************************
 Type: RP
-IRP     0000 PPPP 10011000		p <= p + 1
-DRP     0000 PPPP 10100000		p <= p - 1
+IRP     0000 PPPP 10011000      p <= p + 1
+DRP     0000 PPPP 10100000      p <= p - 1
 
-JMPI    0000 PPPP 10101000		pc <= p
-JCI     0010 PPPP 10101000		pc <= (carryFlag) ? p : pc
-JNCI    0100 PPPP 10101000		pc <= (!carryFlag) ? p : pc
-JZI     0110 PPPP 10101000		pc <= (zeroFlag) ? p : pc
-JNZI    1000 PPPP 10101000		pc <= (!zeroFlag) ? p : pc
-JNI     1010 PPPP 10101000		pc <= (negativeFlag) ? p : pc
-JNNI    1100 PPPP 10101000		pc <= (!negativeFlag) ? p : pc
+JMPI    0000 PPPP 10101000      pc <= p
+JCI     0010 PPPP 10101000      pc <= (carryFlag) ? p : pc
+JNCI    0100 PPPP 10101000      pc <= (!carryFlag) ? p : pc
+JZI     0110 PPPP 10101000      pc <= (zeroFlag) ? p : pc
+JNZI    1000 PPPP 10101000      pc <= (!zeroFlag) ? p : pc
+JNI     1010 PPPP 10101000      pc <= (negativeFlag) ? p : pc
+JNNI    1100 PPPP 10101000      pc <= (!negativeFlag) ? p : pc
 **********************************************************************************************
 Type: Absolute Address
-JMP     0000 0000 10110000		pc <= a
-		AAAA AAAA AAAAAAAA 
-JC      0010 0000 10110000 		pc <= (carryFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
-JNC     0100 0000 10110000 		pc <= (!carryFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
-JZ      0110 0000 10110000 		pc <= (zeroFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
-JNZ     1000 0000 10110000 		pc <= (!zeroFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
-JN      1010 0000 10110000 		pc <= (negativeFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
-JNN     1100 0000 10110000 		pc <= (!negativeFlag) ? a : pc
-		AAAA AAAA AAAAAAAA
+JMP     0000 0000 10110000      pc <= a
+        AAAA AAAA AAAAAAAA 
+JC      0010 0000 10110000      pc <= (carryFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
+JNC     0100 0000 10110000      pc <= (!carryFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
+JZ      0110 0000 10110000      pc <= (zeroFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
+JNZ     1000 0000 10110000      pc <= (!zeroFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
+JN      1010 0000 10110000      pc <= (negativeFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
+JNN     1100 0000 10110000      pc <= (!negativeFlag) ? a : pc
+        AAAA AAAA AAAAAAAA
 
 CALL    0000 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CC      0010 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CNC     0100 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CZ      0110 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CNZ     1000 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CN      1010 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 CNN     1100 0000 10111000
-		AAAA AAAA AAAAAAAA
+        AAAA AAAA AAAAAAAA
 **********************************************************************************************
 Type: No Args
 RET     0000 0000 11000000
