@@ -429,7 +429,7 @@ def store_string(arg, symbols, code, line):
 
     for char in new_str:
         code.write_data(line,format(ord(char),'02X'))
-
+    code.write_data(line,format(0,'02X'))
     return 1
 ##############################################################################################################
 directives = {
