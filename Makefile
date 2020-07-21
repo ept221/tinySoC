@@ -23,8 +23,8 @@ pack: build/pnr/upload.asc
 upload: build/binary/upload.bin
 	tinyprog -p build/binary/upload.bin
 
-clean_code:
-	rm -rf build/assembled build/images build/pnr/upload.asc build/binary
+refresh:
+	rm -rf build/images build/pnr/upload.asc build/binary
 
 clean:
 	rm -rf build

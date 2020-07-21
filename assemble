@@ -1,0 +1,14 @@
+#!/bin/bash
+
+mkdir -p build/images
+
+python3 assembler/assembler.py $1 -o $2 || exit
+
+./utilities/loadImage $2 || exit
+
+mv $2"_instructions.hex" build/images/$2"_instructions.hex"
+mv $2"_data.hex" build/images/$2"_data.hex"
+
+rm build/pnr/temp.asc
+
+make pack
