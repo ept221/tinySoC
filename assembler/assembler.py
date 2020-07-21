@@ -1067,6 +1067,25 @@ def output(code, file_name, args):
 
 ##############################################################################################################
 # Main
+
+try:
+    if(preferences.i_ram_len < 0  or preferences.i_ram_len > 65535):
+        print("Bad preferences! Instruction memory length must be >= 0 and <= 65535.")
+        sys.exit(2)
+
+except AttributeError:
+    print("Bad preferences! The variable preferences.i_ram_len does not exist!")
+    sys.exit(2)
+
+try:
+    if(preferences.d_ram_len < 0  or preferences.d_ram_len > 65535):
+        print("Bad preferences! Data memory length must be >= 0 and <= 65535.")
+        sys.exit(2)
+
+except AttributeError:
+    print("Bad preferences! The variable preferences.d_ram_len does not exist!")
+    sys.exit(2)
+
 code = Code()
 symbols = Symbol()
 
