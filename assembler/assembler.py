@@ -29,8 +29,8 @@ class Code:
 
     def write_code(self, line, data, code_string, status):
 
-        if(self.code_address > 65535):
-            error("Cannot write past 0xFFFF. Out of program memory!",line)
+        if(self.code_address > preferences.i_ram_len):
+            error("Cannot write past " + format(preferences.i_ram_len, '04X') + ". Out of program memory!",line)
             sys.exit(2)
 
         self.code_data.append([line, str(line[0][0]), format(self.code_address,'04X'),self.code_label,data, code_string, status])
@@ -38,6 +38,11 @@ class Code:
         self.code_address += 1
 
     def write_data(self, line, data):
+
+        if(self.data_address > preferences.d_ram_len):
+            error("Cannot write past 0x" + format(preferences.d_ram_len, '02X') + ". Out of data memory!",line)
+            sys.exit(2)
+
         self.data_data.append([line, str(line[0][0]), format(self.data_address,'04X'),self.data_label,data])
         self.data_label = ""
         self.data_address += 1
@@ -367,15 +372,18 @@ def org(arg, symbols, code, line):
     elif(arg < address):
         error("Cannot move origin backwards!",line)
         return 0
-    elif(arg > 65535):
-        error("Cannot set origin past 0xFFFF",line)
-        return 0
     else:
         if(code.segment == "code"):
+            if(arg > preferences.i_ram_len):
+                error("Cannot set code origin past " + format(preferences.i_ram_len, '04X') + ".",line)
+                return 0
             code.code_address = arg
             if(code.code_label):
                 symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
         else:
+            if(arg > preferences.d_ram_len):
+                error("Cannot set data origin past " + format(preferences.d_ram_len, '02X') + ".",line)
+                return 0
             code.data_address = arg
             if(code.data_label):
                 symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
@@ -827,8 +835,8 @@ def parse_code(tokens, symbols, code, line):
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
                 numb = val[0]
-                if(numb < 0 or numb > 65535):
-                    error("Address must be >= 0 and <= 65535",line)
+                if(numb < 0 or numb > preferences.i_ram_len):
+                    error("Address must be >= 0 and <= "+str(preferences.i_ram_len),line)
                     return er
                 else:
                     address = format(numb,'016b')
@@ -962,8 +970,8 @@ def second_pass(symbols, code):
                 ##################################################
                 # [mnm_a]
                 elif(code_line[-1][0] == "<mnm_a>"):
-                    if(numb < 0 or numb > 65535):
-                        error("Address must be >= 0 and <= 65535",line)
+                    if(numb < 0 or numb > preferences.i_ram_len):
+                        error("Address must be >= 0 and <= "+str(preferences.i_ram_len),line)
                         return 0
                     else:
                         code_line[4] = format(numb,'016b')
@@ -1066,7 +1074,7 @@ discription = 'An assembler for tinySoC'
 p = argparse.ArgumentParser(description = discription)
 p.add_argument("source", help="source file")
 p.add_argument("-o", "--out", help="output file name (stdout, if not specified)")
-p.add_argument("-d", "--debug", help="outputs debugging information", action="store_true")
+p.add_argument("-d", "--debug", help="outputs debugging information instead of hex images", action="store_true")
 args = p.parse_args()
 
 if(args.source):
