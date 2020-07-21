@@ -253,9 +253,9 @@ module control(input wire clk,
             end
             // [Type R-RP]
             else if(iMemOut[7:3] >= 5'b01101 && iMemOut[7:3] < 5'b10011 && iMemOut[2:0] == 3'b000) begin
-                regFileSrc = 2'b00;                         // aluOut
-                regFileOutBSelect = (iMemOut[11:9]*2);      // PPP
-                regFileWriteEnable = iMemOut[7];    // Write if store (takes 2 cycles to get right result)
+                regFileSrc = 2'b10;                         // dMemIOOut
+                regFileOutBSelect = iMemOut[11:8];          // PPPP
+                regFileWriteEnable = iMemOut[7];    // Write if load (takes 2 cycles to get right result)
                 aluSrcASelect = 1'b1;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
                 aluMode = 4'b1101;                  // Pass A
@@ -266,7 +266,7 @@ module control(input wire clk,
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
-                if(~iMemOut[7]) begin
+                if(~iMemOut[7]) begin               // If store
                     iMemReadEnable = 1'b1;
                     pcWriteEn = 1'b1;
                     nextState = PART1;
@@ -283,23 +283,29 @@ module control(input wire clk,
                         nextState = PART1;
                     end
                 end
-                if(iMemOut[7:3] == 5'b01101 || iMemOut[7:3] == 5'b10000) begin
-                    regFileIncPair = 1'b0;
-                    regFileDecPair = 1'b0;
-                end
-                else if(iMemOut[7:3] == 5'b01110 || iMemOut[7:3] == 5'b10001) begin
-                    regFileIncPair = 1'b1;
-                    regFileDecPair = 1'b0;
+                if(state == PART1) begin
+                    if(iMemOut[7:3] == 5'b01101 || iMemOut[7:3] == 5'b10000) begin
+                        regFileIncPair = 1'b0;
+                        regFileDecPair = 1'b0;
+                    end
+                    else if(iMemOut[7:3] == 5'b01110 || iMemOut[7:3] == 5'b10001) begin
+                        regFileIncPair = 1'b1;
+                        regFileDecPair = 1'b0;
+                    end
+                    else begin
+                        regFileIncPair = 1'b0;
+                        regFileDecPair = 1'b1;
+                    end
                 end
                 else begin
                     regFileIncPair = 1'b0;
-                    regFileDecPair = 1'b1;
+                    regFileDecPair = 1'b0;
                 end
             end
             // [Type RP]
             else if((iMemOut[7:3] == 5'b10011 || iMemOut[7:3] == 5'b10100 || iMemOut[7:3] == 5'b10101) && iMemOut[2:0] == 3'b000) begin
                 regFileSrc = 2'b00;                         // aluOut, doesn't really matter
-                regFileOutBSelect = (iMemOut[11:9]*2);      // PPP
+                regFileOutBSelect = iMemOut[11:8];          // PPPP
                 regFileWriteEnable = 1'b0;
                 aluSrcASelect = 1'b1;                       // regFileOutA, doesn't really matter
                 aluSrcBSelect = 2'b00;                      // regFileOutB, doesn't really matter
