@@ -3,6 +3,7 @@ import re
 import sys
 import table
 import argparse
+import preferences
 ##############################################################################################################
 # Support Classes
 class Symbol:
@@ -1001,10 +1002,36 @@ def parse(lines, symbols, code):
     if(not result):
         sys.exit(1)
 ##############################################################################################################
+def genImage(code_list,out_file,length,hex_width):
+    pair = []
+    address = 0
+    hex_width_str = "0"+str(hex_width)+"x"
+    while(address < length):
+        if(not pair):
+            if(code_list):
+                pair = code_list.pop(0)
+                if(address == pair[0]):
+                    print(format(pair[1], hex_width_str),file=out_file)
+                    pair = []
+                else:
+                    print("0"*hex_width,file=out_file)
+            else:
+                print("0"*hex_width,file=out_file)
+        else:
+            if(address == pair[0]):
+                    print(format(pair[1], hex_width_str),file=out_file)
+                    pair = []
+            else:
+                print("0"*hex_width,file=out_file)
+        address += 1
+##############################################################################################################
 def output(code, file_name, args):
-    code_file = open(file_name + ".instructions",'w') if file_name else sys.stdout
-    data_file = open(file_name + ".data",'w') if file_name else sys.stdout
+
     if(args.debug == True):
+
+        code_file = open(file_name + ".instructions",'w') if file_name else sys.stdout
+        data_file = open(file_name + ".data",'w') if file_name else sys.stdout
+
         print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource",file=code_file)
         print("----------------------------------------------------------------------------------------------------",file=code_file)
         for x in code.code_data:
@@ -1015,13 +1042,21 @@ def output(code, file_name, args):
         print("----------------------------------------------------------------------------------------------------",file=data_file)
         for x in code.data_data:
             print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0x"+x[4],file=data_file)
+
     else:
+        instruction_list = []
+        data_list = []
         for x in code.code_data:
-            print("0x"+x[2] + "," + "0b"+x[4],file=code_file)
-        if(not file_name):
-            print()
+            instruction_list.append([int(x[2],base=16),int(x[4],base=2)])
         for x in code.data_data:
-            print("0x"+x[2] + "," + "0x"+x[4],file=data_file)
+            data_list.append([int(x[2],base=16),int(x[4],base=16)])
+
+        code_image = open(file_name + "_instructions.hex",'w') if file_name else sys.stdout
+        data_image = open(file_name + "_data.hex",'w') if file_name else sys.stdout
+
+        genImage(instruction_list,code_image,preferences.i_ram_len,4)
+        genImage(data_list,data_image,preferences.d_ram_len,2)
+
 ##############################################################################################################
 # Main
 code = Code()
