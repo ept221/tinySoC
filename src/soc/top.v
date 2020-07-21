@@ -5,7 +5,6 @@ module top(input wire clk,
            output wire B,
            output wire h_sync,
            output wire v_sync,
-           output wire cool
 );
 
     //***************************************************************
@@ -150,8 +149,7 @@ module top(input wire clk,
                .io_w_en(IOWriteEn),
                .io_r_en(IOReadEn),
                .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
-               .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr),
-               .cool(cool)
+               .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
     );
     //***************************************************************
 endmodule

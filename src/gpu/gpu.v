@@ -15,8 +15,6 @@ module gpu(input wire clk,
 
            output reg blanking_start_interrupt_flag = 0,
            input wire blanking_start_interrupt_flag_clr,
-
-           output wire cool
 );
     //*****************************************************************************************************************
     // Create the VGA clock with the PLL
@@ -66,8 +64,6 @@ module gpu(input wire clk,
     reg red = 1;
     reg green = 1;
     reg blue = 1;
-
-    assign cool = blanking_start_interrupt_flag;
 
     always @(posedge clk) begin
         if(address == 12'h080 && io_w_en) begin
