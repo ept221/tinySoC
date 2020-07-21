@@ -70,25 +70,25 @@ JN      1010 0000 10110000      pc <= a, if negativeFlag
 JNN     1100 0000 10110000      pc <= a, if !negativeFlag
         AAAA AAAA AAAAAAAA
 
-CALL    0000 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8])
+CALL    0000 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a,
         AAAA AAAA AAAAAAAA
 
-CC      0010 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if carryFlag
+CC      0010 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if carryFlag
         AAAA AAAA AAAAAAAA
 
-CNC     0100 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if !carryFlag
+CNC     0100 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if !carryFlag
         AAAA AAAA AAAAAAAA
 
-CZ      0110 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if zero
+CZ      0110 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if zero
         AAAA AAAA AAAAAAAA
 
-CNZ     1000 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if !zero
+CNZ     1000 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if !zero
         AAAA AAAA AAAAAAAA
 
-CN      1010 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if negativeFlag
+CN      1010 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if negativeFlag
         AAAA AAAA AAAAAAAA
 
-CNN     1100 0000 10111000      pc <= a; stack.push(pc[7:0]), stack.push(pc[15:8]), if !negativeFlag
+CNN     1100 0000 10111000      stack.push(pc[7:0]); stack.push(pc[15:8]); pc <= a, if !negativeFlag
         AAAA AAAA AAAAAAAA
 ****************************************************************************************************
 Type: No Args
