@@ -25,5 +25,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "I can't belive this finally works! It took so long."
+text:   .string "Hello World!"
 ;*************************************************
