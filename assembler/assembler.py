@@ -85,7 +85,7 @@ def read(name):
 
             block.append([lineNumber, pc])
             if(rest): 												   # If we have code after we strip any comment out
-                split_rest = re.split(r'(\+|-|,|"|\s|(?:\[(?:l|L|h|H)\]))\s*', rest)
+                split_rest = re.split(r'(\+|-|,|"|\s|(?:\[(?:l|L|h|H)\]))', rest)
                 split_rest = list(filter(None, split_rest))
                 block.append(split_rest)
             else:
@@ -103,7 +103,7 @@ def lexer(lines):
     stringCapture = False
     codeLines = [x for x in lines if len(x[1])]                # codeLines only includes lines with code,
     for line in codeLines:                                     # so if a line only has comments, then
-        tl = []                                                 # then it's out
+        tl = []                                                # then it's out
         for word in line[1]:
             if(stringCapture == False):
                 word = word.strip()

@@ -5,7 +5,7 @@
 ;*************************************************      
         .code
 
-        ldi r2, gpu_addr[l]
+        ldi r2,  gpu_addr[l]
         ldi r3, gpu_addr[h]
 
         ldi r0, text[l]
@@ -22,5 +22,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "I can't belive this is working!"
+text:   .string "I can't belive this finally works! It took so long."
 ;*************************************************
