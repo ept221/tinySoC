@@ -5,7 +5,10 @@
 ;*************************************************      
         .code
 
-        ldi r2,  gpu_addr[l]
+        ldi r0, 0b00011000
+        out r0, gpu_ctrl_reg
+
+        ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
 
         ldi r0, text[l]
