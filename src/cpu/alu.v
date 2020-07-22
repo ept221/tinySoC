@@ -18,17 +18,18 @@ module alu(input wire [7:0] dataA,
         4'b0110:    {cout, out} = {(dataA < dataB),dataA};  // CMP          // Sets carry on greater, passes dataA
         4'b0111:    {cout, out} = dataA - dataB;            // SUB
         4'b1000:    {cout, out} = dataA - dataB - cin;      // SBB
-        4'b1001:    {cout, out} = {cin,~dataA};             // NOT
-        4'b1010:    {cout, out} = (1 << dataA);             // SLL
-        4'b1011:    {cout, out} = {cin,(dataA >> 1)};       // SRL
-        4'b1100:    {cout, out} = {cin,(dataA >>> 1)};      // SRA
-        4'b1101:    {cout, out} = {cin,dataA};              // Pass A
+        4'b1001:    {cout, out} = {cin,~dataA};             // Pass B
+        4'b1010:    {cout, out} = {cin,~dataA};             // NOT
+        4'b1011:    {cout, out} = (1 << dataA);             // SLL
+        4'b1100:    {cout, out} = {cin,(dataA >> 1)};       // SRL
+        4'b1101:    {cout, out} = {cin,(dataA >>> 1)};      // SRA
+        4'b1110:    {cout, out} = {cin,dataA};              // Pass A
         default     {cout, out} = {cin,8'd0};               // Default
         endcase
     end
 
     always @(*) begin
-        if(mode == 4'b1011) begin       // If CMP
+        if(mode == 4'b0110) begin       // If CMP
             zout = (dataA == dataB);
             nout = (dataA > dataB);
         end
