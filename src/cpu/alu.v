@@ -18,7 +18,7 @@ module alu(input wire [7:0] dataA,
         4'b0110:    {cout, out} = {(dataA < dataB),dataA};  // CMP          // Sets carry on greater, passes dataA
         4'b0111:    {cout, out} = dataA - dataB;            // SUB
         4'b1000:    {cout, out} = dataA - dataB - cin;      // SBB
-        4'b1001:    {cout, out} = {cin,~dataA};             // Pass B
+        4'b1001:    {cout, out} = {cin,~dataA};             // Pass B       // Used by mov rd, rs
         4'b1010:    {cout, out} = {cin,~dataA};             // NOT
         4'b1011:    {cout, out} = (1 << dataA);             // SLL
         4'b1100:    {cout, out} = {cin,(dataA >> 1)};       // SRL

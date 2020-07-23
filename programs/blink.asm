@@ -35,7 +35,8 @@ loop:	jmp loop				; loop and wait for interrupt
 		.org top_isr_vector
 isr:    in r0, port_reg			; read pin register
 		xoi r0, 1				; toggle the led bit
-		out r0, port_reg 		; write to the port register
+		mov r1, r0
+		out r1, port_reg 		; write to the port register
 		ssr 8					; enable interrupts
 		ret
 ;******************************************************************************
