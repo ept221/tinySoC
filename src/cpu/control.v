@@ -257,16 +257,15 @@ module control(input wire clk,
                 regFileOutBSelect = iMemOut[11:8];          // PPPP
                 aluSrcASelect = 1'b1;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
-                aluMode = 4'b1101;                  // Pass A
+                aluMode = 4'b1110;                  // Pass A
                 dMemDataSelect = 3'b010;            // aluOut
                 dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b001;            // pcOut
 
-
                 if(iMemOut[7:3] == 5'b01110 || iMemOut[7:3] == 5'b01111 || iMemOut[7:3] == 5'b10000) begin // if store
-                    regFileWriteEnable = 1'b1;
+                    regFileWriteEnable = 1'b0;
                     dMemIOWriteEn = 1'b1;
                     dMemIOReadEn = 1'b0;
 
@@ -275,7 +274,7 @@ module control(input wire clk,
                     nextState = PART1;
                 end
                 else begin      // if load
-                    regFileWriteEnable = 1'b0;
+                    regFileWriteEnable = 1'b1;
                     dMemIOWriteEn = 1'b0;
                     dMemIOReadEn = 1'b1;
 
@@ -317,7 +316,7 @@ module control(input wire clk,
                 regFileWriteEnable = 1'b0;
                 aluSrcASelect = 1'b1;                       // regFileOutA, doesn't really matter
                 aluSrcBSelect = 2'b00;                      // regFileOutB, doesn't really matter
-                aluMode = 4'b1101;                          // Pass A, doesn't really matter
+                aluMode = 4'b1110;                          // Pass A, doesn't really matter
                 dMemDataSelect = 3'b010;                    // aluOut, doesn't really matter
                 dMemIOAddressSelect = 2'b00;                // {regFileOutC,regFileOutB}, doesn't really matter
                 dMemIOWriteEn = 1'b0;
@@ -357,7 +356,7 @@ module control(input wire clk,
                 regFileDecPair = 1'b0;
                 aluSrcASelect = 1'b0;                           // From zero-extended status register
                 aluSrcBSelect = 2'b00;                          // regFileOutB, doesn't really matter
-                aluMode = 4'b1101;                              // pass A
+                aluMode = 4'b1110;                              // pass A
                 dMemDataSelect = 3'b010;                        // aluOut, doesn't really matter
                 dMemIOAddressSelect = 2'b00;                    // {regFileOutC,regFileOutB}, doesn't really matter
                 dMemIOWriteEn = 1'b0;
@@ -460,7 +459,7 @@ module control(input wire clk,
                 regFileDecPair = 1'b1;
                 aluSrcASelect = 1'b0;               // From zero-extended status register
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
-                aluMode = 4'b1101;                  // pass A
+                aluMode = 4'b1110;                  // pass A
                 dMemDataSelect = 3'b010;            // aluOut
                 dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
                 dMemIOWriteEn = 1'b1;
@@ -481,7 +480,7 @@ module control(input wire clk,
                 regFileDecPair = 1'b0;
                 aluSrcASelect = 1'b0;               // From zero-extended status register, doesn't really matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
-                aluMode = 4'b1101;                  // pass A
+                aluMode = 4'b1110;                  // pass A
                 dMemDataSelect = 3'b010;            // aluOut, doesn't really matter
                 dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
                 dMemIOWriteEn = 1'b0;
@@ -612,7 +611,7 @@ module control(input wire clk,
                     regFileDecPair = 1'b0;
                     aluSrcASelect = 1'b0;                           // From zero-extended status register
                     aluSrcBSelect = 2'b00;                          // regFileOutB, doesn't really matter
-                    aluMode = 4'b1101;                              // pass A
+                    aluMode = 4'b1110;                              // pass A
                     dMemDataSelect = 3'b010;                        // aluOut, doesn't really matter
                     dMemIOAddressSelect = 2'b00;                    // {regFileOutC,regFileOutB}, doesn't really matter
                     dMemIOWriteEn = 1'b0;
