@@ -70,30 +70,17 @@ def read(name):
     lineNumber = 0
     pc = 0
     
-    for lineNumber, line in enumerate(file, start = 1):
+    for lineNumber, line in enumerate(file, start=1):
         line = line.strip()
         if(line):
             block = []
-            rest = [] 												   # The input line without the comment
-            comment = ''
-            commentIndex = line.find(";")
-            if(commentIndex != -1):
-                comment = line[commentIndex:]
-                rest = line[:commentIndex].strip()
-            else:
-                rest = line
-
             block.append([lineNumber, pc])
-            if(rest): 												   # If we have code after we strip any comment out
-                split_rest = re.split(r'(\+|-|,|"|\s|(?:\[(?:l|L|h|H)\]))', rest)
-                split_rest = list(filter(None, split_rest))
-                block.append(split_rest)
-            else:
-                block.append([])
-            block.append(comment)
+            words = re.split(r'(\+|-|,|"|\s|(?:\[(?:l|L|h|H)\]))', line)
+            words = list(filter(none, words))
+            block.append(words)
+            block.append("")                     # A place holder for comments
             lines.append(block)
             pc += 1
-            
     file.close()
     return lines
 ##############################################################################################################
@@ -104,8 +91,10 @@ def lexer(lines):
     codeLines = [x for x in lines if len(x[1])]                # codeLines only includes lines with code,
     for line in codeLines:                                     # so if a line only has comments, then
         tl = []                                                # then it's out
+        print(line)
         for word in line[1]:
             if(stringCapture == False):
+                if
                 word = word.strip()
                 word = word.upper()
                 if word == "\"":

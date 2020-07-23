@@ -25,5 +25,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "Hello World!"
+text:   .string "GitHub repo at: https://github.com/ept221"
 ;*************************************************
