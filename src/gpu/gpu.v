@@ -182,7 +182,7 @@ endmodule
 // ASCII char RAM
 module ram(din, w_addr, w_en, r_addr, r_en, r_clk, w_clk, dout);
     initial begin
-        $readmemh("src/gpu/ram.ini",mem);
+        $readmemh("src/gpu/ram.hex",mem);
     end
 
     parameter addr_width = 12;
@@ -213,7 +213,7 @@ endmodule
 // Font ROM
 module rom(din, addr, write_en, clk, dout);
     initial begin
-        $readmemh("src/gpu/rom.ini",mem);
+        $readmemh("src/gpu/rom.hex",mem);
     end
 
     parameter addr_width = 11;
