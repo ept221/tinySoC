@@ -1058,17 +1058,31 @@ def output(code, file_name, args):
         code_file = open(file_name + ".instructions",'w') if file_name else sys.stdout
         data_file = open(file_name + ".data",'w') if file_name else sys.stdout
 
-        print("Line Number\tAddress\t\tLabel\t\tCode\t\t\tSource",file=code_file)
-        print("----------------------------------------------------------------------------------------------------",file=code_file)
+        print('{:<16}'.format("Line Number") + '{:<15}'.format("Address") + '{:<15}'.format("Label") + '{:<25}'.format("Code") + '{:<30}'.format("Source") + '{:<20}'.format("Comments"),file=code_file)
+        for x in range(120):
+            print("-",end="",file=code_file)
+        print("",file=code_file)
+        previous_line = -1
         for x in code.code_data:
-            print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0b"+x[4] + "\t" + x[5],file=code_file)
+            comment = ""
+            if(previous_line != int(x[1])):
+                comment = x[0][-1]
+            print('{:<16}'.format(x[1]) + '{:<15}'.format("0x"+x[2]) + '{:<15}'.format(x[3]) + '{:<25}'.format("0b"+x[4]) + '{:<30}'.format(x[5]) + '{:<20}'.format(comment),file=code_file)
+            previous_line = int(x[1])
+        
         if(not file_name):
             print()
-        print("Line Number\tAddress\t\tLabel\t\tData",file=data_file)
-        print("----------------------------------------------------------------------------------------------------",file=data_file)
-        for x in code.data_data:
-            print(x[1] + "\t\t" + "0x"+x[2] + "\t\t" + x[3] + "\t\t" + "0x"+x[4],file=data_file)
 
+        print('{:<16}'.format("Line Number") + '{:<15}'.format("Address") + '{:<15}'.format("Label") + '{:<25}'.format("Data") + '{:<20}'.format("Comments"),file=data_file)
+        for x in range(120):
+            print("-",end="",file=data_file)
+        print("",file=data_file)
+        for x in code.data_data:
+            comment = ""
+            if(previous_line != int(x[1])):
+                comment = x[0][-1]
+            print('{:<16}'.format(x[1]) + '{:<15}'.format("0x"+x[2]) + '{:<15}'.format(x[3]) + '{:<25}'.format("0x"+x[4]) + '{:<20}'.format(comment),file=data_file)
+            previous_line = int(x[1])
     else:
         instruction_list = []
         data_list = []
