@@ -11,7 +11,7 @@
         ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
 
-        ldi r0, text[l]
+        ldi r0, text[l]                 ; comment here lol
         ldi r1, text[h]
 
 loop:   lri r4, p0
@@ -25,5 +25,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "GitHub repo at: https://github.com/ept221"
+text:   .string "GitHub repo at: https://github.com/ept221;"
 ;*************************************************
