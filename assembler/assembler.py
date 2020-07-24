@@ -54,10 +54,10 @@ def read(name):
     # [[Line_number, Program_Counter] [body] [comment]]
     # Line_number corrisponds to the line on the 
     # source code. the Program_Counter is incremented
-    # every time there is a non-empty line (even a comment
-    # counts as non empty). Note that two consecutive PC
-    # locations do NOT nessisarily corrispond to two
-    # consecutive address locations
+    # every time there is a non-empty line. Note that two
+    # consecutive PC locations do NOT nessisarily corrispond
+    # to two consecutive address locations. The comment feild
+    # is initially left blank, but is used later by the lexer
 
     # [[Line_number, Program_Counter] [body] 'comment']
     
