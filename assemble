@@ -3,6 +3,12 @@
 # $1 is the source file, eg blink.asm
 # $2 is the prefix name of the files to be generated, eg. blink, and the tools add the extentions eg. blink_data.hex
 
+if [ $2 == "hardware" ]
+then
+	echo Sorry, \"hardware\" is an illegal output name.
+	exit 
+fi
+
 mkdir -p build/images || exit
 python3 assembler/assembler.py $1 -o $2 || exit
 
