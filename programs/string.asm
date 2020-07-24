@@ -25,5 +25,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "GitHub repo at: https://github.com/ept221;"
+text:   .string "GitHub repo at: https://github.com/ept221"
 ;*************************************************
