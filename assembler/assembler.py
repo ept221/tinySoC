@@ -88,9 +88,7 @@ def lexer(lines):
     codeLines = []
     tokens = []
 
-    i = 0
-    while(i < len(lines)):
-        line = lines[i]
+    for line in lines:
 
         tl = []
         block = [line[0],[],""]
@@ -98,9 +96,7 @@ def lexer(lines):
         commentCapture = False
         stringCapture = False
 
-        j = 0
-        while(j < len(line[1])):
-            word = line[1][j]
+        for word in line[1]:
             ################################################################
             if(commentCapture):
                 block[-1] += word
@@ -195,14 +191,11 @@ def lexer(lines):
                         tl.append(["<idk_man>", word])
                         error("Unknown token: " + word, line)
                         return [0 , 0]
-            ################################################################
-            j += 1
-            
+            ################################################################            
         if(block[1]):
             tokens.append(tl)
             codeLines.append(block)
 
-        i += 1
     return [codeLines, tokens]
 ##############################################################################################################
 def error(message, line):

@@ -11,12 +11,12 @@
         ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
 
-        ldi r0, text[l]                 ; comment here lol
+        ldi r0, text[l]
         ldi r1, text[h]
 
 loop:   lri r4, p0
         cpi r4, 0
-        jz end ; this is a test
+        jz end
 
         sri r4, p2
         jmp loop
@@ -25,5 +25,5 @@ end:    hlt
 ;*************************************************
         .data
 
-text:   .string "GitHub repo at: https://github.com/ept221"
+text:   .string "GitHub repo at: https://github.com/ept221/tinySoC"
 ;*************************************************
