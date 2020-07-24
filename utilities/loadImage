@@ -1,6 +1,0 @@
-#!/bin/bash
-
-mkdir -p build/pnr
-
-icebram src/memory/i_ram_synth.hex $1"_instructions.hex" <build/pnr/hardware.asc> build/pnr/temp.asc
-icebram src/memory/d_ram_synth.hex $1"_data.hex" <build/pnr/temp.asc> build/pnr/upload.asc

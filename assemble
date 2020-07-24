@@ -1,14 +1,10 @@
 #!/bin/bash
 
-mkdir -p build/images
+# $1 is the source file, eg blink.asm
+# $2 is the prefix name of the files to be generated, eg. blink, and the tools add the extentions eg. blink_data.hex
 
+mkdir -p build/images || exit
 python3 assembler/assembler.py $1 -o $2 || exit
 
-./utilities/loadImage $2 || exit
-
-mv $2"_instructions.hex" build/images/$2"_instructions.hex"
-mv $2"_data.hex" build/images/$2"_data.hex"
-
-rm build/pnr/temp.asc
-
-make pack
+mv $2"_instructions.hex" build/images/$2"_instructions.hex" || exit
+mv $2"_data.hex" build/images/$2"_data.hex" || exit

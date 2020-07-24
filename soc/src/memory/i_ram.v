@@ -1,7 +1,7 @@
 module i_ram(din, w_addr, w_en, r_addr, r_en, clk, dout);
 
     initial begin
-        $readmemh("src/memory/i_ram_synth.hex",mem);
+        $readmemh("soc/src/memory/i_ram_synth.hex",mem);
     end
 
     parameter addr_width = 12;
