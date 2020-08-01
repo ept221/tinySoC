@@ -476,7 +476,6 @@ module control(input wire clk,
                 regFileSrc = 2'b00;                 // aluOut, doesn't really matter
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
-                regFileIncPair = 1'b1;
                 regFileDecPair = 1'b0;
                 aluSrcASelect = 1'b0;               // From zero-extended status register, doesn't really matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
@@ -488,9 +487,18 @@ module control(input wire clk,
                 statusRegSrcSelect = 2'b10;         // dMemIOOut[3:0]
                 flagEnable = 1'b1;
                 iMemAddrSelect = 3'b001;            // pcOut
-                iMemReadEnable = 1'b1;
-                pcWriteEn = 1'b1;
-                nextState = PART1;
+                if(state == PART1) begin
+                    regFileIncPair = 1'b1;
+                    iMemReadEnable = 1'b0;
+                    pcWriteEn = 1'b0;
+                    nextState = PART2;
+                end
+                else begin
+                    regFileIncPair = 1'b0;
+                    iMemReadEnable = 1'b1;
+                    pcWriteEn = 1'b1;
+                    nextState = PART1;
+                end
             end
             // SSR and CSR
             else if((iMemOut[7:3] == 5'b11100 || iMemOut[7:3] == 5'b11101) && iMemOut[2:0] == 3'b000) begin
