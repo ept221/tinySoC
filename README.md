@@ -20,16 +20,18 @@ The assembler is case insensitive.
 ### Comments
 Comments begin with semicolons.
 ```assembly
-ldi r0, 1 ; This is a comment
+        .code
+        ldi r0, 1 ; This is a comment
 ```
 
 ### Constants
 Constants are in decimal by default, but hexadecimal and binary are also supported. Constants can also be negative and are stored in two's complement form.
 ```assembly
-ldi r0, 10     ; Decimal constant
-ldi r0, 0x0A   ; Hexadecimal constant
-ldi r0, 0b1010 ; Binary constant
-ldi r0, -10    ; A negative constant
+        .code
+        ldi r0, 10     ; Decimal constant
+        ldi r0, 0x0A   ; Hexadecimal constant
+        ldi r0, 0b1010 ; Binary constant
+        ldi r0, -10    ; A negative constant
 ```
 
 ### Label Definitions
@@ -159,3 +161,8 @@ Equates a symbol with a number.
 ; 0x0000                        0b0000000001010001       LDI R0, FOO                                       
 ; 0x0001                        0b0000000011110000       HLT  
 ```
+
+### Expressions
+Anytime an instruction or directive requires a numerical argument, an expression can be used.
+Supported operations inside expressions include addition and subtraction. The location counter $ is also made available. Expressions may contain symbols, but must resolve within two passes of the assembler, and if used for directive arguments, must resolve in a single pass.
+
