@@ -68,3 +68,31 @@ foo:    out r0, 1
 ; 0x000B         FOO:           0b0000000000010100       OUT R0, 1                                         
 ; 0x000C                        0b0000000011110000       HLT
 ```
+
+#### .db
+Writes one or more data bytes sequentially into data memory.
+```assembly
+        .code
+        ldi r0, 1
+        out r0, 0
+        out r0, 1
+        hlt
+        
+        .data
+        db 0x01, 0x44, 0x73
+
+;***********************************************************************
+; Assembles to the following:
+; Address        Label          Code                     Source                
+; ------------------------------------------------------------------------
+; 0x0000                        0b0000000000010001       LDI R0, 1                                         
+; 0x0001                        0b0000000000000100       OUT R0, 0                                         
+; 0x0002                        0b0000000000010100       OUT R0, 1                                         
+; 0x0003                        0b0000000011110000       HLT                                               
+;
+; Address        Label          Data                                 
+; ------------------------------------------
+; 0x0000                        0x01                                         
+; 0x0001                        0x44                                         
+; 0x0002                        0x73    
+```
