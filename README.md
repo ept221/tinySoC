@@ -12,3 +12,59 @@ The GPU operates in a monochrome 80 column text mode, and outputs a VGA signal a
 ## The Instruction Set
 ![instruction set part 1](resources/instruction_set_part_1.jpg)
 ![instruction set part 2](resources/instruction_set_part_2.jpg)
+
+## The Assembler
+
+The assembler is case insensitive.
+
+### Comments
+Comments begin with semicolons.
+```assembly
+ldi r0, 1 ; This is a comment
+```
+
+### Constants
+Constants are in decimal by default, but hexadecimal and binary are also supported. Constants can also be negative and are stored in two's complement form.
+```assembly
+ldi r0, 10     ; Decimal constant
+ldi r0, 0x0A   ; Hexadecimal constant
+ldi r0, 0b1010 ; Binary constant
+ldi r0, -10    ; A negative constant
+```
+
+### Label Definitions
+Label definitions may be any string ending with a colon, as long as the string is not in the form of a constant or is one of the reserved keywords
+
+```assembly
+        .code
+        ldi r0, 10
+loop:   adi r0, -1
+        jnz loop
+        hlt
+```
+
+### Directives
+
+#### .org
+Sets the origin to the given address. Only forward movement of the origin is permitted.
+```assembly
+        .code
+        ldi r0, 1
+        out r0, 0
+        jmp foo
+        
+        .org 0x0B
+foo:    out r0, 1
+        hlt
+        
+;***************************************************************************************
+; Assembles to the following:
+Line Number     Address        Label          Code                     Source                      
+----------------------------------------------------------------------------------------
+2               0x0000                        0b0000000000010001       LDI R0, 1                                         
+3               0x0001                        0b0000000000000100       OUT R0, 0                                         
+4               0x0002                        0b0000000010111000       JMP FOO                                           
+4               0x0003                        0b0000000000001011                                                         
+7               0x000B         FOO:           0b0000000000010100       OUT R0, 1                                         
+8               0x000C                        0b0000000011110000       HLT
+```
