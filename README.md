@@ -143,3 +143,19 @@ Writes a null terminated ASCII string into data memory. Double quotes and backsl
 ; 0x0013                        0x22
 ; 0x0014                        0x00
 ```
+
+#### .define
+Equates a symbol with a number.
+```assembly
+        .code
+        .define foo, 5
+        ldi r0, foo
+        hlt
+        
+;*************************************************************************
+; Assembles to the following:        
+; Address        Label          Code                     Source                                    
+; ------------------------------------------------------------------------
+; 0x0000                        0b0000000001010001       LDI R0, FOO                                       
+; 0x0001                        0b0000000011110000       HLT  
+```
