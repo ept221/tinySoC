@@ -79,7 +79,7 @@ Writes one or more data bytes sequentially into data memory.
         hlt
         
         .data
-        db 0x01, 0x44, 0x73
+        .db 0x01, 0x44, 0x73
 
 ;***********************************************************************
 ; Assembles to the following:
