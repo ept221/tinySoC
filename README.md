@@ -57,7 +57,8 @@ Sets the origin to the given address. Only forward movement of the origin is per
 foo:    out r0, 1
         hlt
         
-;***************************************************************************************
+;***********************************************************************
+; Assembles to the following:
 Address        Label          Code                     Source                      
 ------------------------------------------------------------------------
 0x0000                        0b0000000000010001       LDI R0, 1                                         
