@@ -57,7 +57,7 @@ Sets the origin to the given address. Only forward movement of the origin is per
 foo:    out r0, 1
         hlt
         
-;***********************************************************************
+;*************************************************************************
 ; Assembles to the following:
 ; Address        Label          Code                     Source                      
 ; ------------------------------------------------------------------------
@@ -81,7 +81,7 @@ Writes one or more data bytes sequentially into data memory.
         .data
         .db 0x01, 0x44, 0x73
 
-;***********************************************************************
+;*************************************************************************
 ; Assembles to the following:
 ; Address        Label          Code                     Source                
 ; ------------------------------------------------------------------------
@@ -95,4 +95,51 @@ Writes one or more data bytes sequentially into data memory.
 ; 0x0000                        0x01                                         
 ; 0x0001                        0x44                                         
 ; 0x0002                        0x73    
+```
+
+#### .string
+Writes a null terminated ASCII string into data memory. Double quotes and backslashes must be escaped with a backslash.
+
+```assembly
+        .code
+        ldi r0, 1
+        out r0, 0
+        out r0, 1
+        hlt
+        
+        .data
+        .string "The robot says \"Hi!\""
+        
+;*************************************************************************
+; Assembles to the following:
+; Address        Label          Code                     Source                       
+; ------------------------------------------------------------------------
+; 0x0000                        0b0000000000010001       LDI R0, 1                                         
+; 0x0001                        0b0000000000000100       OUT R0, 0                                         
+; 0x0002                        0b0000000000010100       OUT R0, 1                                         
+; 0x0003                        0b0000000011110000       HLT                                               
+;
+; Address        Label          Data                    
+; ------------------------------------------
+; 0x0000                        0x54                                         
+; 0x0001                        0x68                                         
+; 0x0002                        0x65                                         
+; 0x0003                        0x20                                         
+; 0x0004                        0x72                                         
+; 0x0005                        0x6F                                         
+; 0x0006                        0x62                                         
+; 0x0007                        0x6F                                         
+; 0x0008                        0x74                                         
+; 0x0009                        0x20                                         
+; 0x000A                        0x73                                         
+; 0x000B                        0x61                                         
+; 0x000C                        0x79                                         
+; 0x000D                        0x73                                         
+; 0x000E                        0x20                                         
+; 0x000F                        0x22                                         
+; 0x0010                        0x48                                         
+; 0x0011                        0x69                                         
+; 0x0012                        0x21                                         
+; 0x0013                        0x22
+; 0x0014                        0x00
 ```
