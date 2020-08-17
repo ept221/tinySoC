@@ -245,7 +245,7 @@ module control(input wire clk,
                 dMemIOWriteEn = 1'b0;
                 dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-                flagEnable = 1'b1;
+                flagEnable = (iMemOut[7:3] != 5'b01001);   // MOV doesn't affect flags
                 iMemReadEnable = 1'b1;
                 iMemAddrSelect = 3'b001;            // pcOut
                 pcWriteEn = 1'b1;
