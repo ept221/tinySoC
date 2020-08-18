@@ -1,8 +1,11 @@
 module uart(input wire clk,
             input wire rx,
             output reg tx,
-            output reg led = 0
 );
+    //*************************************************************************
+    // Might want an enable bit to switch from normal i/o operation to
+    // uart mode.
+
     //*************************************************************************
     // Create sampling clock
     reg [7:0] prescaler = 8'b0;
@@ -102,7 +105,7 @@ module uart(input wire clk,
     //*************************************************************************
     // Tx State Machine
     reg [2:0] tx_state = 3'b0;
-    reg [7:0] tx_data = 8'd65;
+    reg [7:0] tx_data = 8'b0;
     reg [3:0] tx_count = 4'b0;
     reg [3:0] tx_delay = 4'b0;
     reg tx_start = 1'b1;
@@ -112,7 +115,7 @@ module uart(input wire clk,
             case(tx_state)
             3'b000: begin                       // Wait for start signal and begin start bit
                 if(tx_start) begin
-                    //tx_start <= 0;
+                    tx_start <= 0;
                     tx_state <= 3'b001;
                     tx_count <= 4'b1;
                     tx <= 0;                    // Start bit
@@ -141,7 +144,6 @@ module uart(input wire clk,
                     tx_delay <= 0;
                     tx_count <= 0;
                     tx_state <= 3'b000;
-                    tx_data <= 8'd65;
                 end
                 else begin
                     tx_delay <= tx_delay + 1;
