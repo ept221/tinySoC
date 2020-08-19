@@ -9,6 +9,7 @@ module regFile(input wire [3:0] inSelect,
                output wire [7:0] outB,
                output reg [7:0] outC
 );
+    //****************************************************************************************
     // Construct the register file and initialize it to zero
     reg [7:0] rFile [0:15];
     integer i;
@@ -17,52 +18,83 @@ module regFile(input wire [3:0] inSelect,
             rFile[i] = 8'd0;
         end
     end
-    
+    //****************************************************************************************
     always @(posedge clk) begin
         if(write_en) begin
             rFile[inSelect] <= in;
         end
-        if(inc&& (~write_en || (write_en && ~(inSelect == outBselect)))) begin
+        if((inc || dec) && (~write_en || (write_en && ~(inSelect == outBselect)))) begin
             case(outBselect)
-            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} + 16'b1;
-            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} + 16'b1;
-            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} + 16'b1;
-            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} + 16'b1;
-            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} + 16'b1;
-            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} + 16'b1;
-            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} + 16'b1;
-            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} + 16'b1;
-            endcase
-        end
-        else if(dec && (~write_en || (write_en && ~(inSelect == outBselect)))) begin
-            case(outBselect)
-            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} - 16'b1;
-            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} - 16'b1;
-            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} - 16'b1;
-            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} - 16'b1;
-            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} - 16'b1;
-            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} - 16'b1;
-            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} - 16'b1;
-            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} - 16'b1;
+            4'b0000:    {rFile[1],rFile[0]} <= result;
+            4'b0010:    {rFile[3],rFile[2]} <= result;
+            4'b0100:    {rFile[5],rFile[4]} <= result;
+            4'b0110:    {rFile[7],rFile[6]} <= result;
+            4'b1000:    {rFile[9],rFile[8]} <= result;
+            4'b1010:    {rFile[11],rFile[10]} <= result;
+            4'b1100:    {rFile[13],rFile[12]} <= result;
+            4'b1110:    {rFile[15],rFile[14]} <= result;
             endcase
         end
     end
 
+    wire [15:0] const;
+    wire [15:0] pair;
+    wire [15:0] result;
+    always @(*) begin
+        result = pair + const;
+        if(inc) begin
+            const = 16'h0001;
+        end
+        else if(dec) begin
+            const = 16'hffff;
+        end
+        else begin
+            const = 16'h0000;
+        end
+    end
+    //****************************************************************************************
     assign  outA = rFile[inSelect];
     assign  outB = rFile[outBselect];
 
     always @(*) begin
         case(outBselect)
-        4'b0000:    outC = rFile[1];
-        4'b0010:    outC = rFile[3];
-        4'b0100:    outC = rFile[5];
-        4'b0110:    outC = rFile[7];
-        4'b1000:    outC = rFile[9];
-        4'b1010:    outC = rFile[11];
-        4'b1100:    outC = rFile[13];
-        4'b1110:    outC = rFile[15];
-        default     outC = 0;
+        4'b0000: begin
+            pair = {rFile[1],rFile[0]};
+            outC = rFile[1];
+        end
+        4'b0010: begin
+            pair = {rFile[3],rFile[2]};
+            outC = rFile[3];
+        end    
+        4'b0100: begin
+            pair = {rFile[5],rFile[4]};
+            outC = rFile[5];
+        end    
+        4'b0110: begin
+            pair = {rFile[7],rFile[6]};
+            outC = rFile[7]; 
+        end
+        4'b1000: begin
+            pair = {rFile[9],rFile[8]};
+            outC = rFile[9];
+        end    
+        4'b1010: begin
+            pair = {rFile[11],rFile[10]};
+            outC = rFile[11];
+        end
+        4'b1100: begin
+            pair = {rFile[13],rFile[12]};
+            outC = rFile[13]; 
+        end
+        4'b1110: begin
+            pair = {rFile[15],rFile[14]};
+            outC = rFile[15];
+        end
+        default begin
+            pair = 0;
+            outC = 0;
+        end
         endcase
     end
-
+    //****************************************************************************************
 endmodule
