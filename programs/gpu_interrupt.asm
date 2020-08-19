@@ -25,8 +25,22 @@ loop:   jmp loop                ; do nothing and wait for an interrupt
 isr:    in r0, pin_reg          ; read pin 1
         xoi r0, 1               ; flip the bit
         out r0, port_reg        ; toggle pin 1
-        ldi r0, 65
-        str r0, p2
-        ssr 8                   ; enable interrupts
+        
+        ldi r0, 32              ; load a space
+        str r0, p2              ; write the space to the screen and move to the right
+        adi r2, 1
+
+        cpi r2, 80
+        jnz j
+        ldi r2, 0
+
+j:      ldi r0, 65              ; load "A"
+        str r0, p2              ; write A to the screen
+
+        cpi r2, 255             ; check if at 255
+        jnz end
+        ldi r2, 0
+
+end:    ssr 8                   ; enable interrupts
         ret                     ; return
 ;******************************************************************************

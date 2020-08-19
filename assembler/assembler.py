@@ -815,7 +815,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_rp[inst_str]
-        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
+        instruction = instruction[:4] + format(int(reg1[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1
         code.write_code(line,instruction,code_string,0)
         return data
