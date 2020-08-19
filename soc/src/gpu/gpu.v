@@ -143,7 +143,7 @@ module gpu(input wire clk,
     ram myRam(
               .din(din),
               .w_addr(address),
-              .w_en(v_w_en&&writeRamActive),
+              .w_en(v_w_en),
               .r_addr(current_char_address),
               .r_en(readRamActive),
               .w_clk(vgaClk),

@@ -65,8 +65,6 @@ numToStr:
         jmp print1
 alpha1: adi r13, 55
 print1: sri r13, p2
-        nop
-        nop
         ani r12, 0x0f
         cpi r12, 0x09
         jn alpha2
