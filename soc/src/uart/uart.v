@@ -19,6 +19,9 @@ module uart(input wire clk,
     //     7        6        5        4        3        2        1        0   
     //***********************************************************************************
     parameter UART_ADDRESS
+    reg [7:0] uart_control = 8'b0;
+    reg [7:0] rx_buffer = 8'b0;
+    reg [7:0] tx_buffer = 8'b0;
     always @(posedge clk) begin
         case(address)
         UART_ADDRESS: begin
@@ -39,15 +42,6 @@ module uart(input wire clk,
         end
         endcase
     end
-
-    reg [7:0] uart_control = 8'b0;
-    //***********************************************************************************
-    //
-    //                                Prescaler
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    // |        |        |        |        |        |        |        |        |
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    //     7        6        5        4        3        2        1        0   
     //***********************************************************************************
     // Create sampling clock
     reg [7:0] prescaler = 8'b0;
@@ -63,13 +57,6 @@ module uart(input wire clk,
         end
     end
     //***********************************************************************************
-    //
-    //                                rx_buffer
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    // |        |        |        |        |        |        |        |        |
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    //     7        6        5        4        3        2        1        0   
-    //***********************************************************************************
     // Synchronizers
     reg s0 = 1'b1;
     reg s1 = 1'b1;
@@ -83,7 +70,6 @@ module uart(input wire clk,
     //***********************************************************************************
     // Rx State Machine
     reg [2:0] rx_state = 3'b0;
-    reg [7:0] rx_buffer = 8'b0;
     reg [7:0] rx_data = 8'b0;
     reg [3:0] rx_count = 3'b0;
     reg [3:0] rx_delay = 4'b0;
@@ -147,18 +133,16 @@ module uart(input wire clk,
             end
             endcase
         end
-    end
-    //***********************************************************************************
-    //
-    //                                tx_buffer
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    // |        |        |        |        |        |        |        |        |
-    // *--------*--------*--------*--------*--------*--------*--------*--------*
-    //     7        6        5        4        3        2        1        0       
+        if(address == UART_ADDRESS) && r_en) begin
+            uart_control[0] <= 0;
+        end
+        else if(sample_enable && rx_state == 3'b011 && rx_delay == 4'b1111 && rx_clean == 1) begin
+            uart_control[0] <= 1;
+        end
+    end 
     //***********************************************************************************
     // Tx State Machine
     reg [2:0] tx_state = 3'b0;
-    reg [7:0] tx_buffer = 8'b0;
     reg [7:0] tx_data = 8'b0;
     reg [3:0] tx_count = 4'b0;
     reg [3:0] tx_delay = 4'b0;
@@ -169,7 +153,6 @@ module uart(input wire clk,
             case(tx_state)
             3'b000: begin                       // Wait for start signal and begin start bit
                 if(uart_control[1] == 0) begin
-                    uart_control[1] <= 1;
                     tx_data <= tx_buffer;
                     tx_start <= 0;
                     tx_state <= 3'b001;
@@ -206,6 +189,12 @@ module uart(input wire clk,
                 end
             end
             endcase
+        end
+        if(address == UART_ADDRESS) && w_en) begin
+            uart_control[1] <= 0;
+        end
+        else if(sample_enable && tx_state == 3'b0 && uart_control[1] == 0) begin
+            uart_control[1] <= 1;
         end
     end
     //***********************************************************************************
