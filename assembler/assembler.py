@@ -183,7 +183,7 @@ def lexer(lines):
                         tl.append(["<dec_num>", word])
                     elif(re.match(r'^(0B)[0-1]+$', word)):
                         tl.append(["<bin_num>", word]) 
-                    elif(re.match(r'^[A-Z_]+[A-Z_0-9]*$', word)):
+                    elif(re.match(r'^[A-Z_0-9]+$', word)):
                         tl.append(["<symbol>", word])
                     elif word == "$":
                         tl.append(["<lc>", word])
