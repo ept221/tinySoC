@@ -1,5 +1,5 @@
 # tinySoC
-tinySoC is a small system on a chip consisting of an 8-bit CPU, an 80 column VGA graphics card, GPIO and counter/timer peripherals, all implemented on an ice40 FPGA.
+tinySoC is a small system on a chip consisting of an 8-bit CPU, an 80 column VGA graphics card, GPIO and counter/timer peripherals, all implemented on an ice40 FPGA. It also comes with an assembler and utilities for loading programs into the internal block memory without having to rerun synthesis and place-and-route.
 
 ## The CPU
 ![datapath](resources/datapath.jpg)
