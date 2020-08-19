@@ -433,7 +433,7 @@ def store_string(arg, symbols, code, line):
 
     for char in arg:
         if(int(ord(char)) > 128):
-            error("Unsupported character in string!",line)
+            error("Unsupported character in string: " + str(char),line)
             return 0
 
     new_str = bytes(arg,"utf-8").decode("unicode_escape")

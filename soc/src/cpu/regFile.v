@@ -37,19 +37,19 @@ module regFile(input wire [3:0] inSelect,
         end
     end
 
-    wire [15:0] const;
+    wire [15:0] inc_or_dec;
     wire [15:0] pair;
     wire [15:0] result;
     always @(*) begin
-        result = pair + const;
+        result = pair + inc_or_dec;
         if(inc) begin
-            const = 16'h0001;
+            inc_or_dec = 16'h0001;
         end
         else if(dec) begin
-            const = 16'hffff;
+            inc_or_dec = 16'hffff;
         end
         else begin
-            const = 16'h0000;
+            inc_or_dec = 16'h0000;
         end
     end
     //****************************************************************************************
