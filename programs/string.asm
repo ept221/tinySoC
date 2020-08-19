@@ -17,7 +17,6 @@
 loop:   lri r4, p0
         cpi r4, 0
         jz end
-
         sri r4, p2
         jmp loop
 

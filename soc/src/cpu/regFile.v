@@ -24,26 +24,26 @@ module regFile(input wire [3:0] inSelect,
         end
         if(inc&& (~write_en || (write_en && ~(inSelect == outBselect)))) begin
             case(outBselect)
-            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} + 1;
-            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} + 1;
-            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} + 1;
-            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} + 1;
-            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} + 1;
-            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} + 1;
-            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} + 1;
-            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} + 1;
+            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} + 16'b1;
+            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} + 16'b1;
+            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} + 16'b1;
+            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} + 16'b1;
+            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} + 16'b1;
+            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} + 16'b1;
+            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} + 16'b1;
+            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} + 16'b1;
             endcase
         end
         else if(dec && (~write_en || (write_en && ~(inSelect == outBselect)))) begin
             case(outBselect)
-            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} - 1;
-            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} - 1;
-            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} - 1;
-            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} - 1;
-            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} - 1;
-            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} - 1;
-            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} - 1;
-            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} - 1;
+            4'b0000:    {rFile[1],rFile[0]} <= {rFile[1],rFile[0]} - 16'b1;
+            4'b0010:    {rFile[3],rFile[2]} <= {rFile[3],rFile[2]} - 16'b1;
+            4'b0100:    {rFile[5],rFile[4]} <= {rFile[5],rFile[4]} - 16'b1;
+            4'b0110:    {rFile[7],rFile[6]} <= {rFile[7],rFile[6]} - 16'b1;
+            4'b1000:    {rFile[9],rFile[8]} <= {rFile[9],rFile[8]} - 16'b1;
+            4'b1010:    {rFile[11],rFile[10]} <= {rFile[11],rFile[10]} - 16'b1;
+            4'b1100:    {rFile[13],rFile[12]} <= {rFile[13],rFile[12]} - 16'b1;
+            4'b1110:    {rFile[15],rFile[14]} <= {rFile[15],rFile[14]} - 16'b1;
             endcase
         end
     end
