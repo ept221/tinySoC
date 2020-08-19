@@ -139,7 +139,6 @@ module gpu(input wire clk,
     reg [7:0] char;
     wire [11:0] current_char_address = (x[9:3] + (y[9:4]*80));
     wire readRamActive = (current_char_address < 12'd2400) ? 1 : 0;
-    wire writeRamActive = (address < 12'd2400) ? 1 : 0;
     ram myRam(
               .din(din),
               .w_addr(address),
