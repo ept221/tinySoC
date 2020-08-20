@@ -3,17 +3,16 @@ module gpio(input wire clk,
             input wire [7:0] address,
             input wire w_en,
             input wire r_en,
-            output reg [7:0] dout
+            output reg [7:0] dout,
+            output reg [7:0] dir = 0,
+            output reg [7:0] port = 0,
+            input wire [7:0] pins
 );  
     //*****************************************************
     parameter GPIO_ADDRESS = 8'h00;
-    parameter DIR_ADDRESS = GPIO_ADDRESS;
-    parameter PORT_ADDRESS = GPIO_ADDRESS + 1;
-    parameter PINS_ADDRESS = GPIO_ADDRESS + 2;
-    //*****************************************************
-    reg [7:0] dir = 0;
-    reg [7:0] port = 0;
-    wire [7:0] pins;
+    localparam DIR_ADDRESS = GPIO_ADDRESS;
+    localparam PORT_ADDRESS = GPIO_ADDRESS + 1;
+    localparam PINS_ADDRESS = GPIO_ADDRESS + 2;
     //*****************************************************
     always @(posedge clk) begin
         case(address)
@@ -34,9 +33,6 @@ module gpio(input wire clk,
                 end
             end
             PINS_ADDRESS: begin
-                if(w_en) begin
-                    pins <= din;
-                end
                 if(r_en) begin
                     dout <= pins;
                 end

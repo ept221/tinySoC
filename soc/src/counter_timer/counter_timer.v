@@ -1,18 +1,25 @@
 module counter_timer(input wire clk,
-            input wire [7:0] din,
-            input wire [7:0] address,
-            input wire w_en,
-            input wire r_en,
-            output reg [7:0] dout
+                     input wire [7:0] din,
+                     input wire [7:0] address,
+                     input wire w_en,
+                     input wire r_en,
+                     output reg [7:0] dout,
+                     output reg top_flag = 0,
+                     output reg match0_flag = 0,
+                     output reg match1_flag = 0,
+                     input wire top_flag_clr,
+                     input wire match0_flag_clr,
+                     input wire match1_flag_clr
 );
     //*********************************************************************************************
     parameter COUNTER_TIMER_ADDRESS = 8'h00;
-    parameter SCALE_FACTOR_LSB_ADDRESS = COUNTER_TIMER_ADDRESS;
-    parameter SCALE_FACTOR_MSB_ADDRESS = COUNTER_TIMER_ADDRESS + 1;
-    parameter COUNTER_CONTROL_ADDRESS = COUNTER_TIMER_ADDRESS + 2;
-    parameter CMPR0_ADDRESS = COUNTER_TIMER_ADDRESS + 3;
-    parameter CMPR1_ADDRESS = COUNTER_TIMER_ADDRESS + 4;
-    parameter INTERRUPT_FLAGS_ADDRESS = COUNTER_TIMER_ADDRESS + 5;
+    localparam SCALE_FACTOR_LSB_ADDRESS = COUNTER_TIMER_ADDRESS;
+    localparam SCALE_FACTOR_MSB_ADDRESS = COUNTER_TIMER_ADDRESS + 1;
+    localparam COUNTER_CONTROL_ADDRESS = COUNTER_TIMER_ADDRESS + 2;
+    localparam CMPR0_ADDRESS = COUNTER_TIMER_ADDRESS + 3;
+    localparam CMPR1_ADDRESS = COUNTER_TIMER_ADDRESS + 4;
+    localparam COUNTER_ADDRESS = COUNTER_TIMER_ADDRESS + 5;
+    localparam INTERRUPT_FLAGS_ADDRESS = COUNTER_TIMER_ADDRESS + 6;
     //*********************************************************************************************
     // Prescaler registeres
     reg [15:0] scaleFactor = 0;
@@ -170,6 +177,11 @@ module counter_timer(input wire clk,
                 end
                 if(r_en) begin
                     dout <= cmpr1;
+                end
+            end
+            COUNTER_ADDRESS: begin
+                if(r_en) begin
+                    dout <= counter;
                 end
             end
         endcase

@@ -19,8 +19,8 @@ module uart(input wire clk,
     //     7        6        5        4        3        2        1        0   
     //***********************************************************************************
     parameter UART_ADDRESS = 8'h00;
-    parameter UART_CONTROL_ADDRESS = UART_ADDRESS;
-    parameter UART_BUFFER_ADDRESS = UART_ADDRESS + 1;
+    localparam UART_CONTROL_ADDRESS = UART_ADDRESS;
+    localparam UART_BUFFER_ADDRESS = UART_ADDRESS + 1;
 
     reg [7:0] uart_control = 8'b0;
     reg [7:0] rx_buffer = 8'b0;
@@ -136,7 +136,7 @@ module uart(input wire clk,
             end
             endcase
         end
-        if(address == UART_CONTROL_ADDRESS) && r_en) begin
+        if(address == UART_BUFFER_ADDRESS) && r_en) begin
             uart_control[0] <= 0;
         end
         else if(sample_enable && rx_state == 3'b011 && rx_delay == 4'b1111 && rx_clean == 1) begin
@@ -191,7 +191,7 @@ module uart(input wire clk,
             end
             endcase
         end
-        if(address == UART_CONTROL_ADDRESS) && w_en) begin
+        if(address == UART_BUFFER_ADDRESS) && w_en) begin
             uart_control[1] <= 0;
         end
         else if(sample_enable && tx_state == 3'b0 && uart_control[1] == 0) begin
