@@ -18,19 +18,16 @@
 ;******************************************************************************         
         .code
 
-start:  ldi r2, text[l]
-        ldi r3, text[h]
+loop1:  in r0, uart_ctrl
+        ani r0, 1
+        jz loop1                ; poll for full rx buffer
 
-loop:   in r1, uart_ctrl
-        ani r1, 2
-        jz loop                 ; poll for empty buffer
+        in r1, uart_buffer      ; capture the data
 
-        lri r0, p2              ; check for end of string
-        cpi r0, 0
-        jz start
+loop2:  in r0, uart_ctrl        ; poll for empty tx buffer
+        ani r0, 1
+        jz loop2
 
-        out r0, uart_buffer     ; print the char
-        jnz loop
-;******************************************************************************
-        .data
-text:   .string "GitHub repo at: https://github.com/ept221/tinySoC\n"
+        out r1, uart_buffer     ; print the char
+
+        jmp loop1
