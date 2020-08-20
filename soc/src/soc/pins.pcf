@@ -8,6 +8,10 @@ set_io io_pins[5] H1
 set_io io_pins[6] J1
 set_io io_pins[7] H2
 
+# UART
+set_io rx H9
+set_io tx D9
+
 # GPU
 set_io h_sync A2
 set_io v_sync A1
