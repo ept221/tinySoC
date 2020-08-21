@@ -16,7 +16,7 @@ module gpio(input wire clk,
     //*****************************************************
     always @(posedge clk) begin
         case(address)
-            8'd00: begin
+            DIR_ADDRESS: begin
                 if(w_en) begin
                     dir <= din;
                 end
@@ -24,7 +24,7 @@ module gpio(input wire clk,
                     dout <= dir;
                 end
             end
-            8'd01: begin
+            PORT_ADDRESS: begin
                 if(w_en) begin
                     port <= din;
                 end
@@ -32,7 +32,7 @@ module gpio(input wire clk,
                     dout <= port;
                 end
             end
-            8'd02: begin
+            PINS_ADDRESS: begin
                 if(r_en) begin
                     dout <= pins;
                 end

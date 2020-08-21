@@ -1,5 +1,5 @@
 module top(input wire clk,
-           output wire [7:0] gpio_pins,
+           inout wire [7:0] gpio_pins,
            input wire rx,
            output wire tx,
            output wire h_sync,
@@ -44,7 +44,6 @@ module top(input wire clk,
     );
     //***************************************************************
     // Instantiate Interface to Data Memory and IO  
-
     wire top_flag;
     wire match0_flag;
     wire match1_flag;
@@ -85,6 +84,5 @@ module top(input wire clk,
                                    .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
                                    .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
     );
-
     //***************************************************************
 endmodule

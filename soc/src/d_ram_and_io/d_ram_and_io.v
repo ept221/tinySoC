@@ -54,45 +54,11 @@ module d_ram_and_io(input wire clk,
             io_w_en = 0;
             io_r_en = 0;
         end
-        dout = d_ram_dout | gpio_dout | counter_timer_dout | uart_dout; // | gpu_dout;
+        dout = d_ram_dout | gpio_dout | counter_timer_dout | uart_dout | gpu_dout;
     end
     //***********************************************************************************
     // Memory from
     wire [7:0] d_ram_dout;
-    
-    //***********************************************************************************
-    // Physical pin instantiation 
-    wire pin_6 = (out0_en == 1) ? out0 : port[6];
-    wire pin_7 = (out1_en == 1) ? out1 : port[7];
-
-    //***********************************************************************************
-    // gpio from: 0x1000 - 0x1002
-    wire [7:0] dir;
-    wire [7:0] port;
-    wire [7:0] pins;
-    wire [7:0] gpio_dout;
-    
-    //***********************************************************************************
-    // counter_timer from: 0x1003 - 0x1009
-    wire out0;
-    wire out1;
-    wire out0_en;
-    wire out1_en;
-    wire [7:0] counter_timer_dout;
-    //***********************************************************************************
-    // uart from: 0x100A - 0x100B
-    wire [7:0] uart_dout;
-    
-    SB_IO #(
-        .PIN_TYPE(6'b 1010_01),
-        .PULLUP(1'b 0)
-    ) io_block_instance0 [7:0](
-        .PACKAGE_PIN(gpio_pins),
-        .OUTPUT_ENABLE(dir),
-        .D_OUT_0({pin_7,pin_6,port[5:0]}),
-        .D_IN_0(pins)
-    );
-
 
     d_ram dataMemory(.din(din),
                      .w_addr(address[10:0]),
@@ -102,7 +68,46 @@ module d_ram_and_io(input wire clk,
                      .clk(clk),
                      .dout(d_ram_dout)
     );
+    //***********************************************************************************
+    // Physical pin instantiation 
+    wire pin_6 = (out0_en == 1) ? out0 : port[6];
+    wire pin_7 = (out1_en == 1) ? out1 : port[7];
 
+    SB_IO #(
+        .PIN_TYPE(6'b 1010_01),
+        .PULLUP(1'b 0)
+    ) io_block_instance0 [7:0](
+        .PACKAGE_PIN(gpio_pins),
+        .OUTPUT_ENABLE(dir),
+        .D_OUT_0({pin_7,pin_6,port[5:0]}),
+        .D_IN_0(pins)
+    );
+    //***********************************************************************************
+    // gpio from: 0x1000 - 0x1002
+    wire [7:0] dir;
+    wire [7:0] port;
+    wire [7:0] pins;
+    wire [7:0] gpio_dout;
+    
+    gpio #(.GPIO_ADDRESS(8'h00)) 
+         gpio_inst(.clk(clk),
+                   .din(din),
+                   .address(address[7:0]),
+                   .w_en(io_w_en),
+                   .r_en(io_r_en),
+                   .dout(gpio_dout),
+                   .dir(dir),
+                   .port(port),
+                   .pins(pins)
+    );
+
+    //***********************************************************************************
+    // counter_timer from: 0x1003 - 0x1009
+    wire out0;
+    wire out1;
+    wire out0_en;
+    wire out1_en;
+    wire [7:0] counter_timer_dout;
 
     counter_timer #(.COUNTER_TIMER_ADDRESS(8'h03))
         counter_timer_inst(.clk(clk),
@@ -122,18 +127,9 @@ module d_ram_and_io(input wire clk,
                            .match0_flag_clr(match0_flag_clr),
                            .match1_flag_clr(match1_flag_clr)
     );
-
-    gpio #(.GPIO_ADDRESS(8'h00)) 
-         gpio_inst(.clk(clk),
-                   .din(din),
-                   .address(address[7:0]),
-                   .w_en(io_w_en),
-                   .r_en(io_r_en),
-                   .dout(gpio_dout),
-                   .dir(dir),
-                   .port(port),
-                   .pins(pins)
-    );
+    //***********************************************************************************
+    // uart from: 0x100A - 0x100B
+    wire [7:0] uart_dout;
 
     uart #(.UART_ADDRESS(8'h0A))
         uart_inst(.clk(clk),
@@ -147,8 +143,8 @@ module d_ram_and_io(input wire clk,
     );
     //***********************************************************************************
     // gpu from: 0x1080, 0x2000-0x2960
-    
     wire [7:0] gpu_dout;
+
     gpu #(.GPU_IO_ADDRESS(8'h80),
           .GPU_VRAM_ADDRESS(16'h2000))
         gpu_inst(.clk(clk),
