@@ -137,7 +137,7 @@ module gpu(input wire clk,
     // Create the text RAM addressed by the current tile being displayed
     // by the vga sync generator.
     reg [7:0] char;
-    wire [11:0] current_char_address = (x[9:3] + (y[9:4]*80));
+    wire [11:0] current_char_address = ({7'd0,x[9:3]} + (y[9:4]*80));
     wire readRamActive = (current_char_address < 12'd2400) ? 1 : 0;
     ram myRam(
               .din(din),
