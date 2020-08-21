@@ -1,12 +1,12 @@
 # GPIO
-set_io io_pins[0] D2
-set_io io_pins[1] D1
-set_io io_pins[2] E2
-set_io io_pins[3] E1
-set_io io_pins[4] G2
-set_io io_pins[5] H1
-set_io io_pins[6] J1
-set_io io_pins[7] H2
+set_io gpio_pins[0] D2
+set_io gpio_pins[1] D1
+set_io gpio_pins[2] E2
+set_io gpio_pins[3] E1
+set_io gpio_pins[4] G2
+set_io gpio_pins[5] H1
+set_io gpio_pins[6] J1
+set_io gpio_pins[7] H2
 
 # UART
 set_io rx H9
