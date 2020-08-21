@@ -37,9 +37,9 @@ module regFile(input wire [3:0] inSelect,
         end
     end
 
-    reg [15:0] inc_or_dec;
-    reg [15:0] pair;
-    reg [15:0] result;
+    wire [15:0] inc_or_dec;
+    wire [15:0] pair;
+    wire [15:0] result;
     always @(*) begin
         result = pair + inc_or_dec;
         if(inc) begin
