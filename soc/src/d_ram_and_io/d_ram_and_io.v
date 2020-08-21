@@ -40,21 +40,23 @@ module d_ram_and_io(input wire clk,
             d_ram_w_en = w_en;
             d_ram_r_en = r_en;
             io_w_en = 0;
-            io_r_en = 0;            
+            io_r_en = 0;
+            dout = d_ram_dout;     
         end
         else if(address >= 16'h1000 && address <= 16'h10FF) begin      // io
             d_ram_w_en = 0;
             d_ram_r_en = 0;
             io_w_en = w_en;
             io_r_en = r_en;
+            dout = gpio_dout | counter_timer_dout | uart_dout | gpu_dout;
         end
         else begin
             d_ram_w_en = 0;
             d_ram_r_en = 0;
             io_w_en = 0;
             io_r_en = 0;
+            dout = 0;
         end
-        dout = d_ram_dout | gpio_dout | counter_timer_dout | uart_dout | gpu_dout;
     end
     //***********************************************************************************
     // Memory from

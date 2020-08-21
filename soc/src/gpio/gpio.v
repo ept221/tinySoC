@@ -37,6 +37,9 @@ module gpio(input wire clk,
                     dout <= pins;
                 end
             end
+            default begin
+                dout <= 0;
+            end
         endcase
     end
     //*****************************************************

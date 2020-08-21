@@ -22,7 +22,7 @@ module uart(input wire clk,
     localparam UART_CONTROL_ADDRESS = UART_ADDRESS;
     localparam UART_BUFFER_ADDRESS = UART_ADDRESS + 1;
 
-    reg [7:0] uart_control = 8'b0;
+    reg [7:0] uart_control = 8'b00000010;
     reg [7:0] rx_buffer = 8'b0;
     reg [7:0] tx_buffer = 8'b0;
     always @(posedge clk) begin
@@ -42,6 +42,9 @@ module uart(input wire clk,
             if(r_en) begin
                 dout <= rx_buffer;
             end
+        end
+        default begin
+            dout <= 0;
         end
         endcase
     end
@@ -153,7 +156,7 @@ module uart(input wire clk,
     always @(posedge clk) begin
         if(sample_enable) begin
             case(tx_state)
-            3'b000: begin                       // Wait for start signal and begin start bit
+            3'b000: begin                       // Wait for tx buffer to be full (not empty) before starting
                 if(uart_control[1] == 0) begin
                     tx_data <= tx_buffer;
                     tx_state <= 3'b001;
@@ -171,7 +174,7 @@ module uart(input wire clk,
                     end
                     else begin
                         tx <= tx_data[0];       // Data bit
-                        tx_data <= {1'b0,tx_data[7:1]};
+                        tx_data <= {0,tx_data[7:1]};
                     end
       
                 end

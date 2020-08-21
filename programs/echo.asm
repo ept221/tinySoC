@@ -25,7 +25,7 @@ loop1:  in r0, uart_ctrl
         in r1, uart_buffer      ; capture the data
 
 loop2:  in r0, uart_ctrl        ; poll for empty tx buffer
-        ani r0, 1
+        ani r0, 2
         jz loop2
 
         out r1, uart_buffer     ; print the char

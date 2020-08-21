@@ -188,6 +188,9 @@ module counter_timer(input wire clk,
                     dout <= counter;
                 end
             end
+            default begin
+                dout <= 0;
+            end
         endcase
     end
     //*********************************************************************************************
