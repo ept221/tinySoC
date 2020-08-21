@@ -4,6 +4,10 @@ module counter_timer(input wire clk,
                      input wire w_en,
                      input wire r_en,
                      output reg [7:0] dout,
+                     output reg out0 = 0,
+                     output reg out1 = 0,
+                     output wire out0_en,
+                     output wire out1_en,
                      output reg top_flag = 0,
                      output reg match0_flag = 0,
                      output reg match1_flag = 0,
@@ -31,9 +35,9 @@ module counter_timer(input wire clk,
     reg [7:0] cmpr1 = 0;
     reg [7:0] counter = 0;
 
-    // Output registers
-    reg out0 = 0;
-    reg out1 = 0;
+    // External signals
+    assign out0_en = counterControl[2];
+    assign out1_en = counterControl[3];
 
     // Internal signals 
     wire match0;
