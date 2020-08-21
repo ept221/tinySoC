@@ -29,7 +29,7 @@ module uart(input wire clk,
         case(address)
         UART_CONTROL_ADDRESS: begin
             if(w_en) begin
-                uart_control <= din;
+                uart_control[7:2] <= din[7:2];
             end
             if(r_en) begin
                dout <= uart_control; 
@@ -74,7 +74,7 @@ module uart(input wire clk,
     // Rx State Machine
     reg [2:0] rx_state = 3'b0;
     reg [7:0] rx_data = 8'b0;
-    reg [3:0] rx_count = 3'b0;
+    reg [3:0] rx_count = 4'b0;
     reg [3:0] rx_delay = 4'b0;
 
     always @(posedge clk) begin
@@ -100,8 +100,8 @@ module uart(input wire clk,
                     rx_data <= {rx_clean,rx_data[7:1]};
                     rx_delay <= 4'b0;
                     rx_count <= rx_count + 1;
-                    if(rx_count == 3'b111) begin
-                        rx_count <= 3'b0;
+                    if(rx_count == 4'b0111) begin
+                        rx_count <= 4'b0;
                         rx_state <= 3'b011;
                     end
                 end
@@ -136,7 +136,7 @@ module uart(input wire clk,
             end
             endcase
         end
-        if(address == UART_BUFFER_ADDRESS) && r_en) begin
+        if(address == UART_BUFFER_ADDRESS && r_en) begin
             uart_control[0] <= 0;
         end
         else if(sample_enable && rx_state == 3'b011 && rx_delay == 4'b1111 && rx_clean == 1) begin
@@ -171,7 +171,7 @@ module uart(input wire clk,
                     end
                     else begin
                         tx <= tx_data[0];       // Data bit
-                        tx_data <= {0,tx_data[7:1]};
+                        tx_data <= {1'b0,tx_data[7:1]};
                     end
       
                 end
@@ -191,7 +191,7 @@ module uart(input wire clk,
             end
             endcase
         end
-        if(address == UART_BUFFER_ADDRESS) && w_en) begin
+        if(address == UART_BUFFER_ADDRESS && w_en) begin
             uart_control[1] <= 0;
         end
         else if(sample_enable && tx_state == 3'b0 && uart_control[1] == 0) begin

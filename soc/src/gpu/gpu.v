@@ -13,7 +13,7 @@ module gpu(input wire clk,
            output wire B,
 
            output reg blanking_start_interrupt_flag = 0,
-           input wire blanking_start_interrupt_flag_clr,
+           input wire blanking_start_interrupt_flag_clr
 );
 
     parameter GPU_IO_ADDRESS = 8'h00;
@@ -141,7 +141,7 @@ module gpu(input wire clk,
     // Create the text RAM addressed by the current tile being displayed
     // by the vga sync generator.
     reg [7:0] char;
-    wire [11:0] current_char_address = (x[9:3] + (y[9:4]*80));
+    wire [11:0] current_char_address = ({5'b0,x[9:3]} + (y[9:4]*80));
     wire readRamActive = (current_char_address < 12'd2400) ? 1 : 0;
     wire writeRamActive = (address >= GPU_VRAM_ADDRESS && address <= GPU_VRAM_ADDRESS + 16'd2399);
     ram myRam(

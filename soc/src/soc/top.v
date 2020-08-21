@@ -1,12 +1,12 @@
 module top(input wire clk,
-           output wire [7:0] io_pins,
+           inout wire [7:0] gpio_pins,
            input wire rx,
            output wire tx,
-           output wire R,
-           output wire G,
-           output wire B,
            output wire h_sync,
            output wire v_sync,
+           output wire R,
+           output wire G,
+           output wire B
 );
 
     //***************************************************************
@@ -44,6 +44,47 @@ module top(input wire clk,
     );
     //***************************************************************
     // Instantiate Interface to Data Memory and IO  
+
+    wire top_flag;
+    wire match0_flag;
+    wire match1_flag;
+    wire top_flag_clr;
+    wire match0_flag_clr;
+    wire match1_flag_clr;
+    wire blanking_start_interrupt_flag;
+    wire blanking_start_interrupt_flag_clr;
+    wire [15:0] dMemIOAddress;
+    wire [7:0] dMemIOOut;
+    wire [7:0] dMemIOIn;
+    wire dMemIOWriteEn;
+    wire dMemIOReadEn;
+    d_ram_and_io d_ram_and_io_inst(.clk(clk),
+                                   .din(dMemIOIn),
+                                   .address(dMemIOAddress),
+                                   .w_en(dMemIOWriteEn),
+                                   .r_en(dMemIOReadEn),
+                                   .dout(dMemIOOut),
+
+                                   .gpio_pins(gpio_pins),
+
+                                   .top_flag(top_flag),
+                                   .match0_flag(match0_flag),
+                                   .match1_flag(match1_flag),
+                                   .top_flag_clr(top_flag_clr),
+                                   .match0_flag_clr(match0_flag_clr),
+                                   .match1_flag_clr(match1_flag_clr),
+
+                                   .rx(rx),
+                                   .tx(tx),
+
+                                   .h_sync(h_sync),
+                                   .v_sync(v_sync),
+                                   .R(R),
+                                   .G(G),
+                                   .B(B),
+                                   .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
+                                   .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
+    );
 
     //***************************************************************
 endmodule
