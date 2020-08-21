@@ -1,5 +1,5 @@
 module top(input wire clk,
-           inout wire [7:0] gpio_pins,
+           output wire [7:0] gpio_pins,
            input wire rx,
            output wire tx,
            output wire h_sync,
