@@ -23,8 +23,8 @@
         ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
 
-        ldi r0, 1
-        out r0, dir_reg                 ; set pin 1 to output
+        ldi r0, 0xff
+        out r0, dir_reg                 ; set all pins to output
 
         ldi r0, 36
         out r0, prescaler_l             ; set LSBs of prescaler
@@ -41,15 +41,13 @@
 loop:   jmp loop                        ; loop and wait for interrupt
 ;******************************************************************************
         .org top_isr_vector
-isr:    in r0, port_reg                 ; read pin register
-        xoi r0, 1                       ; toggle the led bit
-        out r0, port_reg                ; write to the port register
-        jz exit
-        adi r5, 1
+isr:    
+        out r5, port_reg
         mov r12, r5
         call numToStr
         ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
+        adi r5, 1
 exit:   ssr 8                           ; enable interrupts
         ret
 ;******************************************************************************
