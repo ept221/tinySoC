@@ -23,7 +23,8 @@ module gpu(input wire clk,
     //*****************************************************************************************************************
     // Create the VGA clock with the PLL
     wire vgaClk;
-    pll vgaClkGen(.clock_in(clk),.clock_out(vgaClk),.locked());
+    wire locked;
+    pll vgaClkGen(.clock_in(clk),.clock_out(vgaClk),.locked(locked));
     
     //*****************************************************************************************************************
     // Create the sync generator 
@@ -69,7 +70,11 @@ module gpu(input wire clk,
     reg green = 1;
     reg blue = 1;
 
+    reg l0 = 0;
+    reg l1 = 0;
     always @(posedge clk) begin
+        l0 <= locked;
+        l1 <= l0;
         if(address[7:0] == GPU_CONTROL_ADDRESS && w_en) begin
             {blue, green, red} <= din[4:2];
             blanking_start_interrupt_enable <= din[1];
@@ -77,7 +82,8 @@ module gpu(input wire clk,
         else if(address[7:0] == GPU_CONTROL_ADDRESS && r_en) begin
             dout[1:0] <= {blanking_start_interrupt_enable,blanking_start_interrupt_flag};
             dout[4:2] <= {blue, green, red};
-            dout[7:5] <= 0;
+            dout[6:5] <= 0;
+            dout[7] <= l1;
         end
         else begin
             dout <= 0;
@@ -153,8 +159,8 @@ module gpu(input wire clk,
               .w_en(vram_w_en && writeRamActive),
               .r_addr(current_char_address),
               .r_en(readRamActive),
-              .w_clk(vgaClk),
-              .r_clk(clk),
+              .w_clk(clk),
+              .r_clk(vgaClk),
               .dout(char)
     );
 

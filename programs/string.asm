@@ -1,5 +1,5 @@
 ;*************************************************
-        .define gpu_addr, 0x2000
+        .define gpu_addr, 0x2050
         .define gpu_ctrl_reg, 0x80
         .define gpu_isr_vector, 0x20
 ;*************************************************      
@@ -10,6 +10,10 @@
 
         ldi r2, gpu_addr[l]
         ldi r3, gpu_addr[h]
+
+stable: in r0, gpu_ctrl_reg
+        ani r0, 0x80
+        jz stable
 
         ldi r0, text[l]
         ldi r1, text[h]
