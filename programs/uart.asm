@@ -7,8 +7,9 @@
         .define prescaler_h, 0x04
         .define count_ctrl, 0x05
 
-        .define uart_ctrl, 0x0A
-        .define uart_buffer, 0x0B
+        .define uart_baud, 0x0A
+        .define uart_ctrl, 0x0B
+        .define uart_buffer, 0x0C
 
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
@@ -17,6 +18,9 @@
         .define top_isr_vector, 0x0030
 ;******************************************************************************         
         .code
+
+        ldi r0, 103
+        out r0, uart_baud       ; set the baud rate to 9600
 
 start:  ldi r2, text[l]
         ldi r3, text[h]

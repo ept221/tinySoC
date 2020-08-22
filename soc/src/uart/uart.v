@@ -19,14 +19,23 @@ module uart(input wire clk,
     //     7        6        5        4        3        2        1        0   
     //***********************************************************************************
     parameter UART_ADDRESS = 8'h00;
-    localparam UART_CONTROL_ADDRESS = UART_ADDRESS;
-    localparam UART_BUFFER_ADDRESS = UART_ADDRESS + 1;
+    localparam UART_BAUD_ADDRESS = UART_ADDRESS;
+    localparam UART_CONTROL_ADDRESS = UART_ADDRESS + 1;
+    localparam UART_BUFFER_ADDRESS = UART_ADDRESS + 2;
 
     reg [7:0] uart_control = 8'b00000010;
     reg [7:0] rx_buffer = 8'b0;
     reg [7:0] tx_buffer = 8'b0;
     always @(posedge clk) begin
         case(address)
+        UART_BAUD_ADDRESS: begin
+            if(w_en) begin
+                baud <= din;
+            end
+            if(r_en) begin
+                dout <= baud;
+            end
+        end
         UART_CONTROL_ADDRESS: begin
             if(w_en) begin
                 uart_control[7:2] <= din[7:2];
@@ -50,10 +59,11 @@ module uart(input wire clk,
     end
     //***********************************************************************************
     // Create sampling clock
+    reg [7:0] baud = 8'd0;
     reg [7:0] prescaler = 8'b0;
     reg sample_enable = 1'b0;
     always @(posedge clk) begin
-        if(prescaler == 8'd103) begin
+        if(prescaler == baud) begin
             prescaler <= 0;
             sample_enable <= 1;
         end
