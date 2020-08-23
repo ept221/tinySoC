@@ -140,3 +140,28 @@ Equates a symbol with a number.
 Anytime an instruction or directive requires a numerical argument, an expression can be used.
 Supported operations inside expressions include addition and subtraction. The location counter $ is also made available. Expressions may contain symbols, but must resolve within two passes of the assembler, and if used for directive arguments, must resolve in a single pass.
 
+```assembly
+        ; Example resolution in one pass
+        .code
+        .define foo, 5
+        ldi r0, foo + 7
+        hlt
+```
+```assembly
+        ; Example resolution in two passes
+        .code
+        ldi r0, foo + 7
+        .define foo, 5
+```
+```assembly
+        ; Example resulution in two passes with $
+        .code
+        ldi r0, 55
+        jmp $ + foo
+        .define foo, 3
+        nop
+        nop
+        nop
+        hlt
+```
+
