@@ -29,7 +29,7 @@
         ldi r2, gpu_addr[l]     ; setup the pointer to the v-ram
         ldi r3, gpu_addr[h]
 
-stable: in r0, gpu_ctrl_reg     ; wait for gpu clock to be stable
+stable: in r0, gpu_ctrl_reg     ; wait for gpu clock to become stable
         ani r0, 0x80
         jz stable
 
@@ -42,8 +42,24 @@ loop1:  in r0, uart_ctrl        ; poll for full rx buffer
 
         in r0, uart_buffer      ; capture the data
 
+loop2:  in r1, uart_ctrl        ; poll for empty tx buffer
+        ani r1, 2
+        jz loop2
+        out r0, uart_buffer     ; print the char to the uart
+
         out r0, port_reg        ; write the data to the gpio port
 
-        sri r0, p2              ; write the data to the screen
-        jmp loop1               ; go get another char
+        cpi r0, 8               ; check if delete was sent
+        jnz normal
+        
+        ldi r0, 32
+        srd r0, p2              ; print space to clear cursor, and move back
+        ldi r0, 95
+        str r0, p2              ; delete char and print cursor
+        jmp loop1
 
+normal: sri r0, p2              ; write the data to the screen
+        ldi r0, 95
+        str r0, p2
+        jmp loop1               ; go get another char
+;******************************************************************************
