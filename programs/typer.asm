@@ -45,7 +45,7 @@ loop1:  in r0, uart_ctrl        ; poll for full rx buffer
 loop2:  in r1, uart_ctrl        ; poll for empty tx buffer
         ani r1, 2
         jz loop2
-        out r0, uart_buffer     ; print the char to the uart
+        out r0, uart_buffer     ; echo the char back over the uart
 
         out r0, port_reg        ; write the data to the gpio port
 

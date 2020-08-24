@@ -960,7 +960,7 @@ def second_pass(symbols, code):
         code_line = code.code_data[i]
         line = code_line[0]
         if(code_line[-1]):
-            val = evaluate(code_line[-1][1],symbols,int(code_line[2]))
+            val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16))
             if(len(val) == 1):
                 numb = val[0]
                 ##################################################
