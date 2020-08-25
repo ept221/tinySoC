@@ -58,16 +58,16 @@ Sets the origin to the given address. Only forward movement of the origin is per
         .org 0x0B
 foo:    out r0, 1
         hlt
-        
+
 ;*************************************************************************
 ; Assembles to the following:
-; Address        Label          Code                     Source                      
+; Address        Label          Code                     Source
 ; ------------------------------------------------------------------------
-; 0x0000                        0b0000000000010001       LDI R0, 1                                         
-; 0x0001                        0b0000000000000100       OUT R0, 0                                         
-; 0x0002                        0b0000000010111000       JMP FOO                                           
-; 0x0003                        0b0000000000001011                                                         
-; 0x000B         FOO:           0b0000000000010100       OUT R0, 1                                         
+; 0x0000                        0b0000000000010001       LDI R0, 1
+; 0x0001                        0b0000000000000100       OUT R0, 0
+; 0x0002                        0b0000000010111000       JMP FOO
+; 0x0003                        0b0000000000001011
+; 0x000B         FOO:           0b0000000000010100       OUT R0, 1
 ; 0x000C                        0b0000000011110000       HLT
 ```
 
@@ -95,27 +95,27 @@ Writes a null terminated ASCII string into data memory. Double quotes and backsl
         
 ;*************************************************************************
 ; Assembles to the following:
-; Address        Label          Data                    
+; Address        Label          Data
 ; ------------------------------------------
-; 0x0000                        0x54                                         
-; 0x0001                        0x68                                         
-; 0x0002                        0x65                                         
-; 0x0003                        0x20                                         
-; 0x0004                        0x72                                         
-; 0x0005                        0x6F                                         
-; 0x0006                        0x62                                         
-; 0x0007                        0x6F                                         
-; 0x0008                        0x74                                         
-; 0x0009                        0x20                                         
-; 0x000A                        0x73                                         
-; 0x000B                        0x61                                         
-; 0x000C                        0x79                                         
-; 0x000D                        0x73                                         
-; 0x000E                        0x20                                         
-; 0x000F                        0x22                                         
-; 0x0010                        0x48                                         
-; 0x0011                        0x69                                         
-; 0x0012                        0x21                                         
+; 0x0000                        0x54
+; 0x0001                        0x68
+; 0x0002                        0x65
+; 0x0003                        0x20
+; 0x0004                        0x72
+; 0x0005                        0x6F
+; 0x0006                        0x62
+; 0x0007                        0x6F
+; 0x0008                        0x74
+; 0x0009                        0x20
+; 0x000A                        0x73
+; 0x000B                        0x61
+; 0x000C                        0x79
+; 0x000D                        0x73
+; 0x000E                        0x20
+; 0x000F                        0x22
+; 0x0010                        0x48
+; 0x0011                        0x69
+; 0x0012                        0x21
 ; 0x0013                        0x22
 ; 0x0014                        0x00
 ```
@@ -130,9 +130,9 @@ Equates a symbol with a number.
         
 ;*************************************************************************
 ; Assembles to the following:        
-; Address        Label          Code                     Source                                    
+; Address        Label          Code                     Source
 ; ------------------------------------------------------------------------
-; 0x0000                        0b0000000001010001       LDI R0, FOO                                       
+; 0x0000                        0b0000000001010001       LDI R0, FOO     
 ; 0x0001                        0b0000000011110000       HLT  
 ```
 
@@ -146,6 +146,13 @@ Supported operations inside expressions include addition and subtraction. The lo
         .define foo, 5
         ldi r0, foo + 7
         hlt
+
+;*************************************************************************
+; Assembles to the following:
+; Address        Label          Code                     Source
+; ------------------------------------------------------------------------
+; 0x0000                        0b0000000011000001       LDI R0, FOO + 7
+; 0x0001                        0b0000000011110000       HLT
 ```
 ```assembly
         ; Example resolution in two passes
