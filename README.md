@@ -162,7 +162,8 @@ Supported operations inside expressions include addition and subtraction. The lo
         .define foo, 5
 
 ;*************************************************************************
-; Address        Label          Code                     Source            
+; Address        Label          Code                     Source
+; Assembles to the following:
 ; ------------------------------------------------------------------------
 ; 0x0000                        0b0000000011000001       LDI R0, FOO + 7
 ; 0x0001                        0b0000000011110000       HLT
@@ -178,6 +179,8 @@ Supported operations inside expressions include addition and subtraction. The lo
         nop
         hlt
 
+;*************************************************************************
+; Assembles to the following:
 ; Address        Label          Code                     Source
 ; ------------------------------------------------------------------------
 ; 0x0000                        0b0000000000000001       LDI R0, $
