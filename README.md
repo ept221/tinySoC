@@ -79,11 +79,11 @@ Writes one or more data bytes sequentially into data memory.
 
 ;*************************************************************************
 ; Assembles to the following:
-; Address        Label          Data                                 
+; Address        Label          Data
 ; ------------------------------------------
-; 0x0000                        0x01                                         
-; 0x0001                        0x44                                         
-; 0x0002                        0x73    
+; 0x0000                        0x01
+; 0x0001                        0x44
+; 0x0002                        0x73
 ```
 
 #### .string
