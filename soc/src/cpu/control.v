@@ -1,4 +1,5 @@
 module control(input wire clk,
+               input wire reset,
                input wire [15:0] iMemOut,
                input wire carryFlag,
                input wire zeroFlag,
@@ -29,27 +30,38 @@ module control(input wire clk,
                output reg interrupt_0_clr,
                output reg interrupt_1_clr,
                output reg interrupt_2_clr,
-               output reg interrupt_3_clr
+               output reg interrupt_3_clr,
+               output wire reset_out
 );    
     //****************************************************************************************************
     // States
-    parameter PART1 = 3'b000;           // Part 1 of instruction (may be single or multi-cycle)
-    parameter PART2 = 3'b010;           // Part 2 of generic multi-cycle instruction
-    parameter PART3 = 3'b100;           // Part 3 of generic multi-cycle instruction
+    localparam PART1 = 4'b0000;           // Part 1 of instruction (may be single or multi-cycle)
+    localparam PART2 = 4'b0010;           // Part 2 of generic multi-cycle instruction
+    localparam PART3 = 4'b0100;           // Part 3 of generic multi-cycle instruction
 
-    parameter JMP = 3'b001;             // Fetch address, and perform a jump
-    parameter CALL = 3'b011;            // Fetch address, and perform a call
-    parameter INTERRUPT = 3'b101;       // Push MSBs of return address, and jump to the ISR
-    parameter START = 3'b111;           // Initial state, wait 40 cycles, and fetch first instruction
+    localparam JMP = 4'b0001;             // Fetch address, and perform a jump
+    localparam CALL = 4'b0011;            // Fetch address, and perform a call
+    localparam INTERRUPT = 4'b0101;       // Push MSBs of return address, and jump to the ISR
+    localparam START = 4'b0111;           // Initial state, wait 40 cycles, and fetch first instruction
+    localparam RESET = 4'b1001;           // Reset State
 
-    reg [2:0] state = START;
-    reg [2:0] nextState;
+    reg [3:0] state = START;
+    reg [3:0] nextState;
     always @(posedge clk) begin
         state <= nextState;
     end
     //****************************************************************************************************
-    // Delayed start counter
+    // Reset Control
+    reg reset_d0 = 1;
+    reg reset_d1 = 1;
+    always @(posedge clk) begin
+        reset_d0 <= reset;
+        reset_d1 <= reset_d0;
+    end
 
+    assign reset_out = (state[3:1] == RESET[3:1]) ? 1'b1 : 1'b0;
+    //****************************************************************************************************
+    // Delayed start counter
     reg [5:0] delay = 0;
     always @(posedge clk) begin
         if(state == START) begin
@@ -59,7 +71,6 @@ module control(input wire clk,
             delay <= 0;
         end
     end
-
     //****************************************************************************************************
     // Logic for jmp, call, and ret conditions
     reg condition;
@@ -77,7 +88,6 @@ module control(input wire clk,
     end
     //****************************************************************************************************
     // Interrupt vectoring
-
     always @(*) begin
         if(interrupt_0) begin
             interruptVector = 16'd20;
@@ -138,7 +148,27 @@ module control(input wire clk,
     //****************************************************************************************************
     // Main Decoder
     always @(*) begin
-        if(state[0] == 1'b0) begin
+        if(reset_d1 == 1'b0 && state != START && state != RESET) begin
+            regFileSrc = 2'b00;                 // aluOut
+            regFileOutBSelect = 4'b1110;        // lower SP reg
+            regFileWriteEnable = 1'b0;
+            regFileIncPair = 1'b0;
+            regFileDecPair = 1'b0;
+            aluSrcASelect = 1'b1;               // From the register file
+            aluSrcBSelect = 2'b00;              // regFileOutB
+            aluMode = 4'b0000;                  // Pass B
+            dMemDataSelect = 3'b100;            // From LSBs of the current address
+            dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, SP
+            dMemIOWriteEn = 1'd0;               // Need to push to the stack
+            dMemIOReadEn = 1'b0;
+            statusRegSrcSelect = 2'b11;         // Disable interrupts and save all other flags
+            flagEnable = 1'b0;                  // Disable interrupts
+            iMemAddrSelect = 3'b010;            // interruptVector
+            iMemReadEnable = 1'b0;              // Wait till second stage to make the jump
+            pcWriteEn = 1'd0;
+            nextState = RESET;
+        end
+        else if(state[0] == 1'b0) begin
             if(interruptEnable && state == PART1 && interrupt && ~uninterruptible) begin
                 regFileSrc = 2'b00;                 // aluOut
                 regFileOutBSelect = 4'b1110;        // lower SP reg
@@ -575,8 +605,28 @@ module control(input wire clk,
             end     
         end
         else begin
-            case(state[2:1])
-                START[2:1]: begin
+            case(state[3:1])
+                RESET[3:1]: begin
+                    regFileSrc = 2'b00;                 // aluOut, doesn't really matter
+                    regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesn't really matter
+                    regFileWriteEnable = 1'b0;
+                    regFileIncPair = 1'b0;
+                    regFileDecPair = 1'b0;
+                    aluSrcASelect = 1'b1;               // regFileOutA
+                    aluSrcBSelect = 2'b00;              // regFileOutB
+                    aluMode = 4'b0000;                  // Pass B, doesn't really matter
+                    dMemDataSelect = 3'b010;            // aluOut, doesn't really matter
+                    dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesn't really matter
+                    dMemIOWriteEn = 1'b0;
+                    dMemIOReadEn = 1'b0;
+                    statusRegSrcSelect = 2'b11;         // Disable interrupts and save all other flags
+                    flagEnable = 1'b1;
+                    iMemAddrSelect = 3'b001;            // pcOut
+                    iMemReadEnable = 1'b1;
+                    pcWriteEn = 1;
+                    nextState = (reset_d1 == 1'd1) ? PART1 : RESET;
+                end
+                START[3:1]: begin
                     regFileSrc = 2'b00;                 // aluOut, doesn't really matter
                     regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesn't really matter
                     regFileWriteEnable = 1'b0;
@@ -596,7 +646,7 @@ module control(input wire clk,
                     pcWriteEn = (delay == 6'd40) ? 1 : 0;
                     nextState = (delay == 6'd40) ? PART1 : START;
                 end
-                INTERRUPT[2:1]: begin
+                INTERRUPT[3:1]: begin
                     regFileSrc = 2'b00;                 // aluOut
                     regFileOutBSelect = 4'b1110;        // lower SP reg
                     regFileWriteEnable = 1'b0;
@@ -616,7 +666,7 @@ module control(input wire clk,
                     pcWriteEn = 1'd1;
                     nextState = PART1;
                 end
-                JMP[2:1]: begin
+                JMP[3:1]: begin
                     regFileSrc = 2'b00;                             // aluOut, doesn't really matter
                     regFileOutBSelect = iMemOut[15:12];             // same as inSelect
                     regFileWriteEnable = 1'b0;
@@ -636,7 +686,7 @@ module control(input wire clk,
                     pcWriteEn = 1'b1;
                     nextState = PART1;
                 end
-                CALL[2:1]: begin
+                CALL[3:1]: begin
                     regFileSrc = 2'b00;                 // aluOut, doesn't really matter
                     regFileOutBSelect = 4'b1110;        // lower SP reg
                     regFileWriteEnable = 1'b0;
@@ -653,6 +703,26 @@ module control(input wire clk,
                     regFileDecPair = 1'b1;          // Deincrement the SP
                     dMemIOWriteEn = 1'b1;           // Write the MSBs of the PC to the stack
                     iMemAddrSelect = 3'b011;        // iMemOut, the address of the place we call to
+                    pcWriteEn = 1'b1;
+                    nextState = PART1;
+                end
+                default begin
+                    regFileSrc = 2'b00;                 // aluOut, doesn't really matter
+                    regFileOutBSelect = iMemOut[15:12]; // same as inSelect. Doesn't really matter
+                    regFileWriteEnable = 1'b0;
+                    regFileIncPair = 1'b0;
+                    regFileDecPair = 1'b0;
+                    aluSrcASelect = 1'b1;               // regFileOutA
+                    aluSrcBSelect = 2'b00;              // regFileOutB
+                    aluMode = 4'b0000;                  // Pass B, doesn't really matter
+                    dMemDataSelect = 3'b010;            // aluOut, doesn't really matter
+                    dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, doesn't really matter
+                    dMemIOWriteEn = 1'b0;
+                    dMemIOReadEn = 1'b0;
+                    statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
+                    flagEnable = 1'b0;
+                    iMemAddrSelect = 3'b001;            // pcOut
+                    iMemReadEnable = 1'b1;
                     pcWriteEn = 1'b1;
                     nextState = PART1;
                 end

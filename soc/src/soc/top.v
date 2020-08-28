@@ -1,4 +1,5 @@
 module top(input wire clk,
+           input wire reset,
            inout wire [7:0] gpio_pins,
            input wire rx,
            output wire tx,
@@ -6,12 +7,14 @@ module top(input wire clk,
            output wire v_sync,
            output wire R,
            output wire G,
-           output wire B
+           output wire B,
+           output wire reset_out
 );
 
     //***************************************************************
     // Instantiate CPU
     cpu my_cpu(.clk(clk),
+               .reset(reset),
                .iMemAddress(iMemAddress),
                .iMemOut(iMemOut),
                .iMemReadEnable(iMemReadEnable),
@@ -27,7 +30,8 @@ module top(input wire clk,
                .interrupt_0_clr(blanking_start_interrupt_flag_clr),
                .interrupt_1_clr(top_flag_clr),
                .interrupt_2_clr(match0_flag_clr),
-               .interrupt_3_clr(match1_flag_clr)
+               .interrupt_3_clr(match1_flag_clr),
+               .reset_out(reset_out)
     );
     //***************************************************************
     // Instantiate Instruction Memory

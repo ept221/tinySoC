@@ -19,5 +19,9 @@ set_io R B1
 set_io G C2
 set_io B C1
 
+# Reset
+set_io reset A6
+set_io reset_out B6
+
 # Global Clock
 set_io clk B2
