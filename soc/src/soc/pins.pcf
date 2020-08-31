@@ -13,8 +13,8 @@ set_io rx H9
 set_io tx D9
 
 # GPU
-set_io h_sync A2
-set_io v_sync A1
+set_io h_sync A8
+set_io v_sync B7
 set_io R B1
 set_io G C2
 set_io B C1
