@@ -332,7 +332,7 @@ def parse_lbl_def(tokens, symbols, code, line):
             return er
         elif re.match(r'^(0X)[0-9A-F]+$',lbl[:-1] or
              re.match(r'^[0-9]+$',lbl[:-1]) or
-             re.match(r'^(0B)[0-1]+$')):
+             re.match(r'^(0B)[0-1]+$',lbl[:-1])):
             error("Label cannot be number!",line)
             return er
         elif lbl[:-1] in (symbols.defs):

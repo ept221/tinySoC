@@ -11,6 +11,9 @@
         .define uart_ctrl, 0x0B
         .define uart_buffer, 0x0C
 
+        .define motor_control, 0x0D
+        .define motor_enable, 0x0E
+
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
 
