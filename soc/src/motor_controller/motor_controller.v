@@ -4,9 +4,11 @@ module motor_controller(input wire clk,
 						input wire w_en,
 						input wire r_en,
 						output reg [7:0] dout,
+
+						input wire [1:0] encoders,
 						output reg [1:0] pwm,
 						output reg [3:0] motor,
-						output reg enable = 1
+						output reg enable
 );
 
 	//***************************************************************
@@ -53,6 +55,7 @@ module motor_controller(input wire clk,
 		endcase 
 	end
 	//***************************************************************
+	// PWM
 	reg [15:0] prescaler;
 	reg scaled;
 	localparam SCALE_FACTOR = 16'd125;
@@ -85,6 +88,30 @@ module motor_controller(input wire clk,
                 end
             end
             pwm_counter <= pwm_counter + 1;
+		end
+	end
+	//***************************************************************
+	// Encoders
+
+	// Synchronizers
+	reg [1:0] d0;
+	reg [1:0] d1;
+	always @(posedge clk) begin
+		d0 <= encoders;
+		d1 <= d1;
+	end
+
+	// Counters
+	reg [15:0] encoder_count_0;
+	reg [15:0] encoder_count_1;
+	reg [1:0] edge_delay;
+	always @(posedge clk) begin
+		edge_delay <= d1;
+		if(edge_delay[0] && ~d0[0]) begin
+			encoder_count_0 <= encoder_count_0 + 1;
+		end
+		if(edge_delay[1] && ~d0[1]) begin
+			encoder_count_1 <= encoder_count_1 + 1;
 		end
 	end
 	//***************************************************************

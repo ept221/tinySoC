@@ -159,6 +159,7 @@ module d_ram_and_io(input wire clk,
                               .w_en(io_w_en),
                               .r_en(io_r_en),
                               .dout(motor_controller_dout),
+                              .encoders(),
                               .pwm(pwm),
                               .motor(motor),
                               .enable(motor_enable)
