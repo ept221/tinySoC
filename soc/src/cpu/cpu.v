@@ -201,8 +201,8 @@ module cpu(input wire clk,
     wire [2:0] iMemAddrSelect;                  //*
     always @(*) begin
         case(iMemAddrSelect)
-        3'b000:     iMemAddress = pcPlusOne;
-        3'b001:     iMemAddress = pcOut;
+        3'b000:     iMemAddress = pcOut;
+        3'b001:     iMemAddress = pcPlusOne;
         3'b010:     iMemAddress = interruptVector;
         3'b011:     iMemAddress = iMemOut;
         3'b100:     iMemAddress = {regFileOutC, regFileOutB};
