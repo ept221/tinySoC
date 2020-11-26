@@ -95,8 +95,8 @@ module cpu(input wire clk,
     wire aluSrcASelect;                         //*
     always @(*) begin
         case(aluSrcASelect)
-        1'b0:   dataA = {4'd0,statusOut};       // From zero-extended status register
-        1'b1:   dataA = regFileOutA;            // From the register file
+        1'b0:   dataA = regFileOutA;            // From the register file
+        1'b1:   dataA = {4'd0,statusOut};       // From zero-extended status register
         endcase
     end
     //***************************************************************
@@ -133,9 +133,9 @@ module cpu(input wire clk,
     wire [2:0] dMemDataSelect;                  //*
     always @(*) begin
         case(dMemDataSelect)
-            3'b000:  dMemIOIn = pcPlusOne[15:8];        // From MSBs of the PC + 1
-            3'b001:  dMemIOIn = pcPlusOne[7:0];         // From LSBs of the PC + 1
-            3'b010:  dMemIOIn = aluOut;                 // From the ALU
+            3'b000:  dMemIOIn = aluOut;                 // From the ALU
+            3'b001:  dMemIOIn = pcPlusOne[15:8];        // From MSBs of the PC + 1
+            3'b010:  dMemIOIn = pcPlusOne[7:0];         // From LSBs of the PC + 1
             3'b011:  dMemIOIn = current_address[15:8];  // From MSBs of the current address
             3'b100:  dMemIOIn = current_address[7:0];   // From LSBs of the current address
             default  dMemIOIn = current_address[7:0];
