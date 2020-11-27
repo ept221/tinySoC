@@ -20,11 +20,6 @@ module d_ram_and_io(input wire clk,
                     input wire rx,
                     output wire tx,
 
-                    // For motor_controller
-                    output wire [1:0] pwm,
-                    output wire [3:0] motor,
-                    output wire motor_enable,
-
                     // For gpu
                     output wire h_sync,
                     output wire v_sync,
@@ -53,7 +48,7 @@ module d_ram_and_io(input wire clk,
             d_ram_r_en = 0;
             io_w_en = w_en;
             io_r_en = r_en;
-            dout = gpio_dout | counter_timer_dout | uart_dout | gpu_dout | motor_controller_dout;
+            dout = gpio_dout | counter_timer_dout | uart_dout | gpu_dout;
         end
         else begin
             d_ram_w_en = 0;
@@ -147,22 +142,6 @@ module d_ram_and_io(input wire clk,
                   .dout(uart_dout),
                   .rx(rx),
                   .tx(tx)
-    );
-    //***********************************************************************************
-    // motor controller from: 0x100D - 0x100E
-    wire [7:0] motor_controller_dout;
-
-    motor_controller #(.MOTOR_CONTROLLER_ADDRESS(8'h0D))
-        motor_controller_inst(.clk(clk),
-                              .din(din),
-                              .address(address[7:0]),
-                              .w_en(io_w_en),
-                              .r_en(io_r_en),
-                              .dout(motor_controller_dout),
-                              .encoders(),
-                              .pwm(pwm),
-                              .motor(motor),
-                              .enable(motor_enable)
     );
     //***********************************************************************************
     // gpu from: 0x1080, 0x2000-0x2960

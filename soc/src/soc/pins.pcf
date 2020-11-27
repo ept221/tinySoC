@@ -12,15 +12,6 @@ set_io gpio_pins[7] C2
 set_io rx A9
 set_io tx C9
 
-# Motor Controller
-set_io pwm[0] H2
-set_io pwm[1] H9
-set_io motor[0] H1
-set_io motor[1] J1
-set_io motor[2] D8
-set_io motor[3] D9
-set_io motor_enable G2
-
 # GPU
 set_io h_sync A1
 set_io v_sync A2
