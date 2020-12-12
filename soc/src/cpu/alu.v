@@ -20,7 +20,7 @@ module alu(input wire [7:0] dataA,
         4'b1000:    {cout, out} = dataA - dataB - {7'b0,cin};   // SBB
         4'b1001:    {cout, out} = {cin,dataB};                  // Pass B       // Used by mov rd, rs
         4'b1010:    {cout, out} = {cin,~dataA};                 // NOT
-        4'b1011:    {cout, out} = (1 << dataA);                 // SLL
+        4'b1011:    {cout, out} = (dataA << 1);                 // SLL
         4'b1100:    {cout, out} = {cin,(dataA >> 1)};           // SRL
         4'b1101:    {cout, out} = {cin,(dataA >>> 1)};          // SRA
         4'b1110:    {cout, out} = {cin,dataA};                  // Pass A

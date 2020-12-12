@@ -26,7 +26,7 @@
         ldi r0, 0xff            ; set all gpio to output
         out r0, dir_reg
 
-        ldi r0, 0b00011100      ; setup the gpu
+        ldi r0, 0b00010100      ; setup the gpu
         out r0, gpu_ctrl_reg
 
         ldi r2, gpu_addr[l]     ; setup the pointer to the v-ram
