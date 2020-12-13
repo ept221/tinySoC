@@ -1,65 +1,110 @@
 ;******************************************************************************
-        .define dir_reg, 0x00
-        .define port_reg, 0x01
-        .define pin_reg, 0x02
-
-        .define prescaler_l, 0x03
-        .define prescaler_h, 0x04
-        .define count_ctrl, 0x05
-
-        .define gpu_addr, 0x2000
-        .define gpu_ctrl_reg, 0x80
-
-        .define gpu_isr_vector, 0x0020
-        .define top_isr_vector, 0x0030
+        .define uart_baud, 0x0A
+        .define uart_ctrl, 0x0B
+        .define uart_buffer, 0x0C
 ;******************************************************************************         
         .code
-                
-        ldi r14, 0xff                   ; set stack pointer
 
-        ldi r0, 0b00011000
-        out r0, gpu_ctrl_reg
+        ldi r14, 0xff           ; set the stack pointer
+        ldi r15, 0x00
 
-        ldi r2, gpu_addr[l]
-        ldi r3, gpu_addr[h]
-;******************************************************************************
-main:   ldi r0, 0xff
-        ldi r1, 0x3d
+        ldi r0, 103
+        out r0, uart_baud       ; set the baud rate to 9600
 
-        ldi r4, 1
-        ldi r5, 0
+        ldi r0, 11
+        ldi r1, 3
+        call div
 
-        add r0, r4
-        adc r1, r5
+poll:   in r1, uart_ctrl
+        ani r1, 2
+        jz poll                 ; poll for empty buffer
 
-        mov r12, r1
-        call numToStr
-
-        mov r12, r0
-        call numToStr
-
+print:  out r2, uart_buffer     ; print the lsbs
         hlt
 ;******************************************************************************
-; Prints the value in r12 to the screen, in hex.
-; It expects the gpu pointer to be in p2.
-numToStr:
-        mov r13, r12
-        srl r13
-        srl r13
-        srl r13
-        srl r13
-        cpi r13, 0x09
-        jn alpha1
-        adi r13, 48
-        jmp print1
-alpha1: adi r13, 55
-print1: sri r13, p2
-        ani r12, 0x0f
-        cpi r12, 0x09
-        jn alpha2
-        adi r12, 48
-        jmp print2
-alpha2: adi r12, 55
-print2: sri r12, p2
+mult:   ; r0 is the multiplicand
+        ; r1 is the multiplier
+        ; r2 and r3 will hold the results
+        
+        srd r4, p14
+        srd r5, p14
+        srd r6, p14
+
+        mov r2, r1              ; move the multiplier to r2
+        ldi r1, 0
+        ldi r3, 8               ; counter
+        ldi r4, 0
+        ldi r5, 0
+
+loop:   cpi r3, 0
+        jz end
+
+        ldi r6, 1
+        and r6, r2
+        jz shift
+
+        add r4, r0
+        adc r5, r1
+
+shift:  ldi r6, 0
+        sll r0                  ; shift lsbs of the multiplicand 
+        jnc no_c
+        ldi r6, 1
+no_c:   sll r1                  ; shift the msbs of the multiplicand
+        add r1, r6
+
+        srl r2
+        adi  r3, -1
+        jmp loop
+
+end:    mov r2, r4
+        mov r3, r5
+
+        lri r6, p14
+        lri r5, p14
+        lri r4, p14
+
         ret
+;******************************************************************************
+div:	; r0 is the dividened
+		; r1 is the divisor
+		; r2 holds the quotient
+		; r3 holds the remainder
+
+		srd r4, p14
+        srd r5, p14
+
+		mov r3, r1   
+		ldi r1, 0    
+
+		ldi r4, 8
+
+loop1:	cpi r4, 0
+		jz end1
+
+		ldi r5, 0
+		sll r0
+		jnc no_c1
+		ldi r5, 1
+no_c1:	sll r1
+		add r1, r5
+
+		sub r1, r3
+		mov r5, r1
+		ani r5, 0x80
+		jz other
+		ani r0, 0xfe
+		add r1, r3
+		jmp foo
+other:	ori r0, 1
+foo:	adi r4, -1
+		jmp loop1
+
+end1:	mov r2, r0
+		mov r3, r1
+
+		lri r5, p14
+        lri r4, p14
+		
+		ret
 ;******************************************************************************
