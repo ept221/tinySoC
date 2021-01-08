@@ -25,28 +25,37 @@ module cpu(input wire clk,
     // Instantiate Control Logic
     control cntrl(.clk(clk),
                   .reset(reset),
+
                   .iMemOut(iMemOut),
+
                   .carryFlag(carryFlag),
                   .zeroFlag(zeroFlag),
                   .negativeFlag(negativeFlag),
                   .interruptEnable(interruptEnable),
+
                   .regFileSrc(regFileSrc),
                   .regFileOutBSelect(regFileOutBSelect),
                   .regFileWriteEnable(regFileWriteEnable),
-                  .regFileIncPair(regFileIncPair),
-                  .regFileDecPair(regFileDecPair),
+                  .regFileAdd(regFileAdd),
+                  .regFileConst(regFileConst),
+
                   .aluSrcASelect(aluSrcASelect),
                   .aluSrcBSelect(aluSrcBSelect),
                   .aluMode(aluMode),
+
                   .dMemDataSelect(dMemDataSelect),
                   .dMemIOAddressSelect(dMemIOAddressSelect),
                   .dMemIOWriteEn(dMemIOWriteEn),
                   .dMemIOReadEn(dMemIOReadEn),
+
                   .statusRegSrcSelect(statusRegSrcSelect),
                   .flagEnable(flagEnable),
+
                   .iMemAddrSelect(iMemAddrSelect),
                   .iMemReadEnable(iMemReadEnable),
+
                   .pcWriteEn(pcWriteEn),
+
                   .interruptVector(interruptVector),
                   .interrupt_0(interrupt_0),
                   .interrupt_1(interrupt_1),
@@ -56,17 +65,16 @@ module cpu(input wire clk,
                   .interrupt_1_clr(interrupt_1_clr),
                   .interrupt_2_clr(interrupt_2_clr),
                   .interrupt_3_clr(interrupt_3_clr),
+
                   .reset_out(reset_out)
     );
     //***************************************************************
     // Register File Source Mux
-    wire [1:0] regFileSrc;                      //*
+    wire regFileSrc;                            //*
     always @(*) begin
         case(regFileSrc)
-        2'b00:  regFileIn = aluOut;             // From the ALU output
-        2'b01:  regFileIn = iMemOut[11:4];      // From the instruction memory output
-        2'b10:  regFileIn = dMemIOOut;          // From the data memory output
-        2'b11:  regFileIn = dMemIOOut;          // From the data memory output, for default
+        1'b0:   regFileIn = aluOut;             
+        1'b1:   regFileIn = dMemIOOut;
         endcase
     end
     //***************************************************************
@@ -74,18 +82,21 @@ module cpu(input wire clk,
     wire [3:0] regFileOutBSelect;               //*
     reg [7:0] regFileIn;
     wire regFileWriteEnable;                    //*
-    wire regFileIncPair;                        //*
-    wire regFileDecPair;                        //*
     wire [7:0] regFileOutA;
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
-    regFile registerFile(.inSelect(iMemOut[15:12]),
-                         .outBselect(regFileOutBSelect),
-                         .in(regFileIn),
+
+    wire regFileAdd;                            //*
+    wire [7:0] regFileConst;                    //*
+
+    regFile registerFile(.clk(clk),
+                         .reset(reset_out),
+                         .din(regFileIn),
+                         .a_select(iMemOut[15:12]),
+                         .b_select(regFileOutBSelect),
                          .write_en(regFileWriteEnable),
-                         .inc(regFileIncPair),
-                         .dec(regFileDecPair),
-                         .clk(clk),
+                         .add(regFileAdd),
+                         .constant(regFileConst),
                          .outA(regFileOutA),
                          .outB(regFileOutB),
                          .outC(regFileOutC)
@@ -146,10 +157,10 @@ module cpu(input wire clk,
     wire [1:0] dMemIOAddressSelect;             //*
     always @(*) begin
         case(dMemIOAddressSelect)
-            2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};
-            2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};
-            2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
-            default  dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;
+            2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};                                     // BC pointer
+            2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};                                   // IO address
+            2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;                             // BC pointer + 1
+            2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + {4{{iMemOut[12]}},iMemOut[7:4]};   // BC pointer + k
         endcase
     end
     //***************************************************************
@@ -159,7 +170,7 @@ module cpu(input wire clk,
         case(statusRegSrcSelect)
         2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
         2'b01:  statusIn = {aluOut[3:0]};                                       // ALU output
-        2'b10:  statusIn = {dMemIOOut[3:0]};                                      // Data memory output
+        2'b10:  statusIn = {dMemIOOut[3:0]};                                    // Data memory output
         2'b11:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};              // Disable interrupts and save all other flags
         endcase
     end
@@ -174,7 +185,13 @@ module cpu(input wire clk,
     wire [3:0] statusOut = {interruptEnable,negativeFlag,zeroFlag,carryFlag};
 
     always @(posedge clk) begin
-        if(flagEnable) begin
+        if(reset_out) begin
+            carryFlag <= 0;
+            zeroFlag <= 0;
+            negativeFlag <= 0;
+            interruptEnable <= 0;
+        end
+        else if(flagEnable) begin
             carryFlag <= statusIn[0];
             zeroFlag <= statusIn[1];
             negativeFlag <= statusIn[2];
@@ -191,7 +208,10 @@ module cpu(input wire clk,
     // Current Address Register
     reg [15:0] current_address;
     always @(posedge clk) begin
-        if(iMemReadEnable) begin
+        if(reset_out) begin
+            current_address <= 0;
+        end
+        else if(iMemReadEnable) begin
             current_address <= iMemAddress;
         end
     end
@@ -207,6 +227,7 @@ module cpu(input wire clk,
         3'b011:     iMemAddress = iMemOut;
         3'b100:     iMemAddress = {regFileOutC, regFileOutB};
         3'b101:     iMemAddress = {returnReg,dMemIOOut};
+        3'b110:     iMemAddress = current_address + {{7{1'b0}},iMemOut[12:4]};
         default     iMemAddress = 16'd0;      
         endcase
     end

@@ -8,8 +8,8 @@ module control(input wire clk,
                output reg [1:0] regFileSrc,
                output reg [3:0] regFileOutBSelect,
                output reg regFileWriteEnable,  
-               output reg regFileIncPair,        
-               output reg regFileDecPair,            
+               output reg regFileAdd,
+               output reg [7:0] regFileConst,            
                output reg aluSrcASelect,
                output reg [1:0] aluSrcBSelect,
                output reg [3:0] aluMode,
@@ -147,6 +147,26 @@ module control(input wire clk,
 
     //****************************************************************************************************
     // Main Decoder
+
+    wire R_I_TYPE =   (iMemOut[3:0] >= 4'b001 && iMemOut <= 4'b0111);
+    wire IO_TYPE =    (iMemOut[3:0] == 4'b1000 || iMemOut[3:0] == 4'b1001);
+    wire R_R_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b0010 && iMemOut[7:4] <= 4'b1010);
+    wire P_R_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b1100 && iMemOut[7:4] <= 4'b1111 && iMemOut[12] = 1'b0);
+    wire P_K_S_TYPE = (iMemOut[3:0] == 4'b1011 || iMemOut[3:0] == 4'b1100);
+    wire P_I_TYPE =   (iMemOut[3:0] == 4'b1101 && iMemOut[12] == 1'b0);
+    wire BR_TYPE =    (iMemOut[3:0] == 4'b1110);
+    wire R_TYPE =     (iMemOut[3:0] == 4'b1111 && iMemOut[7:4] >= 4'b0000 && iMemOut[7:4] <= 4'b0101 && iMemOut[11:8] == 4'b0000);
+    wire JMPI_TYPE =  (iMemOut[8:0] == 9'b001101111);
+    wire JMP_TYPE =   (iMemOut[12:0] == 13'b0000001111111);
+    wire CALL_TYPE =  (iMemOut[12:0] == 13'b0000010001111);
+    wire RET_TYPE =   (iMemOut[12:0] == 13'b0000010011111);
+    wire PUS_TYPE =   (iMemOut[15:0] == 16'b0000000010101111);
+    wire POS_TYPE =   (iMemOut[15:0] == 16'b0000000010111111);
+    wire M_TYPE =     (iMemOut[7:0] == 8'b11001111 || iMemOut[7:0] == 8'b11011111) && iMemOut[15:12] == 4'b0000);
+    wire P_TYPE =     (iMemOut[12] == 1'b0 && iMemOut[8:0] == 9'b011101111);
+    wire NOP_TYPE =   (iMemOut[15:0] == 16'b0000000000000000);
+    wire HLT_TYPE =   (iMemOut[15:0] == 16'b1111111111111111);
+
     always @(*) begin
         if(reset_d1 == 1'b0 && state != START && state != RESET) begin
             regFileSrc = 2'b00;                 // aluOut
