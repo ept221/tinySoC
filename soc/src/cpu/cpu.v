@@ -36,6 +36,7 @@ module cpu(input wire clk,
                   .regFileSrc(regFileSrc),
                   .regFileOutBSelect(regFileOutBSelect),
                   .regFileWriteEnable(regFileWriteEnable),
+                  .regFileMove(regFileMove),
                   .regFileAdd(regFileAdd),
                   .regFileConst(regFileConst),
 
@@ -86,6 +87,7 @@ module cpu(input wire clk,
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
 
+    wire regFileMove;                           //*
     wire regFileAdd;                            //*
     wire [7:0] regFileConst;                    //*
 
@@ -95,6 +97,7 @@ module cpu(input wire clk,
                          .a_select(iMemOut[15:12]),
                          .b_select(regFileOutBSelect),
                          .write_en(regFileWriteEnable),
+                         .move(regFileMove),
                          .add(regFileAdd),
                          .constant(regFileConst),
                          .outA(regFileOutA),
