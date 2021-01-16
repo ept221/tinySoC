@@ -163,7 +163,7 @@ module cpu(input wire clk,
             2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};                                     // BC pointer
             2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};                                   // IO address
             2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;                             // BC pointer + 1
-            2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + {4{{iMemOut[12]}},iMemOut[7:4]};   // BC pointer + k
+            2'b11:   dMemIOAddress = {regFileOutC,regFileOutB} + {{4{iMemOut[12]}},iMemOut[7:4]};   // BC pointer + k
         endcase
     end
     //***************************************************************

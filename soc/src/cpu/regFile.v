@@ -14,15 +14,16 @@ module regFile(input wire clk,
     //****************************************************************************************
     // Construct the register file and initialize it to zero
     reg [7:0] rFile [0:15];
+    integer i;
     initial begin
-        for(integer i = 0; i < 16; i = i + 1) begin
+        for(i = 0; i < 16; i = i + 1) begin
             rFile[i] = 8'd0;
         end
     end
     //****************************************************************************************
     always @(posedge clk) begin
         if(reset) begin
-            for(integer i = 0; i < 16; i = i + 1) begin
+            for(i = 0; i < 16; i = i + 1) begin
                 rFile[i] <= 0;
             end
         end
@@ -58,7 +59,7 @@ module regFile(input wire clk,
         end
     end
 
-    wire [15:0] result = a_pair + {8{{constant[7]}},constant};
+    wire [15:0] result = a_pair + {{8{constant[7]}},constant};
     assign outA = rFile[a_select];
     assign outB = rFile[b_select];
     //****************************************************************************************
