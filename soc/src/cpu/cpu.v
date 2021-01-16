@@ -38,7 +38,7 @@ module cpu(input wire clk,
                   .regFileWriteEnable(regFileWriteEnable),
                   .regFileMove(regFileMove),
                   .regFileAdd(regFileAdd),
-                  .regFileConst(regFileConst),
+                  .regFileConstSrc(regFileConstSrc),
 
                   .aluSrcASelect(aluSrcASelect),
                   .aluSrcBSelect(aluSrcBSelect),
@@ -79,6 +79,17 @@ module cpu(input wire clk,
         endcase
     end
     //***************************************************************
+    // Register File Const Mux
+    wire [1:0] regFileConstSrc;                 //*
+    always @(*) begin
+        case(regFileConstSrc)
+        2'b00:  regFileConst = 8'd1;
+        2'b01:  regFileConst = 8'd255;
+        2'b10:  regFileConst = iMemOut[11:4];
+        default regFileConst = iMemOut[11:4];
+        endcase
+    end
+    //***************************************************************
     // Register File
     wire [3:0] regFileOutBSelect;               //*
     reg [7:0] regFileIn;
@@ -89,7 +100,7 @@ module cpu(input wire clk,
 
     wire regFileMove;                           //*
     wire regFileAdd;                            //*
-    wire [7:0] regFileConst;                    //*
+    reg [7:0] regFileConst;
 
     regFile registerFile(.clk(clk),
                          .reset(reset_out),
