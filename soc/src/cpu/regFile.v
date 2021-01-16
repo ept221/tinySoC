@@ -30,7 +30,7 @@ module regFile(input wire clk,
                 rFile[a_select] <= din;
             end
             if(add && (~write_en || (write_en && ~(b_select == a_select))) && ~move) begin
-                case(b_select)
+                case(a_select)
                     4'b0000:    {rFile[1],rFile[0]} <= result;
                     4'b0010:    {rFile[3],rFile[2]} <= result;
                     4'b0100:    {rFile[5],rFile[4]} <= result;
@@ -41,23 +41,23 @@ module regFile(input wire clk,
                     4'b1110:    {rFile[15],rFile[14]} <= result;
                 endcase
             end
-            if(move) begin
-                case(b_select)
-                    4'b0000:    {rFile[1],rFile[0]} <= a_pair;
-                    4'b0010:    {rFile[3],rFile[2]} <= a_pair;
-                    4'b0100:    {rFile[5],rFile[4]} <= a_pair;
-                    4'b0110:    {rFile[7],rFile[6]} <= a_pair;
-                    4'b1000:    {rFile[9],rFile[8]} <= a_pair;
-                    4'b1010:    {rFile[11],rFile[10]} <= a_pair;
-                    4'b1100:    {rFile[13],rFile[12]} <= a_pair;
-                    4'b1110:    {rFile[15],rFile[14]} <= a_pair;
+            else if(move) begin
+                case(a_select)
+                    4'b0000:    {rFile[1],rFile[0]} <= b_pair;
+                    4'b0010:    {rFile[3],rFile[2]} <= b_pair;
+                    4'b0100:    {rFile[5],rFile[4]} <= b_pair;
+                    4'b0110:    {rFile[7],rFile[6]} <= b_pair;
+                    4'b1000:    {rFile[9],rFile[8]} <= b_pair;
+                    4'b1010:    {rFile[11],rFile[10]} <= b_pair;
+                    4'b1100:    {rFile[13],rFile[12]} <= b_pair;
+                    4'b1110:    {rFile[15],rFile[14]} <= b_pair;
                 endcase
             end
 
         end
     end
 
-    wire [15:0] result = b_pair + {8{{0}},constant};
+    wire [15:0] result = a_pair + {8{{constant[7]}},constant};
     assign outA = rFile[a_select];
     assign outB = rFile[b_select];
     //****************************************************************************************
