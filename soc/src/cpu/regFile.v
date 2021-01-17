@@ -32,7 +32,7 @@ module regFile(input wire clk,
                 rFile[a_select] <= din;
             end
             if(add && (~write_en || (write_en && ~(b_select == a_select))) && ~move) begin
-                case(a_select)
+                case(b_select)
                     4'b0000:    {rFile[1],rFile[0]} <= result;
                     4'b0010:    {rFile[3],rFile[2]} <= result;
                     4'b0100:    {rFile[5],rFile[4]} <= result;
@@ -59,7 +59,7 @@ module regFile(input wire clk,
         end
     end
 
-    wire [15:0] result = a_pair + {{7{constant[8]}},constant};
+    wire [15:0] result = b_pair + {{7{constant[8]}},constant};
     assign outA = rFile[a_select];
     assign outB = rFile[b_select];
     //****************************************************************************************
@@ -98,7 +98,7 @@ module regFile(input wire clk,
     //****************************************************************************************
     reg [15:0] b_pair;
     always @(*) begin
-        case(b_select)
+        case(b_select[3:1])
         3'b000: begin
             b_pair = {rFile[1],rFile[0]};
             outC = rFile[1];

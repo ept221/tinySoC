@@ -40,8 +40,8 @@ module cpu(input wire clk,
         case(regFileConstSrc)
         2'b00:  regFileConst = 9'd1;
         2'b01:  regFileConst = 9'd511;
-        2'b10:  regFileConst = iMemOut[12:4];
-        default regFileConst = iMemOut[12:4];
+        2'b10:  regFileConst = {iMemOut[15:12],iMemOut[8:4]};
+        default regFileConst = {iMemOut[15:12],iMemOut[8:4]};
         endcase
     end
     //***************************************************************
