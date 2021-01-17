@@ -347,7 +347,7 @@ module control(input wire clk,
                 dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;                 // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
-                iMemAddrSelect = (condition) ? ((iMemOut[0]) ? 3'b110 : 3'b100) : 3'b000;
+                iMemAddrSelect = (condition) ? ((~iMemOut[0]) ? 3'b110 : 3'b100) : 3'b000;
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;
                 nextState = PART1;
