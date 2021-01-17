@@ -313,8 +313,8 @@ module control(input wire clk,
                 nextState = (~iMemOut[0] && (state == PART1)) ? PART2 : PART1;
             end
             else if(P_I_TYPE) begin
-                regFileSrc = 1'b0;                  // aluOut, doesn't matter
-                regFileOutBSelect = {iMemOut[11:9],1'b0};    // PPP0
+                regFileSrc = 1'b0;                          // aluOut, doesn't matter
+                regFileOutBSelect = {iMemOut[11:9],1'b0};   // PPP0
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b1;
                 regFileConstSrc = 2'b10;
@@ -334,7 +334,7 @@ module control(input wire clk,
             end
             else if(BR_TYPE || JMPI_TYPE) begin
                 regFileSrc = 1'b0;                          // aluOut, doesn't really matter
-                regFileOutBSelect = {iMemOut[11:9],1'b0};          // Doesn't matter
+                regFileOutBSelect = {iMemOut[11:9],1'b0};   // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -354,7 +354,7 @@ module control(input wire clk,
             end
             else if(JMP_TYPE) begin
                 regFileSrc = 1'b0;                              // aluOut, doesn't really matter
-                regFileOutBSelect = {iMemOut[11:9],1'b0};              // Doesn't matter
+                regFileOutBSelect = {iMemOut[11:9],1'b0};       // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -576,7 +576,7 @@ module control(input wire clk,
                     nextState = (reset_d1 == 1'd1) ? PART1 : RESET;
                 end
                 START[3:1]: begin
-                    regFileSrc = 1'b0;                  // aluOut, doesn't really matter
+                    regFileSrc = 1'b0;                         // aluOut, doesn't really matter
                     regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
