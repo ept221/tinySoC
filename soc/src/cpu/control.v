@@ -295,7 +295,7 @@ module control(input wire clk,
             else if(R_P_K_TYPE) begin
                 regFileSrc = 1'b1;                  // dMemIOOut
                 regFileOutBSelect = {iMemOut[11:9],1'b0};    // PPP0
-                regFileWriteEnable = ~iMemOut[0];            // If Load
+                regFileWriteEnable = (state == PART2);       // If PART2 of Load
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA
