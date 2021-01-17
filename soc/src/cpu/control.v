@@ -174,7 +174,7 @@ module control(input wire clk,
         if(state[0] == 1'b0) begin
             if(reset_d1 == 1'b0 && state != START && state != RESET) begin
                 regFileSrc = 1'b0;                  // aluOut
-                regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -214,7 +214,7 @@ module control(input wire clk,
             end
             else if(R_I_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut
-                regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b1;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;             // Doesn't matter
@@ -234,7 +234,7 @@ module control(input wire clk,
             end
             else if(IO_TYPE) begin
                 regFileSrc = 2'b10;                 // dMemIOOut
-                regFileOutBSelect = 4'b1110;    // Doesn't really matter.
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter.
                 regFileWriteEnable = (state == PART2);
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -314,7 +314,7 @@ module control(input wire clk,
             end
             else if(P_I_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't matter
-                regFileOutBSelect = 4'b1110;    // Doesn't matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b1;
                 regFileConstSrc = 2'b10;
@@ -334,7 +334,7 @@ module control(input wire clk,
             end
             else if(BR_TYPE || JMPI_TYPE) begin
                 regFileSrc = 1'b0;                          // aluOut, doesn't really matter
-                regFileOutBSelect = 4'b1110;            // Doesn't matter
+                regFileOutBSelect = iMemOut[11:8];          // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -354,7 +354,7 @@ module control(input wire clk,
             end
             else if(JMP_TYPE) begin
                 regFileSrc = 1'b0;                              // aluOut, doesn't really matter
-                regFileOutBSelect = 4'b1110;                // Doesn't matter
+                regFileOutBSelect = iMemOut[11:8];              // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -474,7 +474,7 @@ module control(input wire clk,
             end
             else if(P_P_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                regFileOutBSelect = 4'b1110;           // Doesn't really matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -514,7 +514,7 @@ module control(input wire clk,
             end
             else if(NOP_TYPE || HLT_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -534,7 +534,7 @@ module control(input wire clk,
             end
             else begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
                 regFileConstSrc = 2'b0;
@@ -557,7 +557,7 @@ module control(input wire clk,
             case(state[3:1])
                 RESET[3:1]: begin
                     regFileSrc = 1'b0;                 // aluOut, doesn't really matter
-                    regFileOutBSelect = 4'b1110;   // Doesn't really matter
+                    regFileOutBSelect = iMemOut[11:8]; // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
                     regFileConstSrc = 2'b0;
@@ -577,7 +577,7 @@ module control(input wire clk,
                 end
                 START[3:1]: begin
                     regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                    regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                    regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
                     regFileConstSrc = 2'b0;
@@ -657,7 +657,7 @@ module control(input wire clk,
                 end
                 default begin
                     regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                    regFileOutBSelect = 4'b1110;    // Doesn't really matter
+                    regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
                     regFileConstSrc = 2'b0;
