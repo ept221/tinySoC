@@ -153,7 +153,7 @@ module control(input wire clk,
     wire R_R_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b0001 && iMemOut[7:4] <= 4'b1001);
     wire R_P_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b1100 && iMemOut[7:4] <= 4'b1111 && iMemOut[8] == 1'b0);
     wire R_P_K_TYPE = (iMemOut[3:0] == 4'b1011 || iMemOut[3:0] == 4'b1100);
-    wire P_I_TYPE =   (iMemOut[3:0] == 4'b1101 && iMemOut[12] == 1'b0);
+    wire P_I_TYPE =   (iMemOut[3:0] == 4'b1101);
     wire BR_TYPE =    (iMemOut[3:0] == 4'b1110);
     wire R_TYPE =     (iMemOut[3:0] == 4'b1111 && iMemOut[7:4] >= 4'b1010 && iMemOut[7:4] <= 4'b1111 && iMemOut[11:8] == 4'b0000);
     wire JMPI_TYPE =  (iMemOut[8:0] == 9'b0_0001_1111 && iMemOut[12] == 1'b0);

@@ -83,10 +83,10 @@ module cpu(input wire clk,
     wire [1:0] regFileConstSrc;                 //*
     always @(*) begin
         case(regFileConstSrc)
-        2'b00:  regFileConst = 8'd1;
-        2'b01:  regFileConst = 8'd255;
-        2'b10:  regFileConst = iMemOut[11:4];
-        default regFileConst = iMemOut[11:4];
+        2'b00:  regFileConst = 9'd1;
+        2'b01:  regFileConst = 9'd511;
+        2'b10:  regFileConst = iMemOut[12:4];
+        default regFileConst = iMemOut[12:4];
         endcase
     end
     //***************************************************************
@@ -100,7 +100,7 @@ module cpu(input wire clk,
 
     wire regFileMove;                           //*
     wire regFileAdd;                            //*
-    reg [7:0] regFileConst;
+    reg [8:0] regFileConst;
 
     regFile registerFile(.clk(clk),
                          .reset(reset_out),
@@ -174,7 +174,7 @@ module cpu(input wire clk,
             2'b00:   dMemIOAddress = {regFileOutC,regFileOutB};                                     // BC pointer
             2'b01:   dMemIOAddress = {8'b00010000,iMemOut[11:4]};                                   // IO address
             2'b10:   dMemIOAddress = {regFileOutC,regFileOutB} + 16'b1;                             // BC pointer + 1
-            2'b11:   dMemIOAddress = {regFileOutC,regFileOutB} + {{4{iMemOut[12]}},iMemOut[7:4]};   // BC pointer + k
+            2'b11:   dMemIOAddress = {regFileOutC,regFileOutB} + {{3{iMemOut[8]}},iMemOut[8:4]};    // BC pointer + k
         endcase
     end
     //***************************************************************

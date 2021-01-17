@@ -6,7 +6,7 @@ module regFile(input wire clk,
                input wire write_en,
                input wire move,
                input wire add,
-               input wire [7:0] constant,
+               input wire [8:0] constant,
                output wire [7:0] outA,
                output wire [7:0] outB,
                output reg [7:0] outC
@@ -59,7 +59,7 @@ module regFile(input wire clk,
         end
     end
 
-    wire [15:0] result = a_pair + {{8{constant[7]}},constant};
+    wire [15:0] result = a_pair + {{7{constant[8]}},constant};
     assign outA = rFile[a_select];
     assign outB = rFile[b_select];
     //****************************************************************************************
