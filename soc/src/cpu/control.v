@@ -507,7 +507,7 @@ module control(input wire clk,
                 dMemIOReadEn = (state == PART2);    // Read during PART2
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
-                iMemAddrSelect = 3'b100;            // BC pointer
+                iMemAddrSelect = 3'b000;            // pcOut
                 iMemReadEnable = (state == PART3);
                 pcWriteEn = (state == PART3);
                 nextState = (state == PART1) ? PART2 : (state == PART2) ? PART3 : PART1;
