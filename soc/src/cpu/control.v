@@ -148,7 +148,7 @@ module control(input wire clk,
 
     //****************************************************************************************************
     // Main Decoder
-    wire R_I_TYPE =   (iMemOut[3:0] >= 4'b001 && iMemOut <= 4'b0111);
+    wire R_I_TYPE =   (iMemOut[3:0] >= 4'b001 && iMemOut[3:0] <= 4'b0111);
     wire IO_TYPE =    (iMemOut[3:0] == 4'b1000 || iMemOut[3:0] == 4'b1001);
     wire R_R_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b0001 && iMemOut[7:4] <= 4'b1001);
     wire R_P_TYPE =   (iMemOut[3:0] == 4'b1010 && iMemOut[7:4] >= 4'b1100 && iMemOut[7:4] <= 4'b1111 && iMemOut[8] == 1'b0);
@@ -260,7 +260,7 @@ module control(input wire clk,
                 regFileConstSrc = 2'b0;
                 aluSrcASelect = 1'b0;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB
-                aluMode = iMemOut[6:3];
+                aluMode = iMemOut[7:4];
                 dMemDataSelect = 3'b000;            // aluOut, doesn't really matter
                 dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}, but doesn't really matter
                 dMemIOWriteEn = 1'b0;
