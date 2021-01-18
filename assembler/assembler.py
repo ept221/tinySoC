@@ -992,7 +992,7 @@ def second_pass(symbols, code):
                 elif(code_line[-1][0] == "<mnm_m>"):
                     instruction = code_line[4]
                     if(numb < 0 or numb > 16):
-                        error("Mask must be >= 0 and <= 16",line)
+                        error("Mask must be >= 0 and <= 15",line)
                         return 0
                     else:
                         instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
