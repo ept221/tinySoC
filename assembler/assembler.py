@@ -686,7 +686,7 @@ def parse_code(tokens, symbols, code, line):
         data.append(expr)
         ##################################################
         # Code Generation
-        instruction = table.mnm_r_i[inst_str]
+        instruction = table.mnm_r_i[inst_str] if (inst_tkn == "<mnm_r_i>") else table.mnm_r_io[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
         val = evaluate(expr[1:],symbols,code.code_address)
@@ -696,11 +696,8 @@ def parse_code(tokens, symbols, code, line):
                 error("Argument must be >= -128 and <= 255",line)
                 return er
             else:
-                if(numb >= 0):
-                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
-                else:
-                    numb = 255 - abs(numb) + 1
-                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
             code.write_code(line,instruction,code_string,[inst_tkn,val])
@@ -831,14 +828,11 @@ def parse_code(tokens, symbols, code, line):
         if(len(val) == 1):
             numb = val[0]
             if(numb < -16 or numb > 31):
-                error("Offset must be >= -16 and <= 15",line)
+                error("Offset must be >= -16 and <= 15.",line)
                 return er
             else:
-                if(numb >= 0):
-                    instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
-                else:
-                    numb = 255 - abs(numb) + 1
-                    instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
             code.write_code(line,instruction,code_string,[inst_tkn,val])
@@ -859,13 +853,41 @@ def parse_code(tokens, symbols, code, line):
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing comma and argument!",line)
+            error("Instruction missing comma and data!",line)
             return er
         if(tokens[0][0] != "<comma>"):
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing data!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad data!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_p_i[inst_str]
+        instruction = instruction[:4] + format(int(reg1[1:]),'04b')[:-1] + instruction[7:]
+        code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
+        val = evaluate(expr[1:],symbols,code.code_address)
+        if(len(val) == 1):
+            numb = val[0]
+            if(numb < -256 or numb > 511):
+                error("Data must be >= -256 and <= 511.",line)
+                return er
+            else:
+                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                instruction = format(numb,'09b')[:4] + instruction[4:7] + format(numb,'09b')[4:] + instruction[12:]
+                code.write_code(line,instruction,code_string,0)
+        else:
+            code.write_code(line,instruction,code_string,[inst_tkn,val])
 
+        return data
     ##################################################
     # [mnm_r]
     if(tokens[0][0] == "<mnm_r>"):
@@ -888,7 +910,7 @@ def parse_code(tokens, symbols, code, line):
         return data
     ##################################################
     # [mnm_p]
-    if(tokens[0][0] == "<mnm_rp>"):
+    if(tokens[0][0] == "<mnm_p>"):
         inst_str = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
