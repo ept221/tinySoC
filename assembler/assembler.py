@@ -964,9 +964,8 @@ def parse_code(tokens, symbols, code, line):
                 code.write_code(line,address,"",0)
             else:
                 code.write_code(line,"AAAAAAAAAAAAAAAA","",[inst_tkn,val])
-        else if(inst_tkn == "<mnm_br>"):
+        elif(inst_tkn == "<mnm_br>"):
             instruction = table.mnm_br[inst_str]
-            code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
                 numb = val[0]
