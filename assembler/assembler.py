@@ -827,11 +827,11 @@ def parse_code(tokens, symbols, code, line):
         val = evaluate(expr[1:],symbols,code.code_address)
         if(len(val) == 1):
             numb = val[0]
-            if(numb < -16 or numb > 31):
+            if(numb < -16 or numb > 15):
                 error("Offset must be >= -16 and <= 15.",line)
                 return er
             else:
-                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
                 instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
@@ -881,7 +881,7 @@ def parse_code(tokens, symbols, code, line):
                 error("Data must be >= -256 and <= 511.",line)
                 return er
             else:
-                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
                 instruction = format(numb,'09b')[:4] + instruction[4:7] + format(numb,'09b')[4:] + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
@@ -929,17 +929,18 @@ def parse_code(tokens, symbols, code, line):
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
-    # [mnm_a] or [mnm_m]
-    if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_m>"):
+    # [mnm_a] or [mnm_m] or [mnm_br]
+    if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_br>") or tokens[0][0] == "<mnm_m>":
         inst_str = tokens[0][1]
         inst_tkn = tokens[0][0]
+        arg_name = "address" if (inst_tkn == "<mnm_a>") else ("offset" if (inst_tkn == "<mnm_br>") else "mask")
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing argument!",line)
+            error("Instruction missing " + arg_name + "!",line)
             return er
         expr = parse_expr(*args)
         if(not expr):
-            error("Instruction has bad argument!",line)
+            error("Instruction has bad " + arg_name + "!",line)
             return er
         elif(expr == er):
             return er
@@ -956,20 +957,35 @@ def parse_code(tokens, symbols, code, line):
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > preferences.i_ram_len):
-                    error("Address must be >= 0 and <= "+str(preferences.i_ram_len),line)
+                    error("Address must be >= 0 and <= "+str(preferences.i_ram_len)+".",line)
                     return er
                 else:
                     address = format(numb,'016b')
                 code.write_code(line,address,"",0)
             else:
                 code.write_code(line,"AAAAAAAAAAAAAAAA","",[inst_tkn,val])
+        else if(inst_tkn == "<mnm_br>"):
+            instruction = table.mnm_br[inst_str]
+            code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
+            val = evaluate(expr[1:],symbols,code.code_address)
+            if(len(val) == 1):
+                numb = val[0]
+                if(numb < -256 or numb > 255):
+                    error("Offset must be >= -256 and <= 255.",line)
+                    return er
+                else:
+                    numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                    instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
+                    code.write_code(line,instruction,code_string,0)
+            else:
+                code.write_code(line,instruction,code_string,[inst_tkn,val])
         else:
             instruction = table.mnm_m[inst_str]
             val = evaluate(expr[1:],symbols,code.code_address)
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > 16):
-                    error("Mask must be >= 0 and <= 16",line)
+                    error("Mask must be >= 0 and <= 16.",line)
                     return er
                 else:
                     instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
@@ -977,6 +993,41 @@ def parse_code(tokens, symbols, code, line):
             else:
                 code.write_code(line,instruction,code_string,[inst_tkn,val])
 
+        return data
+    ##################################################
+    # [mnm_p_p]
+    if(tokens[0][0] == "<mnm_p_p>"):
+        inst_str = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has a bad rp register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and rp register!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r_r[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
+        code_string = inst_str + " " + reg1 + ", " + reg2
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_n]
