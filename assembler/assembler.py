@@ -137,22 +137,28 @@ def lexer(lines):
                         pass
                     elif word in table.mnm_r_i:
                         tl.append(["<mnm_r_i>", word])
-                    elif word in table.mnm_r_l:
-                        tl.append(["<mnm_r_l>", word])
                     elif word in table.mnm_r_r:
                         tl.append(["<mnm_r_r>", word])
+                    elif word in table.mnm_r_p:
+                        tl.append(["<mnm_r_p>", word])
+                    elif word in table.mnm_r_p_k:
+                        tl.append(["<mnm_r_p_k>", word])
+                    elif word in table.mnm_p_i:
+                        tl.append(["<mnm_p_i>", word])
+                    elif word in table.mnm_br:
+                        tl.append(["<mnm_br>", word])
                     elif word in table.mnm_r:
                         tl.append(["<mnm_r>", word])
-                    elif word in table.mnm_r_rp:
-                        tl.append(["<mnm_r_rp>", word])
-                    elif word in table.mnm_rp:
-                        tl.append(["<mnm_rp>", word])
+                    elif word in table.mnm_p:
+                        tl.append(["<mnm_p>", word])
                     elif word in table.mnm_a:
                         tl.append(["<mnm_a>", word])
                     elif word in table.mnm_n:
                         tl.append(["<mnm_n>", word])
                     elif word in table.mnm_m:
                         tl.append(["<mnm_m>", word])
+                    elif word in table.mnm_p_p:
+                        tl.append(["<mnm_p_p>", word])
                     elif word in table.drct_0:
                         tl.append(["<drct_0>", word])
                     elif word in table.drct_1:
