@@ -137,6 +137,8 @@ def lexer(lines):
                         pass
                     elif word in table.mnm_r_i:
                         tl.append(["<mnm_r_i>", word])
+                    elif word in table.mnm_r_io:
+                        tl.append(["<mnm_r_io>", word])
                     elif word in table.mnm_r_r:
                         tl.append(["<mnm_r_r>", word])
                     elif word in table.mnm_r_p:
@@ -651,10 +653,11 @@ def parse_code(tokens, symbols, code, line):
         error("Instructions must be inside the code segment!", line)
         return ["<error>"]
     ##################################################
-    # [mnm_r_i]
-    if(tokens[0][0] == "<mnm_r_i>"):
+    # [mnm_r_i] or [mnm_r_io]
+    if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_io>"):
         inst_str = tokens[0][1]
         inst_tkn = tokens[0][0]
+        arg_name = "data" if (inst_tkn == "<mnm_r_i>") else "port address"
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
@@ -665,17 +668,14 @@ def parse_code(tokens, symbols, code, line):
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing comma and argument!",line)
+            error("Instruction missing comma and " + arg_name + "!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] not in {"<hex_num>","<dec_num>","<bin_num>","<symbol>"}):
-                error("Instruction has bad argument!",line)
-                return er
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing argument!",line)
+            error("Instruction missing " + arg_name + "!",line)
             return er
         expr = parse_expr(*args)
         if(not expr):
@@ -723,9 +723,6 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg>"):
-                error("Instruction has bad register!",line)
-                return er
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
@@ -761,9 +758,6 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<pair>"):
-                error("Instruction has bad rp register!",line)
-                return er
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
@@ -837,7 +831,7 @@ def parse_code(tokens, symbols, code, line):
         if(len(val) == 1):
             numb = val[0]
             if(numb < -16 or numb > 31):
-                error("Offset must be >= -16 and <= 31",line)
+                error("Offset must be >= -16 and <= 15",line)
                 return er
             else:
                 if(numb >= 0):
@@ -850,6 +844,28 @@ def parse_code(tokens, symbols, code, line):
             code.write_code(line,instruction,code_string,[inst_tkn,val])
 
         return data
+    ##################################################
+    # [mnm_p_i]
+    if(tokens[0][0] == "<mnm_p_i>"):
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and argument!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+
     ##################################################
     # [mnm_r]
     if(tokens[0][0] == "<mnm_r>"):
@@ -960,6 +976,7 @@ def parse_code(tokens, symbols, code, line):
 #          | <code>
 #
 # <code> ::= <mnm_r_i> <reg> <comma> <expr>
+#          | <mnm_r_io> <reg> <comma> <expr>
 #          | <mnm_r_r> <reg> <comma> <reg>
 #          | <mnm_r_p> <reg> <comma> <pair>
 #          | <mnm_r_p_k> <reg> <comma> <pair> <comma> <expr>

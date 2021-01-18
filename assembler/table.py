@@ -5,9 +5,12 @@ mnm_r_i = {
 	'XOI': "DDDDIIIIIIII0100",
 	'ADI': "DDDDIIIIIIII0101",
 	'ACI': "DDDDIIIIIIII0110",
-	'CPI': "DDDDIIIIIIII0111",
+	'CPI': "DDDDIIIIIIII0111",  
+}
+
+mnm_r_io = {
 	'IN':  "DDDDIIIIIIII1000",
-	'OUT': "SSSSIIIIIIII1001",  
+	'OUT': "SSSSIIIIIIII1001",
 }
 
 mnm_r_r = {
@@ -161,6 +164,7 @@ pairs = {
 }
 
 reserved_mnm_r_i = {key for key in mnm_r_i}
+reserved_mnm_io = {key for key in mnm_r_io}
 reserved_mnm_r_r = {key for key in mnm_r_r}
 reserved_mnm_r_p = {key for key in mnm_r_p}
 reserved_mnm_r_p_k = {key for key in mnm_r_p_k}
@@ -173,9 +177,8 @@ reserved_mnm_n = {key for key in mnm_n}
 reserved_mnm_m = {key for key in mnm_m}
 reserved_mnm_p_p = {key for key in mnm_p_p}
 
-reserved = (reserved_mnm_r_i | reserved_mnm_r_r | reserved_mnm_r_p |
-			reserved_mnm_r_p_k | reserved_mnm_p_i | reserved_mnm_br |
-			reserved_mnm_r | reserved_mnm_p | reserved_mnm_a |
-			reserved_mnm_n | reserved_mnm_m | reserved_mnm_p_p | 
-			drct_0 | drct_0 | drct_1 | drct_2 | drct_m | drct_s |
+reserved = (reserved_mnm_r_i | reserved_mnm_io | reserved_mnm_r_r | reserved_mnm_r_p |
+			reserved_mnm_r_p_k | reserved_mnm_p_i | reserved_mnm_br | reserved_mnm_r |
+			reserved_mnm_p | reserved_mnm_a | reserved_mnm_n | reserved_mnm_m | 
+			reserved_mnm_p_p | drct_0 | drct_0 | drct_1 | drct_2 | drct_m | drct_s |
 			registers | pairs)
