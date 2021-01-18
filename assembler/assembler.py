@@ -644,14 +644,15 @@ def parse_code(tokens, symbols, code, line):
         return 0
     ##################################################
     # Check if inside the code segment
-    if(tokens[0][0] in {"<mnm_r_i>","<mnm_r_l>","<mnm_r_r>","<mnm_r>",
-                        "<mnm_r_rp>","<mnm_rp>","<mnm_a>","<mnm_m>","<mnm_n>"}
+    if(tokens[0][0] in {"<mnm_r_i>","<mnm_r_r>","<mnm_r_p>","<mnm_r_p_k>",
+                        "<mnm_p_i>","<mnm_br>","<mnm_r>","<mnm_p>","<mnm_a>",
+                        "<mnm_n>","<mnm_p_p>"}
                         and not (code.segment == "code")):
         error("Instructions must be inside the code segment!", line)
         return ["<error>"]
     ##################################################
-    # [mnm_r_i] or [mnm_r_l]
-    if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
+    # [mnm_r_i]
+    if(tokens[0][0] == "<mnm_r_i>"):
         inst_str = tokens[0][1]
         inst_tkn = tokens[0][0]
         data.append(tokens.pop(0))
@@ -659,7 +660,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -685,11 +686,7 @@ def parse_code(tokens, symbols, code, line):
         data.append(expr)
         ##################################################
         # Code Generation
-        instruction = ""
-        if(inst_tkn == "<mnm_r_i>"):
-            instruction = table.mnm_r_i[inst_str]
-        else:
-            instruction = table.mnm_r_l[inst_str]
+        instruction = table.mnm_r_i[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
         val = evaluate(expr[1:],symbols,code.code_address)
@@ -727,7 +724,7 @@ def parse_code(tokens, symbols, code, line):
             return er
         if(tokens[0][0] != "<comma>"):
             if(tokens[0][0] != "<reg>"):
-                error("Instruction has a bad register!",line)
+                error("Instruction has bad register!",line)
                 return er
             error("Instruction missing comma!",line)
             return er
@@ -736,7 +733,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -748,35 +745,15 @@ def parse_code(tokens, symbols, code, line):
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
-    # [mnm_r]
-    if(tokens[0][0] == "<mnm_r>"):
+    # [mnm_r_p]
+    if(tokens[0][0] == "<mnm_r_p>"):
         inst_str = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
-            return er
-        reg1 = tokens[0][1]
-        data.append(tokens.pop(0))
-        ##################################################
-        # Code Generation
-        instruction = table.mnm_r[inst_str]
-        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
-        code_string = inst_str + " " + reg1
-        code.write_code(line,instruction,code_string,0)
-        return data
-    ##################################################
-    # [mnm_r_rp]
-    if(tokens[0][0] == "<mnm_r_rp>"):
-        inst_str = tokens[0][1]
-        data.append(tokens.pop(0))
-        if(not tokens):
-            error("Instruction missing register!",line)
-            return er
-        if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -785,7 +762,7 @@ def parse_code(tokens, symbols, code, line):
             return er
         if(tokens[0][0] != "<comma>"):
             if(tokens[0][0] != "<pair>"):
-                error("Instruction has a bad rp register!",line)
+                error("Instruction has bad rp register!",line)
                 return er
             error("Instruction missing comma!",line)
             return er
@@ -794,7 +771,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing rp register!",line)
             return er
         if(tokens[0][0] != "<pair>"):
-            error("Instruction has a bad rp register!",line)
+            error("Instruction has bad rp register!",line)
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -806,7 +783,95 @@ def parse_code(tokens, symbols, code, line):
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
-    # [mnm_rp]
+    # [mnm_r_p_k]
+    if(tokens[0][0] == "<mnm_r_p_k>"):
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg>"):
+            error("Instruction has bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma rp register comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing offset!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad offset!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r_p_k[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
+        code_string = inst_str + " " + reg1 + ", " + reg2 + ", " + expr_to_str(expr[1:])
+        val = evaluate(expr[1:],symbols,code.code_address)
+        if(len(val) == 1):
+            numb = val[0]
+            if(numb < -16 or numb > 31):
+                error("Offset must be >= -16 and <= 31",line)
+                return er
+            else:
+                if(numb >= 0):
+                    instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                else:
+                    numb = 255 - abs(numb) + 1
+                    instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                code.write_code(line,instruction,code_string,0)
+        else:
+            code.write_code(line,instruction,code_string,[inst_tkn,val])
+
+        return data
+    ##################################################
+    # [mnm_r]
+    if(tokens[0][0] == "<mnm_r>"):
+        inst_str = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg>"):
+            error("Instruction has bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + instruction[4:]
+        code_string = inst_str + " " + reg1
+        code.write_code(line,instruction,code_string,0)
+        return data
+    ##################################################
+    # [mnm_p]
     if(tokens[0][0] == "<mnm_rp>"):
         inst_str = tokens[0][1]
         data.append(tokens.pop(0))
@@ -814,7 +879,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing rp register!",line)
             return er
         if(tokens[0][0] != "<pair>"):
-            error("Instruction has a bad rp register!",line)
+            error("Instruction has bad rp register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
