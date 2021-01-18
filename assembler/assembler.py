@@ -768,7 +768,7 @@ def parse_code(tokens, symbols, code, line):
         data.append(tokens.pop(0))
         ##################################################
         # Code Generation
-        instruction = table.mnm_r_rp[inst_str]
+        instruction = table.mnm_r_p[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
         code.write_code(line,instruction,code_string,0)
@@ -923,7 +923,7 @@ def parse_code(tokens, symbols, code, line):
         data.append(tokens.pop(0))
         ##################################################
         # Code Generation
-        instruction = table.mnm_rp[inst_str]
+        instruction = table.mnm_p[inst_str]
         instruction = instruction[:4] + format(int(reg1[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1
         code.write_code(line,instruction,code_string,0)
@@ -1128,7 +1128,6 @@ def second_pass(symbols, code):
     while i < len(code.code_data):
         code_line = code.code_data[i]
         line = code_line[0]
-        print(code_line)
         if(code_line[-1]):
             val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16))
             if(len(val) == 1):
@@ -1137,7 +1136,7 @@ def second_pass(symbols, code):
                 # [mnm_r_i] or [mnm_r_io]
                 if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_io>"):
                     instruction = code_line[4]
-                    arg_name = "Data" if (inst_tkn == "<mnm_r_i>") else "Port address"
+                    arg_name = "Data" if (code_line[-1][0] == "<mnm_r_i>") else "Port address"
                     if(numb < -128 or numb > 255):
                         error("Argument must be >= -128 and <= 255",line)
                         return 0
