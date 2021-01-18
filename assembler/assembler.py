@@ -985,7 +985,7 @@ def parse_code(tokens, symbols, code, line):
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > 16):
-                    error("Mask must be >= 0 and <= 16.",line)
+                    error("Mask must be >= 0 and <= 15.",line)
                     return er
                 else:
                     instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
