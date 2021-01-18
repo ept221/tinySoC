@@ -895,14 +895,17 @@ def parse_code(tokens, symbols, code, line):
 #          | <code>
 #
 # <code> ::= <mnm_r_i> <reg> <comma> <expr>
-#          | <mnm_r_l> <reg> <comma> <expr>
 #          | <mnm_r_r> <reg> <comma> <reg>
+#          | <mnm_r_p> <reg> <comma> <pair>
+#          | <mnm_r_p_k> <reg> <comma> <pair> <comma> <expr>
+#          | <mnm_p_i> <pair> <comma> <expr>
+#          | <mnm_br> <expr>
 #          | <mnm_r> <reg>
-#          | <mnm_r_rp> <reg> <comma> <pair>
-#          | <mnm_rp> <pair>
+#          | <mnm_p> <pair>
 #          | <mnm_a> <expr>
 #          | <mnm_n>
 #          | <mnm_m> <expr>
+#          | <mnm_p_p> <pair> <comma> <pair>
 #
 # <expr> ::= [ (<plus> | <minus>) ] <numb> [ <selector> ] { (<plus> | <minus>) <numb> [ <selector> ]}
 #
