@@ -973,6 +973,12 @@ def parse_code(tokens, symbols, code, line):
                     error("Offset must be >= -256 and <= 255.",line)
                     return er
                 else:
+                    if(numb + code.code_address):
+                        error("Instruction branches below address 0",line)
+                        return er
+                    if(numb + code.code_address > preferences.i_ram_len,line):
+                        error("Instruction branches above address " + str(preferences.i_ram_len),line)
+                        return er
                     numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
                     instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
                     code.write_code(line,instruction,code_string,0)
@@ -1122,23 +1128,46 @@ def second_pass(symbols, code):
     while i < len(code.code_data):
         code_line = code.code_data[i]
         line = code_line[0]
+        print(code_line)
         if(code_line[-1]):
             val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16))
             if(len(val) == 1):
                 numb = val[0]
                 ##################################################
-                # [mnm_r_i] or [mnm_r_l]
-                if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_l>"):
+                # [mnm_r_i] or [mnm_r_io]
+                if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_io>"):
                     instruction = code_line[4]
+                    arg_name = "Data" if (inst_tkn == "<mnm_r_i>") else "Port address"
                     if(numb < -128 or numb > 255):
                         error("Argument must be >= -128 and <= 255",line)
                         return 0
                     else:
-                        if(numb >= 0):
-                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
-                        else:
-                            numb = 255 - abs(numb) + 1
-                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                        instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
+                ##################################################
+                # [mnm_r_p_k]
+                elif(code_line[-1][0] == "<mnm_r_p_k>"):
+                    instruction = code_line[4]
+                    if(numb < -16 or numb > 15):
+                        error(arg_name + " must be >= -16 and <= 15.",line)
+                        return 0
+                    else:
+                        numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
+                        instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
+                 ##################################################
+                # [mnm_p_i]
+                elif(code_line[-1][0] == "<mnm_p_i>"):
+                    instruction = code_line[4]
+                    if(numb < -256 or numb > 511):
+                        error("Data must be >= -256 and <= 511.",line)
+                        return 0
+                    else:
+                        numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                        instruction = format(numb,'09b')[:4] + instruction[4:7] + format(numb,'09b')[4:] + instruction[12:]
                         code_line[4] = instruction
                         code_line[-1] = 0
                 ##################################################
@@ -1150,6 +1179,22 @@ def second_pass(symbols, code):
                     else:
                         code_line[4] = format(numb,'016b')
                         code_line[-1] = 0
+                ##################################################
+                # [mnm_br]
+                elif(code_line[-1][0] == "<mnm_br>"):
+                    instruction = code_line[4]
+                    if(numb < -256 or numb > 255):
+                        error("Offset must be >= -256 and <= 255.",line)
+                        return er
+                    else:
+                        if(numb + int(code_line[3], 16) < 0):
+                            error("Instruction branches below address 0", line)
+                            return 0
+                        if(numb + int(code_line[3], 16) > preferences.i_ram_len,line):
+                            error("Instruction branches above address " + str(preferences.i_ram_len),line)
+                            return 0
+                        numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                        instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
                 ##################################################
                 # [mnm_m]
                 elif(code_line[-1][0] == "<mnm_m>"):
