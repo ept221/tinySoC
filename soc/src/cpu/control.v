@@ -233,7 +233,7 @@ module control(input wire clk,
                 nextState = PART1;
             end
             else if(IO_TYPE) begin
-                regFileSrc = 2'b10;                 // dMemIOOut
+                regFileSrc = 1'b1;                  // dMemIOOut
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter.
                 regFileWriteEnable = (state == PART2);
                 regFileAdd = 1'b0;
@@ -276,7 +276,7 @@ module control(input wire clk,
                 regFileSrc = 1'b1;                  // dMemIOOut
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // PPP0
                 regFileWriteEnable = iMemOut[5];    // If Load
-                regFileAdd = 1'b1;
+                regFileAdd = (state == PART1);
                 regFileConstSrc = (iMemOut[4] == 1'b0) ? 2'b00 : 2'b01;
                 aluSrcASelect = 1'b0;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
