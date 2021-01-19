@@ -254,7 +254,7 @@ def expr_to_str(expr):
         expr_str = expr_str + expr[-1][1]
     return expr_str
 ##############################################################################################################
-def evaluate(expr, symbols, address):
+def evaluate(expr, symbols, address, mode):
     ##################################################
     def modify(val, selector):
         if(selector == "[L]"):
@@ -308,7 +308,10 @@ def evaluate(expr, symbols, address):
             result += sign*modify((address),selector)
             expr = expr[:-pop]
         elif(expr[numpos][1] in symbols.labelDefs):
-            result += sign*modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)
+            if(mode == "diff"):
+                result += sign*(modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)-address)
+            else:
+                result += sign*modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)
             expr = expr[:-pop]
         elif(expr[numpos][1] in symbols.defs):
             result += sign*modify(int(symbols.defs[expr[numpos][1]],base=16),selector)
@@ -498,7 +501,7 @@ def parse_drct(tokens, symbols, code, line):
             return er
         if(expr == er):
             return er
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         data.append(expr)
         if(len(val) == 1):
             status = directives[drct_1](val[0],symbols,code,line)
@@ -545,7 +548,7 @@ def parse_drct(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         if(len(val) == 1):
             status = directives[drct_2]([symbol,val[0]],symbols,code,line)
             if(not status):
@@ -577,7 +580,7 @@ def parse_drct(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         if(len(val) == 1):
             d_args.append(val[0])
         else:
@@ -600,7 +603,7 @@ def parse_drct(tokens, symbols, code, line):
             if(expr == error):
                 return er
             data.append(expr)
-            val = evaluate(expr[1:],symbols,address)
+            val = evaluate(expr[1:],symbols,address,"abs")
             if(len(val) == 1):
                 d_args.append(val[0])
             else:
@@ -689,7 +692,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_i[inst_str] if (inst_tkn == "<mnm_r_i>") else table.mnm_r_io[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
-        val = evaluate(expr[1:],symbols,code.code_address)
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
         if(len(val) == 1):
             numb = val[0]
             if(numb < -128 or numb > 255):
@@ -824,7 +827,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_r_p_k[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2 + ", " + expr_to_str(expr[1:])
-        val = evaluate(expr[1:],symbols,code.code_address)
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
         if(len(val) == 1):
             numb = val[0]
             if(numb < -16 or numb > 15):
@@ -874,7 +877,7 @@ def parse_code(tokens, symbols, code, line):
         instruction = table.mnm_p_i[inst_str]
         instruction = instruction[:4] + format(int(reg1[1:]),'04b')[:-1] + instruction[7:]
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
-        val = evaluate(expr[1:],symbols,code.code_address)
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
         if(len(val) == 1):
             numb = val[0]
             if(numb < -256 or numb > 511):
@@ -953,7 +956,7 @@ def parse_code(tokens, symbols, code, line):
             instruction = table.mnm_a[inst_str]
             address = ""
             code.write_code(line,instruction,code_string,0)
-            val = evaluate(expr[1:],symbols,code.code_address)
+            val = evaluate(expr[1:],symbols,code.code_address,"abs")
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > preferences.i_ram_len):
@@ -966,7 +969,7 @@ def parse_code(tokens, symbols, code, line):
                 code.write_code(line,"AAAAAAAAAAAAAAAA","",[inst_tkn,val])
         elif(inst_tkn == "<mnm_br>"):
             instruction = table.mnm_br[inst_str]
-            val = evaluate(expr[1:],symbols,code.code_address)
+            val = evaluate(expr[1:],symbols,code.code_address,"diff")
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < -256 or numb > 255):
@@ -988,7 +991,7 @@ def parse_code(tokens, symbols, code, line):
                 code.write_code(line,instruction,code_string,[inst_tkn,val])
         else:
             instruction = table.mnm_m[inst_str]
-            val = evaluate(expr[1:],symbols,code.code_address)
+            val = evaluate(expr[1:],symbols,code.code_address,"abs")
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > 16):
@@ -1131,7 +1134,8 @@ def second_pass(symbols, code):
         code_line = code.code_data[i]
         line = code_line[0]
         if(code_line[-1]):
-            val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16))
+            mode = "diff" if(code_line[-1][0] == "<mnm_br>") else "abs"
+            val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16),mode)
             if(len(val) == 1):
                 numb = val[0]
                 ##################################################
