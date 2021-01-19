@@ -980,9 +980,7 @@ def parse_code(tokens, symbols, code, line):
                         error("Instruction branches below address 0",line)
                         return er
                     if(numb + code.code_address > preferences.i_ram_len):
-                        print(numb + code.code_address)
-                        print(preferences.i_ram_len)
-                        error("Instruction branches above address " + str(preferences.i_ram_len),line)
+                        error("Instruction branches above address asdf " + str(preferences.i_ram_len),line)
                         return er
                     numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
                     instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
@@ -1034,7 +1032,7 @@ def parse_code(tokens, symbols, code, line):
         data.append(tokens.pop(0))
         ##################################################
         # Code Generation
-        instruction = table.mnm_r_r[inst_str]
+        instruction = table.mnm_p_p[inst_str]
         instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1 + ", " + reg2
         code.write_code(line,instruction,code_string,0)
@@ -1192,14 +1190,16 @@ def second_pass(symbols, code):
                         error("Offset must be >= -256 and <= 255.",line)
                         return er
                     else:
-                        if(numb + int(code_line[3], 16) < 0):
+                        if((numb + int(code_line[2], 16)) < 0):
                             error("Instruction branches below address 0", line)
                             return 0
-                        if(numb + int(code_line[3], 16) > preferences.i_ram_len,line):
+                        if((numb + int(code_line[2], 16)) > preferences.i_ram_len):
                             error("Instruction branches above address " + str(preferences.i_ram_len),line)
                             return 0
                         numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
                         instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
                 ##################################################
                 # [mnm_m]
                 elif(code_line[-1][0] == "<mnm_m>"):
