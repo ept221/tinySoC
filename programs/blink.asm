@@ -29,13 +29,16 @@
         ldi r0, 0b00010010
         out r0, count_ctrl              ; set pwm mode, set top interrupt
 
+        csr 0
         ssr 8                           ; enable interrupts
-loop:   jmp loop                        ; loop and wait for interrupt
+loop:   bz 0                        ; loop and wait for interrupt
+        hlt
 
         .org top_isr_vector
 isr:    in r0, port_reg                 ; read pin register
         xoi r0, 1                       ; toggle the led bit
         out r0, port_reg                ; write to the port register
+        csr 0
         ssr 8                           ; enable interrupts
         ret
 ;******************************************************************************

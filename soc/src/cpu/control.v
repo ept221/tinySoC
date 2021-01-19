@@ -142,10 +142,6 @@ module control(input wire clk,
 
     wire interrupt = interrupt_0 || interrupt_1 || interrupt_2 || interrupt_3;
 
-    // The HLT instruction cannot be interrupted, and neither can the clear status register
-    // instruction (CSR), if it is clearing the global interrupt enable flag.
-    wire uninterruptible = (iMemOut == 16'h00f0) || (iMemOut[7:0] == 8'he8 && iMemOut[11] == 1'b0);
-
     //****************************************************************************************************
     // Main Decoder
     wire R_I_TYPE =   (iMemOut[3:0] >= 4'b001 && iMemOut[3:0] <= 4'b0111);
@@ -167,6 +163,10 @@ module control(input wire clk,
     wire POP_TYPE =   (iMemOut[11:0] == 12'b1110_0010_0000);
     wire NOP_TYPE =   (iMemOut[15:0] == 16'b0000_0000_0000_0000);
     wire HLT_TYPE =   (iMemOut[15:0] == 16'b1111_1111_1111_1111);
+    //****************************************************************************************************
+    // The HLT instruction cannot be interrupted, and neither can the clear status register
+    // instruction (CSR), if it is clearing the global interrupt enable flag.
+    wire uninterruptible = (HLT_TYPE) || (iMemOut[15:11] == 4'b0 && iMemOut[7:0] == 8'b10001111);
     //****************************************************************************************************
     assign regFileMove = P_P_TYPE;
     //****************************************************************************************************
@@ -226,7 +226,7 @@ module control(input wire clk,
                 dMemIOWriteEn = 1'd0;
                 dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-                flagEnable = (iMemOut[3:1] != 3'b001);  // Don't set flags on LDI
+                flagEnable = (iMemOut[2:0] != 3'b001);  // Don't set flags on LDI
                 iMemAddrSelect = 3'b000;            // pcOut, pcPlusOne
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'd1;
@@ -243,7 +243,7 @@ module control(input wire clk,
                 aluMode = 4'b0000;                  // Pass A
                 dMemDataSelect = 3'b000;            // aluOut
                 dMemIOAddressSelect = 2'b01;        // {8'd0,iMemOut[11:4]};
-                dMemIOWriteEn = iMemOut[0];
+                dMemIOWriteEn = iMemOut[0];         // If out
                 dMemIOReadEn = (~iMemOut[0] && (state == PART1));   // If In and PART1
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status, doesn't matter.
                 flagEnable = 1'b0;
@@ -266,7 +266,7 @@ module control(input wire clk,
                 dMemIOWriteEn = 1'b0;
                 dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
-                flagEnable = (iMemOut[6:3] != 4'b0001);   // MOV doesn't affect flags
+                flagEnable = (iMemOut[7:4] != 4'b0001);   // MOV doesn't affect flags
                 iMemAddrSelect = 3'b000;            // pcOut
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;
@@ -326,7 +326,7 @@ module control(input wire clk,
                 dMemIOWriteEn = 1'b0;
                 dMemIOReadEn = 1'b0;
                 statusRegSrcSelect = 2'b00;                 // ALU flags out and save interrupt enable status
-                flagEnable = 1'b1;
+                flagEnable = 1'b0;
                 iMemAddrSelect = 3'b000;                    // pcOut
                 iMemReadEnable = 1'b1;
                 pcWriteEn = 1'b1;

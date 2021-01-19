@@ -20,7 +20,7 @@ loop:   in r1, uart_ctrl
         jz start
 
         out r0, uart_buffer     ; print the char
-        jnz loop
+        jmp loop
 ;******************************************************************************
         .data
 text:   .string "GitHub repo at: https://github.com/ept221/tinySoC\n"

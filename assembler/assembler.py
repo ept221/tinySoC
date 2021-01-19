@@ -973,10 +973,12 @@ def parse_code(tokens, symbols, code, line):
                     error("Offset must be >= -256 and <= 255.",line)
                     return er
                 else:
-                    if(numb + code.code_address):
+                    if(numb + code.code_address < 0):
                         error("Instruction branches below address 0",line)
                         return er
-                    if(numb + code.code_address > preferences.i_ram_len,line):
+                    if(numb + code.code_address > preferences.i_ram_len):
+                        print(numb + code.code_address)
+                        print(preferences.i_ram_len)
                         error("Instruction branches above address " + str(preferences.i_ram_len),line)
                         return er
                     numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
