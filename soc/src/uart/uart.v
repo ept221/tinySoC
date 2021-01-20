@@ -184,7 +184,7 @@ module uart(input wire clk,
                     end
                     else begin
                         tx <= tx_data[0];       // Data bit
-                        tx_data <= {0,tx_data[7:1]};
+                        tx_data <= {1'b0,tx_data[7:1]};
                     end
       
                 end
