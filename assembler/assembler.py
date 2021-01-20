@@ -825,7 +825,7 @@ def parse_code(tokens, symbols, code, line):
         ##################################################
         # Code Generation
         instruction = table.mnm_r_p_k[inst_str]
-        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b')[0:3] + instruction[7:]
         code_string = inst_str + " " + reg1 + ", " + reg2 + ", " + expr_to_str(expr[1:])
         val = evaluate(expr[1:],symbols,code.code_address,"abs")
         if(len(val) == 1):
@@ -835,7 +835,7 @@ def parse_code(tokens, symbols, code, line):
                 return er
             else:
                 numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
-                instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                instruction = instruction[0:7] + format(numb,'05b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
             code.write_code(line,instruction,code_string,[inst_tkn,val])
@@ -1158,7 +1158,7 @@ def second_pass(symbols, code):
                         return 0
                     else:
                         numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
-                        instruction = instruction[0:8] + format(numb,'05b') + instruction[12:]
+                        instruction = instruction[0:7] + format(numb,'05b') + instruction[12:]
                         code_line[4] = instruction
                         code_line[-1] = 0
                  ##################################################
