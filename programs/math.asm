@@ -13,7 +13,7 @@
 
         ldi r0, 11
         ldi r1, 3
-        call div
+        call mult
 
 poll:   in r1, uart_ctrl
         ani r1, 2
