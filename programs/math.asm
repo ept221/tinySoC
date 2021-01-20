@@ -95,7 +95,7 @@ other:  ori r0, 1
 foo:    adi r4, -1
         jmp loop1
 
-end1:   mov p0, p2
+end1:   mvp p2, p0
 
         pop r5
         pop r4
