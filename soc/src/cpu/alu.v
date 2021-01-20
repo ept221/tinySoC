@@ -7,6 +7,7 @@ module alu(input wire [7:0] dataA,
            output reg zout,
            output reg nout
 );
+    //wire [10:0] foo = (dataA >> 1);
 
     always @(*) begin
         case(mode)
@@ -21,8 +22,8 @@ module alu(input wire [7:0] dataA,
         4'b1000:    {cout, out} = dataA - dataB;                // SUB
         4'b1001:    {cout, out} = dataA - dataB - {7'b0,cin};   // SBB
         4'b1010:    {cout, out} = (dataA << 1);                 // SLL
-        4'b1011:    {out, cout} = (dataA >> 1);                 // SRL
-        4'b1100:    {out, cout} = (dataA >>> 1);                // SRA
+        4'b1011:    {cout, out} = {dataA[0],(dataA >> 1)};      // SRL
+        4'b1100:    {cout, out} = {dataA[0],(dataA >>> 1)};     // SRA
         4'b1101:    {cout, out} = {dataA,cin};                  // RLC
         4'b1110:    {out, cout} = {cin,dataA};                  // RRC
         4'b1111:    {cout, out} = {cin,~dataA};                 // NOT
