@@ -55,7 +55,6 @@ module regFile(input wire clk,
                     4'b1110:    {rFile[15],rFile[14]} <= b_pair;
                 endcase
             end
-
         end
     end
 
