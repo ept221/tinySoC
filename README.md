@@ -11,7 +11,7 @@ The GPU operates in a monochrome 80 column text mode, and outputs a VGA signal a
 
 ## The Instruction Set
 ![instruction set part 1](resources/ISA_Part_1.png)
-![instruction set part 2](resources/ISA_Part_1.png)
+![instruction set part 2](resources/ISA_Part_2.png)
 
 ## The Assembler
 
