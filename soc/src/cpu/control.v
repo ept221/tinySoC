@@ -60,7 +60,7 @@ module control(input wire clk,
         reset_d1 <= reset_d0;
     end
 
-    assign reset_out = (state[3:1] == RESET[3:1]);
+    assign reset_out = (state[3:1] == RESET[3:1] || state[3:1] == START[3:1]);
     //****************************************************************************************************
     // Delayed start counter
     reg [5:0] delay = 0;

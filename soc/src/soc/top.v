@@ -8,11 +8,11 @@ module top(input wire clk,
            output wire R,
            output wire G,
            output wire B,
-           output wire reset_out
 );
 
     //***************************************************************
     // Instantiate CPU
+    wire reset_out;
     cpu my_cpu(.clk(clk),
                .reset(reset),
                .iMemAddress(iMemAddress),
@@ -62,6 +62,7 @@ module top(input wire clk,
     wire dMemIOWriteEn;
     wire dMemIOReadEn;
     d_ram_and_io d_ram_and_io_inst(.clk(clk),
+                                   .rst(reset_out),
                                    .din(dMemIOIn),
                                    .address(dMemIOAddress),
                                    .w_en(dMemIOWriteEn),

@@ -34,7 +34,7 @@
 
         ldi r0, 32              ; This clears the screen by filling
         ldi r8, 0x60            ; it up with spaces
-        ldi r9, 0x08
+        ldi r9, 0x09
 clear:  sri r0, p2
         api p8, -1
         cpi r9, 0

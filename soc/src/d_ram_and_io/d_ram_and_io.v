@@ -1,4 +1,5 @@
 module d_ram_and_io(input wire clk,
+                    input wire rst,
                     input wire [7:0] din,
                     input wire [15:0] address,
                     input wire w_en,
@@ -135,6 +136,7 @@ module d_ram_and_io(input wire clk,
 
     uart #(.UART_ADDRESS(8'h0A))
         uart_inst(.clk(clk),
+                  .rst(rst),
                   .din(din),
                   .address(address[7:0]),
                   .w_en(io_w_en),
