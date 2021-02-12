@@ -26,11 +26,27 @@
         ldi r0, 0xff            ; set all gpio to output
         out r0, dir_reg
 
-        ldi r0, 0b00010100      ; setup the gpu
+        ldi r0, 0b00000100      ; setup the gpu
         out r0, gpu_ctrl_reg
 
         ldi r2, gpu_addr[l]     ; setup the pointer to the v-ram
         ldi r3, gpu_addr[h]
+
+        ldi r0, 32              ; This clears the screen by filling
+        ldi r8, 0x60            ; it up with spaces
+        ldi r9, 0x08
+clear:  sri r0, p2
+        api p8, -1
+        cpi r9, 0
+        bnz clear
+        cpi r8, 0
+        bnz clear
+
+        ldi r2, gpu_addr[l]     ; reset the pointer to the v-ram
+        ldi r3, gpu_addr[h]        
+
+        ldi r0, 95
+        str r0, p2, 0           ; print the cursor
 
         ldi r4, 0               ; r4 is the column counter
         ldi r6, gpu_addr[l]
