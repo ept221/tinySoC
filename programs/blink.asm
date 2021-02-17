@@ -31,7 +31,7 @@
 
         csr 0
         ssr 8                           ; enable interrupts
-loop:   bz 0                        ; loop and wait for interrupt
+loop:   br -1                           ; loop and wait for interrupt
         hlt
 
         .org top_isr_vector
