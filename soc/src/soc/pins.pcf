@@ -21,7 +21,6 @@ set_io B D2
 
 # Reset
 set_io -pullup yes reset E1
-set_io reset_out C1
 
 # Global Clock
 set_io clk B2

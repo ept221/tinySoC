@@ -1,4 +1,5 @@
 module gpu(input wire clk,
+           input wire rst,
            input wire [7:0] din,
            input wire [15:0] address,
            input wire w_en,
@@ -61,7 +62,7 @@ module gpu(input wire clk,
     //                                              gpu_control_register
     //
     // *--------*--------*--------*--------*--------*--------*----------------------------*--------------------------*
-    // |  N/A   |  N/A   |  N/A   |  blue  | green  |  red   | frame_end_interrupt_enable | frame_end_interrupt_flag |
+    // |PLL lock|  N/A   |  N/A   |  blue  | green  |  red   | frame_end_interrupt_enable | frame_end_interrupt_flag |
     // *--------*--------*--------*--------*--------*--------*----------------------------*--------------------------*
     //     7        6        5        4        3        2                  1                           0 
     //*****************************************************************************************************************
@@ -75,7 +76,12 @@ module gpu(input wire clk,
     always @(posedge clk) begin
         l0 <= locked;
         l1 <= l0;
-        if(address[7:0] == GPU_CONTROL_ADDRESS && w_en) begin
+        if(rst) begin
+            {blue, green, red} <= 0;
+            blanking_start_interrupt_enable <= 0;
+            dout <= 0;
+        end
+        else if(address[7:0] == GPU_CONTROL_ADDRESS && w_en) begin
             {blue, green, red} <= din[4:2];
             blanking_start_interrupt_enable <= din[1];
         end
@@ -135,7 +141,10 @@ module gpu(input wire clk,
 
     reg blanking_start_interrupt_enable = 0;
     always @(posedge clk) begin
-        if(blanking_start_interrupt_flag_clr) begin
+        if(rst) begin
+            blanking_start_interrupt_flag <= 0;
+        end
+        else if(blanking_start_interrupt_flag_clr) begin
             blanking_start_interrupt_flag <= 0;
         end
         else if(address[7:0] == GPU_CONTROL_ADDRESS && w_en) begin

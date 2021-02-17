@@ -94,6 +94,7 @@ module d_ram_and_io(input wire clk,
     
     gpio #(.GPIO_ADDRESS(8'h00)) 
          gpio_inst(.clk(clk),
+                   .rst(rst),
                    .din(din),
                    .address(address[7:0]),
                    .w_en(io_w_en),
@@ -114,6 +115,7 @@ module d_ram_and_io(input wire clk,
 
     counter_timer #(.COUNTER_TIMER_ADDRESS(8'h03))
         counter_timer_inst(.clk(clk),
+                           .rst(rst),
                            .din(din),
                            .address(address[7:0]),
                            .w_en(io_w_en),
@@ -152,6 +154,7 @@ module d_ram_and_io(input wire clk,
     gpu #(.GPU_IO_ADDRESS(8'h80),
           .GPU_VRAM_ADDRESS(16'h2000))
         gpu_inst(.clk(clk),
+                 .rst(rst),
                  .din(din),
                  .address(address[15:0]),
                  .w_en(io_w_en),
