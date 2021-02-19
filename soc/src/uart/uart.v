@@ -194,6 +194,7 @@ module uart(input wire clk,
 
     always @(posedge clk) begin
         if(rst) begin
+            tx <= 0;
             tx_state <= 3'b0;
             tx_data <= 8'b0;
             tx_count <= 4'b0;
