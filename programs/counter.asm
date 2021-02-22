@@ -58,16 +58,16 @@ numToStr:
         srl r13
         srl r13
         cpi r13, 0x09
-        jn alpha1
+        bn alpha1
         adi r13, 48
-        jmp print1
+        br print1
 alpha1: adi r13, 55
 print1: sri r13, p2
         ani r12, 0x0f
         cpi r12, 0x09
-        jn alpha2
+        bn alpha2
         adi r12, 48
-        jmp print2
+        br print2
 alpha2: adi r12, 55
 print2: sri r12, p2
         ret

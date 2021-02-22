@@ -24,14 +24,14 @@
 
 loop1:  in r0, uart_ctrl
         ani r0, 1
-        jz loop1                ; poll for full rx buffer
+        bz loop1                ; poll for full rx buffer
 
         in r1, uart_buffer      ; capture the data
 
 loop2:  in r0, uart_ctrl        ; poll for empty tx buffer
         ani r0, 2
-        jz loop2
+        bz loop2
 
         out r1, uart_buffer     ; print the char
 
-        jmp loop1
+        br loop1

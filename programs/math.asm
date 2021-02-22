@@ -90,10 +90,10 @@ loop1:  cpi r4, 0
         bz other
         ani r0, 0xfe
         add r1, r3
-        jmp foo
+        br foo
 other:  ori r0, 1
 foo:    adi r4, -1
-        jmp loop1
+        br loop1
 
 end1:   mvp p2, p0
 

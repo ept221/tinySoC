@@ -13,16 +13,16 @@
 
 stable: in r0, gpu_ctrl_reg
         ani r0, 0x80
-        jz stable
+        bz stable
 
         ldi r0, text[l]
         ldi r1, text[h]
 
 loop:   lri r4, p0
         cpi r4, 0
-        jz end
+        bz end
         sri r4, p2
-        jmp loop
+        br loop
 
 end:    hlt
 ;*************************************************

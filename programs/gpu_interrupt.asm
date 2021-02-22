@@ -19,7 +19,7 @@
         ldi r3, gpu_addr[h]
 
         ssr 8                   ; enable interrupts
-loop:   jmp loop                ; do nothing and wait for an interrupt
+loop:   br loop                ; do nothing and wait for an interrupt
 
         .org gpu_isr_vector
 isr:    in r0, pin_reg          ; read pin 1
@@ -29,7 +29,7 @@ isr:    in r0, pin_reg          ; read pin 1
         ldi r0, 32              ; load a space
         sri r0, p2              ; write the space to the screen and move to the right
         cpi r2, 80
-        jnz j
+        bnz j
         ldi r2, 0
 
 j:      ldi r0, 65              ; load "A"

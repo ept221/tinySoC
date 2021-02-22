@@ -15,7 +15,7 @@ loop:   in r1, uart_ctrl
         ani r1, 2
         bz loop                  ; poll for empty buffer
 
-        ldri r0, p2              ; check for end of string
+        lri r0, p2              ; check for end of string
         cpi r0, 0
         bz start
 
