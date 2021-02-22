@@ -6,7 +6,7 @@ module uart(input wire clk,
             input wire r_en,
             output reg [7:0] dout,
             input wire rx,
-            output reg tx
+            output reg tx = 1
 );
     //***********************************************************************************
     // Might want an enable bit to switch from normal i/o operation to
@@ -194,7 +194,7 @@ module uart(input wire clk,
 
     always @(posedge clk) begin
         if(rst) begin
-            tx <= 0;
+            tx <= 1;
             tx_state <= 3'b0;
             tx_data <= 8'b0;
             tx_count <= 4'b0;
