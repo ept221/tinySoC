@@ -187,7 +187,7 @@ module uart(input wire clk,
     end 
     //***********************************************************************************
     // Tx State Machine
-    reg [2:0] tx_state = 3'b0;
+    reg [1:0] tx_state = 2'b0;
     reg [7:0] tx_data = 8'b0;
     reg [3:0] tx_count = 4'b0;
     reg [3:0] tx_delay = 4'b0;
@@ -195,7 +195,7 @@ module uart(input wire clk,
     always @(posedge clk) begin
         if(rst) begin
             tx <= 1;
-            tx_state <= 3'b0;
+            tx_state <= 2'b0;
             tx_data <= 8'b0;
             tx_count <= 4'b0;
             tx_delay <= 4'b0;
@@ -204,21 +204,21 @@ module uart(input wire clk,
         else begin
             if(sample_enable) begin
                 case(tx_state)
-                3'b000: begin                       // Wait for tx buffer to be full (not empty) before starting
+                2'b00: begin                        // Wait for tx buffer to be full (not empty) before starting
                     if(uart_control[1] == 0) begin
                         tx_data <= tx_buffer;
-                        tx_state <= 3'b001;
+                        tx_state <= 2'b01;
                         tx_count <= 4'b1;
                         tx <= 0;                    // Start bit
                     end
                 end
-                3'b001: begin
+                2'b01: begin
                     if(tx_delay == 4'b1111) begin   // Finish start bit, send data bits, begin stop bit
                         tx_delay <= 0;
                         tx_count <= tx_count + 1;
                         if(tx_count == 4'b1001) begin
                             tx <= 1;                // Stop bit
-                            tx_state <= 3'b010;
+                            tx_state <= 2'b10;
                         end
                         else begin
                             tx <= tx_data[0];       // Data bit
@@ -230,11 +230,11 @@ module uart(input wire clk,
                         tx_delay <= tx_delay + 1;
                     end
                 end
-                3'b010: begin                       // Finish stop bit
+                2'b10: begin                        // Finish stop bit
                     if(tx_delay == 4'b1111) begin
                         tx_delay <= 0;
                         tx_count <= 0;
-                        tx_state <= 3'b000;
+                        tx_state <= 2'b00;
                     end
                     else begin
                         tx_delay <= tx_delay + 1;
@@ -245,7 +245,7 @@ module uart(input wire clk,
             if(address == UART_BUFFER_ADDRESS && w_en) begin
                 uart_control[1] <= 0;
             end
-            else if(sample_enable && tx_state == 3'b0 && uart_control[1] == 0) begin
+            else if(sample_enable && tx_state == 2'b0 && uart_control[1] == 0) begin
                 uart_control[1] <= 1;
             end
         end
