@@ -97,6 +97,9 @@ module cpu(input wire clk,
     wire [7:0] regFileOutA;
     wire [7:0] regFileOutB;
     wire [7:0] regFileOutC;
+    wire regFile_cout;
+    wire regFile_zout;
+    wire regFile_nout;
 
     wire regFileMove;                           //*
     wire regFileAdd;                            //*
@@ -113,7 +116,10 @@ module cpu(input wire clk,
                          .constant(regFileConst),
                          .outA(regFileOutA),
                          .outB(regFileOutB),
-                         .outC(regFileOutC)
+                         .outC(regFileOutC),
+                         .cout(regFile_cout),
+                         .zout(regFile_zout),
+                         .nout(regFile_nout)
     );
     //***************************************************************
     // ALU Mux A
@@ -138,9 +144,9 @@ module cpu(input wire clk,
     //***************************************************************
     // ALU
     wire [3:0] aluMode;                         //*
-    wire carryOut;
-    wire zeroOut;
-    wire negitiveOut;
+    wire alu_cout;
+    wire alu_zout;
+    wire alu_nout;
     wire [7:0] aluOut;
     reg [7:0] dataA;
     reg [7:0] dataB;
@@ -150,9 +156,9 @@ module cpu(input wire clk,
             .mode(aluMode),
             .cin(carryFlag),
             .out(aluOut),
-            .cout(carryOut),
-            .zout(zeroOut),
-            .nout(negitiveOut)
+            .cout(alu_cout),
+            .zout(alu_zout),
+            .nout(alu_nout)
     );
     //***************************************************************
     // Data Memory and I/O Data Mux
@@ -179,14 +185,19 @@ module cpu(input wire clk,
         endcase
     end
     //***************************************************************
+    // Flag Out Mux
+    wire cout = (regFileAdd) ? regFile_cout : alu_cout;
+    wire zout = (regFileAdd) ? regFile_zout : alu_zout;
+    wire nout = (regFileAdd) ? regFile_nout : alu_nout;
+    //***************************************************************
     // Status Register Source Mux
     wire [1:0] statusRegSrcSelect;              //*
     always @(*) begin
         case(statusRegSrcSelect)
-        2'b00:  statusIn = {interruptEnable,negitiveOut,zeroOut,carryOut};      // ALU flags out and save interrupt enable status
-        2'b01:  statusIn = {aluOut[3:0]};                                       // ALU output
-        2'b10:  statusIn = {dMemIOOut[3:0]};                                    // Data memory output
-        2'b11:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};              // Disable interrupts and save all other flags
+        2'b000:  statusIn = {interruptEnable,nout,zout,cout};               // ALU flags out and save interrupt enable status
+        2'b001:  statusIn = {aluOut[3:0]};                                  // ALU output
+        2'b010:  statusIn = {dMemIOOut[3:0]};                               // Data memory output
+        2'b011:  statusIn = {1'b0,negativeFlag,zeroFlag,carryFlag};         // Disable interrupts and save all other flags
         endcase
     end
     //***************************************************************

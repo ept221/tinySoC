@@ -9,7 +9,10 @@ module regFile(input wire clk,
                input wire [8:0] constant,
                output wire [7:0] outA,
                output wire [7:0] outB,
-               output reg [7:0] outC
+               output reg [7:0] outC,
+               output wire cout,
+               output wire zout,
+               output wire nout
 );
     //****************************************************************************************
     // Construct the register file and initialize it to zero
@@ -58,7 +61,11 @@ module regFile(input wire clk,
         end
     end
 
-    wire [15:0] result = b_pair + {{7{constant[8]}},constant};
+    wire [15:0] result;
+    assign {cout, result} = b_pair + {{7{constant[8]}},constant};
+    assign zout = (result == 16'b0);
+    assign nout = result[14];
+
     assign outA = rFile[a_select];
     assign outB = rFile[b_select];
     //****************************************************************************************
