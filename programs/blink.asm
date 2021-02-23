@@ -20,10 +20,10 @@
         ldi r0, 1
         out r0, dir_reg                 ; set pin 1 to output
 
-        ldi r0, 36
+        ldi r0, 25
         out r0, prescaler_l             ; set LSBs of prescaler
 
-        ldi r0, 244
+        ldi r0, 245
         out r0, prescaler_h             ; set MSPs of prescaler
 
         ldi r0, 0b00010010
