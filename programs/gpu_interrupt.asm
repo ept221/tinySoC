@@ -33,7 +33,7 @@ isr:    in r0, pin_reg          ; read pin 1
         ldi r2, 0
 
 j:      ldi r0, 65              ; load "A"
-        str r0, p2              ; write A to the screen
+        str r0, p2, 0           ; write A to the screen
 
 end:    ssr 8                   ; enable interrupts
         ret                     ; return
