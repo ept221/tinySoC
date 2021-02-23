@@ -7,7 +7,6 @@ module alu(input wire [7:0] dataA,
            output reg zout,
            output reg nout
 );
-    //wire [10:0] foo = (dataA >> 1);
 
     always @(*) begin
         case(mode)

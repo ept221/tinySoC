@@ -4,7 +4,7 @@
         .define pin_reg, 0x02
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
-        .define gpu_isr_vector, 0x0020
+        .define gpu_isr_vector, 0x0014
 ;******************************************************************************
         .code
         ldi r0, 1               ; set pin 1 to output

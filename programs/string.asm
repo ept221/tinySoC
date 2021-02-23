@@ -1,7 +1,7 @@
 ;*************************************************
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
-        .define gpu_isr_vector, 0x20
+        .define gpu_isr_vector, 0x14
 ;*************************************************      
         .code
 
