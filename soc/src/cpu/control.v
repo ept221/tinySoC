@@ -166,7 +166,7 @@ module control(input wire clk,
     //****************************************************************************************************
     // The HLT instruction cannot be interrupted, and neither can the clear status register
     // instruction (CSR), if it is clearing the global interrupt enable flag.
-    wire uninterruptible = (HLT_TYPE) || RET_TYPE || (iMemOut[15:11] == 4'b0 && iMemOut[7:0] == 8'b10001111);
+    wire uninterruptible = (HLT_TYPE) || (RET_TYPE) || (iMemOut[15:11] == 4'b0 && iMemOut[7:0] == 8'b10001111);
     //****************************************************************************************************
     assign regFileMove = P_P_TYPE;
     //****************************************************************************************************
