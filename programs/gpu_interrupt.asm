@@ -19,7 +19,7 @@
         ldi r3, gpu_addr[h]
 
         ssr 8                   ; enable interrupts
-loop:   br loop                ; do nothing and wait for an interrupt
+loop:   br loop                 ; do nothing and wait for an interrupt
 
         .org gpu_isr_vector
 isr:    in r0, pin_reg          ; read pin 1

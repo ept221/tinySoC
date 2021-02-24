@@ -166,7 +166,7 @@ module control(input wire clk,
     //****************************************************************************************************
     // The HLT instruction cannot be interrupted, and neither can the clear status register
     // instruction (CSR), if it is clearing the global interrupt enable flag.
-    wire uninterruptible = (HLT_TYPE) || (iMemOut[15:11] == 4'b0 && iMemOut[7:0] == 8'b10001111);
+    wire uninterruptible = (HLT_TYPE) || RET_TYPE || (iMemOut[15:11] == 4'b0 && iMemOut[7:0] == 8'b10001111);
     //****************************************************************************************************
     assign regFileMove = P_P_TYPE;
     //****************************************************************************************************
@@ -177,7 +177,7 @@ module control(input wire clk,
                 regFileOutBSelect = iMemOut[11:8];  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // From the register file
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass A, doesn't matter
@@ -197,7 +197,7 @@ module control(input wire clk,
                 regFileOutBSelect = 4'b1110;        // lower SP reg
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b1;                  // Need to push to the stack
-                regFileConstSrc = 2'b01;
+                regFileConstSrc = 2'b01;            // SP--
                 aluSrcASelect = 1'b0;               // From the register file
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass A, doesn't matter
@@ -217,7 +217,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                 regFileWriteEnable = 1'b1;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;             // Doesn't matter
+                regFileConstSrc = 2'b00;             // Doesn't matter
                 aluSrcASelect = 1'b0;               // From the register file
                 aluSrcBSelect = 2'b10;              // From immediate 8-bit data
                 aluMode = {1'b0,iMemOut[2:0]};
@@ -237,7 +237,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter.
                 regFileWriteEnable = (state == PART2);
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // From the register file
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass A
@@ -257,7 +257,7 @@ module control(input wire clk,
                 regFileOutBSelect = iMemOut[11:8];  // SSSS, or in the case of Type R, just 0000
                 regFileWriteEnable = 1'b1;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = iMemOut[7:4];
@@ -337,7 +337,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};   // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;                       // regFileOutA, doesn't really matter
                 aluSrcBSelect = 2'b00;                      // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                          // Pass A, doesn't really matter
@@ -357,7 +357,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};       // Doesn't matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;                           // regFileOutA, doesn't really matter
                 aluSrcBSelect = 2'b00;                          // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                              // Pass A, doesn't really matter
@@ -394,17 +394,17 @@ module control(input wire clk,
             end
             else if(RET_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't really matter
-                regFileOutBSelect = {iMemOut[11:9],1'b0};  // lower SP reg
+                regFileOutBSelect = {iMemOut[11:9],1'b0};  // lower SP reg so outputs SP for BC
                 regFileWriteEnable = 1'b0;
-                regFileAdd = condition;
-                regFileConstSrc = 2'b0;
+                regFileAdd = (state == PART1 && condition) || (state == PART2);
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // From the register file
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
                 dMemDataSelect = 3'b000;            // aluOut
                 dMemIOAddressSelect = 2'b10;        // {regFileOutC,regFileOutB} + 1, SP + 1
                 dMemIOWriteEn = 1'b0;
-                dMemIOReadEn = (condition && PART1) || PART2;
+                dMemIOReadEn = (state == PART1 && condition) || (state == PART2);
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = (state == PART1) ? 3'b000 : 3'b101;   // PART1: pcOut, PART2 || PART3: {returnReg,dMemIOOut}
@@ -417,7 +417,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // lower SP reg
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b1;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b1;               // From zero-extended status register
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                  // pass A
@@ -437,7 +437,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // lower SP reg   
                 regFileWriteEnable = 1'b0;
                 regFileAdd = (state == PART1);
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // From register file, doesn't really matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't really matter
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -457,7 +457,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b1;               // From zero-extended status register
                 aluSrcBSelect = 2'b01;              // {4'd0,iMemOut[11:8]}, immediate 4-bit mask
                 aluMode = (~iMemOut[7]) ? 4'b0011 : 4'b0010;
@@ -477,7 +477,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA, doesn't matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't matter
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -497,7 +497,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0}; // lower SP reg
                 regFileWriteEnable = (state == PART3);  // Write during PART3
                 regFileAdd = (state == PART1);      // Increment during PART1
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA, doesn't matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't matter
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -517,7 +517,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -537,7 +537,7 @@ module control(input wire clk,
                 regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                 regFileWriteEnable = 1'b0;
                 regFileAdd = 1'b0;
-                regFileConstSrc = 2'b0;
+                regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA
                 aluSrcBSelect = 2'b00;              // regFileOutB
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -560,7 +560,7 @@ module control(input wire clk,
                     regFileOutBSelect = {iMemOut[11:9],1'b0}; // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
-                    regFileConstSrc = 2'b0;
+                    regFileConstSrc = 2'b00;
                     aluSrcASelect = 1'b0;               // regFileOutA
                     aluSrcBSelect = 2'b00;              // regFileOutB
                     aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -580,7 +580,7 @@ module control(input wire clk,
                     regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
-                    regFileConstSrc = 2'b0;
+                    regFileConstSrc = 2'b00;
                     aluSrcASelect = 1'b0;               // regFileOutA
                     aluSrcBSelect = 2'b00;              // regFileOutB
                     aluMode = 4'b0000;                  // Pass A, doesn't really matter
@@ -599,8 +599,8 @@ module control(input wire clk,
                     regFileSrc = 1'b0;                  // aluOut
                     regFileOutBSelect = 4'b1110;        // lower SP reg
                     regFileWriteEnable = 1'b0;
-                    regFileAdd = 1'b1;
-                    regFileConstSrc = 2'b01;
+                    regFileAdd = 1'b1;                  // SP--
+                    regFileConstSrc = 2'b01;            // SP--
                     aluSrcASelect = 1'b0;               // From the register file
                     aluSrcBSelect = 2'b00;              // regFileOutB
                     aluMode = 4'b0000;                  // Pass A
@@ -620,7 +620,7 @@ module control(input wire clk,
                     regFileOutBSelect = {iMemOut[11:9],1'b0};       // same as inSelect, doesn't matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
-                    regFileConstSrc = 2'b01;
+                    regFileConstSrc = 2'b00;
                     aluSrcASelect = 1'b1;                           // From zero-extended status register
                     aluSrcBSelect = 2'b00;                          // regFileOutB, doesn't really matter
                     aluMode = 4'b0000;                              // Pass B, doesn't really matter
@@ -660,7 +660,7 @@ module control(input wire clk,
                     regFileOutBSelect = {iMemOut[11:9],1'b0};  // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
-                    regFileConstSrc = 2'b0;
+                    regFileConstSrc = 2'b00;
                     aluSrcASelect = 1'b0;               // regFileOutA
                     aluSrcBSelect = 2'b00;              // regFileOutB
                     aluMode = 4'b0000;                  // Pass B, doesn't really matter
