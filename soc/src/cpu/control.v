@@ -495,22 +495,22 @@ module control(input wire clk,
             else if(POP_TYPE) begin
                 regFileSrc = 1'b1;                  // dMemIOOut
                 regFileOutBSelect = {iMemOut[11:9],1'b0}; // lower SP reg
-                regFileWriteEnable = (state == PART3);  // Write during PART3
+                regFileWriteEnable = (state == PART2);    // Write during PART2
                 regFileAdd = (state == PART1);      // Increment during PART1
                 regFileConstSrc = 2'b00;
                 aluSrcASelect = 1'b0;               // regFileOutA, doesn't matter
                 aluSrcBSelect = 2'b00;              // regFileOutB, doesn't matter
                 aluMode = 4'b0000;                  // Pass A, doesn't really matter
                 dMemDataSelect = 3'b000;            // aluOut, doesn't really matter
-                dMemIOAddressSelect = 2'b00;        // {regFileOutC,regFileOutB}
+                dMemIOAddressSelect = 2'b10;        // {regFileOutC,regFileOutB} + 1
                 dMemIOWriteEn = 1'b0;
-                dMemIOReadEn = (state == PART2);    // Read during PART2
+                dMemIOReadEn = (state == PART1);    // Read during PART1
                 statusRegSrcSelect = 2'b00;         // ALU flags out and save interrupt enable status
                 flagEnable = 1'b0;
                 iMemAddrSelect = 3'b000;            // pcOut
-                iMemReadEnable = (state == PART3);
-                pcWriteEn = (state == PART3);
-                nextState = (state == PART1) ? PART2 : (state == PART2) ? PART3 : PART1;
+                iMemReadEnable = (state == PART2);
+                pcWriteEn = (state == PART2);
+                nextState = (state == PART1) ? PART2 : PART1;
             end
             else if(NOP_TYPE || HLT_TYPE) begin
                 regFileSrc = 1'b0;                  // aluOut, doesn't really matter
@@ -556,7 +556,7 @@ module control(input wire clk,
         else begin
             case(state[3:1])
                 RESET[3:1]: begin
-                    regFileSrc = 1'b0;                 // aluOut, doesn't really matter
+                    regFileSrc = 1'b0;                  // aluOut, doesn't really matter
                     regFileOutBSelect = {iMemOut[11:9],1'b0}; // Doesn't really matter
                     regFileWriteEnable = 1'b0;
                     regFileAdd = 1'b0;
