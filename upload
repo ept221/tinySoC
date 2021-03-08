@@ -14,4 +14,4 @@ rm build/pnr/temp.asc || exit
 mkdir -p build/binary || exit
 icepack build/pnr/$1".asc" build/binary/$1".bin" || exit
 
-tinyprog -p build/binary/$1".bin" || exit
+iceprog build/binary/$1".bin" || exit
