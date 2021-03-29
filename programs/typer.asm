@@ -14,6 +14,8 @@
         .define motor_control, 0x0D
         .define motor_enable, 0x0E
 
+        .define servo, 0x11
+
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
 
@@ -23,7 +25,10 @@
 
         .code
 
-        ldi r0, 0xff            ; set all gpio to output
+        ldi r0, 128                     ; setup servo
+        out r0, servo
+
+        ldi r0, 0b00011111      ; setup gpio
         out r0, dir_reg
 
         ldi r0, 0b00000100      ; setup the gpu
