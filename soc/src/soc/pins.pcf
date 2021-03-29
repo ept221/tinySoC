@@ -1,27 +1,26 @@
 # GPIO
-set_io gpio_pins[0] B8
-set_io gpio_pins[1] A8
-set_io gpio_pins[2] B7
-set_io gpio_pins[3] A7
-set_io gpio_pins[4] B6
-set_io gpio_pins[5] A6
-set_io gpio_pins[6] B1
-set_io gpio_pins[7] C2
+set_io gpio_pins[0] L2
+set_io gpio_pins[1] L1
+set_io gpio_pins[2] K2
+set_io gpio_pins[3] K1
+set_io gpio_pins[4] J2
+set_io gpio_pins[5] J10
+set_io gpio_pins[6] J11
+set_io gpio_pins[7] H10
 
 # UART
-set_io rx A9
-set_io tx C9
+set_io rx L4
+set_io tx L3
 
 # GPU
-set_io h_sync A1
-set_io v_sync A2
-set_io R E2
-set_io G D1
-set_io B D2
+set_io h_sync J8
+set_io v_sync H9
+set_io R D9
+set_io G E9
+set_io B F9
 
 # Reset
-set_io -pullup yes reset E1
-set_io reset_out C1
+set_io -pullup yes reset B6
 
 # Global Clock
-set_io clk B2
+set_io clk K6

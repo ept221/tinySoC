@@ -26,9 +26,11 @@ mult:   ; r0 is the multiplicand
         ; r1 is the multiplier
         ; r2 and r3 will hold the results
         
-        srd r4, p14
-        srd r5, p14
-        srd r6, p14
+        push r0
+        push r1
+        push r4
+        push r5
+        push r6
 
         mov r2, r1              ; move the multiplier to r2
         ldi r1, 0
@@ -37,74 +39,66 @@ mult:   ; r0 is the multiplicand
         ldi r5, 0
 
 loop:   cpi r3, 0
-        jz end
+        bz end
 
         ldi r6, 1
         and r6, r2
-        jz shift
+        bz shift
 
         add r4, r0
         adc r5, r1
 
-shift:  ldi r6, 0
-        sll r0                  ; shift lsbs of the multiplicand 
-        jnc no_c
-        ldi r6, 1
-no_c:   sll r1                  ; shift the msbs of the multiplicand
-        add r1, r6
+shift:  sll r0
+        rlc r1
 
         srl r2
-        adi  r3, -1
-        jmp loop
+        adi r3, -1
+        br loop
 
-end:    mov r2, r4
-        mov r3, r5
+end:    mvp p2, p4
 
-        lri r6, p14
-        lri r5, p14
-        lri r4, p14
+        pop r6
+        pop r5
+        pop r4
+        pop r1
+        pop r0
 
         ret
 ;******************************************************************************
-div:	; r0 is the dividened
-		; r1 is the divisor
-		; r2 holds the quotient
-		; r3 holds the remainder
+div:    ; r0 is the dividened
+        ; r1 is the divisor
+        ; r2 holds the quotient
+        ; r3 holds the remainder
 
-		srd r4, p14
-        srd r5, p14
+        push r4
+        push r5
 
-		mov r3, r1   
-		ldi r1, 0    
+        mov r3, r1   
+        ldi r1, 0    
 
-		ldi r4, 8
+        ldi r4, 8
 
-loop1:	cpi r4, 0
-		jz end1
+loop1:  cpi r4, 0
+        bz end1
 
-		ldi r5, 0
-		sll r0
-		jnc no_c1
-		ldi r5, 1
-no_c1:	sll r1
-		add r1, r5
+        sll r0
+        rlc r1
 
-		sub r1, r3
-		mov r5, r1
-		ani r5, 0x80
-		jz other
-		ani r0, 0xfe
-		add r1, r3
-		jmp foo
-other:	ori r0, 1
-foo:	adi r4, -1
-		jmp loop1
+        sub r1, r3
+        mov r5, r1
+        ani r5, 0x80
+        bz other
+        ani r0, 0xfe
+        add r1, r3
+        br foo
+other:  ori r0, 1
+foo:    adi r4, -1
+        br loop1
 
-end1:	mov r2, r0
-		mov r3, r1
+end1:   mvp p2, p0
 
-		lri r5, p14
-        lri r4, p14
-		
-		ret
+        pop r5
+        pop r4
+                
+        ret
 ;******************************************************************************

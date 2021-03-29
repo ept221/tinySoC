@@ -137,22 +137,30 @@ def lexer(lines):
                         pass
                     elif word in table.mnm_r_i:
                         tl.append(["<mnm_r_i>", word])
-                    elif word in table.mnm_r_l:
-                        tl.append(["<mnm_r_l>", word])
+                    elif word in table.mnm_r_io:
+                        tl.append(["<mnm_r_io>", word])
                     elif word in table.mnm_r_r:
                         tl.append(["<mnm_r_r>", word])
+                    elif word in table.mnm_r_p:
+                        tl.append(["<mnm_r_p>", word])
+                    elif word in table.mnm_r_p_k:
+                        tl.append(["<mnm_r_p_k>", word])
+                    elif word in table.mnm_p_i:
+                        tl.append(["<mnm_p_i>", word])
+                    elif word in table.mnm_br:
+                        tl.append(["<mnm_br>", word])
                     elif word in table.mnm_r:
                         tl.append(["<mnm_r>", word])
-                    elif word in table.mnm_r_rp:
-                        tl.append(["<mnm_r_rp>", word])
-                    elif word in table.mnm_rp:
-                        tl.append(["<mnm_rp>", word])
+                    elif word in table.mnm_p:
+                        tl.append(["<mnm_p>", word])
                     elif word in table.mnm_a:
                         tl.append(["<mnm_a>", word])
                     elif word in table.mnm_n:
                         tl.append(["<mnm_n>", word])
                     elif word in table.mnm_m:
                         tl.append(["<mnm_m>", word])
+                    elif word in table.mnm_p_p:
+                        tl.append(["<mnm_p_p>", word])
                     elif word in table.drct_0:
                         tl.append(["<drct_0>", word])
                     elif word in table.drct_1:
@@ -246,7 +254,7 @@ def expr_to_str(expr):
         expr_str = expr_str + expr[-1][1]
     return expr_str
 ##############################################################################################################
-def evaluate(expr, symbols, address):
+def evaluate(expr, symbols, address, mode):
     ##################################################
     def modify(val, selector):
         if(selector == "[L]"):
@@ -300,7 +308,10 @@ def evaluate(expr, symbols, address):
             result += sign*modify((address),selector)
             expr = expr[:-pop]
         elif(expr[numpos][1] in symbols.labelDefs):
-            result += sign*modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)
+            if(mode == "diff"):
+                result += sign*(modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)-address)
+            else:
+                result += sign*modify(int(symbols.labelDefs[expr[numpos][1]],base=16),selector)
             expr = expr[:-pop]
         elif(expr[numpos][1] in symbols.defs):
             result += sign*modify(int(symbols.defs[expr[numpos][1]],base=16),selector)
@@ -490,7 +501,7 @@ def parse_drct(tokens, symbols, code, line):
             return er
         if(expr == er):
             return er
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         data.append(expr)
         if(len(val) == 1):
             status = directives[drct_1](val[0],symbols,code,line)
@@ -537,7 +548,7 @@ def parse_drct(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         if(len(val) == 1):
             status = directives[drct_2]([symbol,val[0]],symbols,code,line)
             if(not status):
@@ -569,7 +580,7 @@ def parse_drct(tokens, symbols, code, line):
         elif(expr == er):
             return er
         data.append(expr)
-        val = evaluate(expr[1:],symbols,address)
+        val = evaluate(expr[1:],symbols,address,"abs")
         if(len(val) == 1):
             d_args.append(val[0])
         else:
@@ -592,7 +603,7 @@ def parse_drct(tokens, symbols, code, line):
             if(expr == error):
                 return er
             data.append(expr)
-            val = evaluate(expr[1:],symbols,address)
+            val = evaluate(expr[1:],symbols,address,"abs")
             if(len(val) == 1):
                 d_args.append(val[0])
             else:
@@ -638,37 +649,36 @@ def parse_code(tokens, symbols, code, line):
         return 0
     ##################################################
     # Check if inside the code segment
-    if(tokens[0][0] in {"<mnm_r_i>","<mnm_r_l>","<mnm_r_r>","<mnm_r>",
-                        "<mnm_r_rp>","<mnm_rp>","<mnm_a>","<mnm_m>","<mnm_n>"}
+    if(tokens[0][0] in {"<mnm_r_i>","<mnm_r_r>","<mnm_r_p>","<mnm_r_p_k>",
+                        "<mnm_p_i>","<mnm_br>","<mnm_r>","<mnm_p>","<mnm_a>",
+                        "<mnm_n>","<mnm_p_p>"}
                         and not (code.segment == "code")):
         error("Instructions must be inside the code segment!", line)
         return ["<error>"]
     ##################################################
-    # [mnm_r_i] or [mnm_r_l]
-    if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_l>"):
+    # [mnm_r_i] or [mnm_r_io]
+    if(tokens[0][0] == "<mnm_r_i>" or tokens[0][0] == "<mnm_r_io>"):
         inst_str = tokens[0][1]
         inst_tkn = tokens[0][0]
+        arg_name = "data" if (inst_tkn == "<mnm_r_i>") else "port address"
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing comma and argument!",line)
+            error("Instruction missing comma and " + arg_name + "!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] not in {"<hex_num>","<dec_num>","<bin_num>","<symbol>"}):
-                error("Instruction has bad argument!",line)
-                return er
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing argument!",line)
+            error("Instruction missing " + arg_name + "!",line)
             return er
         expr = parse_expr(*args)
         if(not expr):
@@ -679,25 +689,18 @@ def parse_code(tokens, symbols, code, line):
         data.append(expr)
         ##################################################
         # Code Generation
-        instruction = ""
-        if(inst_tkn == "<mnm_r_i>"):
-            instruction = table.mnm_r_i[inst_str]
-        else:
-            instruction = table.mnm_r_l[inst_str]
+        instruction = table.mnm_r_i[inst_str] if (inst_tkn == "<mnm_r_i>") else table.mnm_r_io[inst_str]
         instruction = format(int(reg1[1:]),'04b') + instruction[4:]
         code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
-        val = evaluate(expr[1:],symbols,code.code_address)
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
         if(len(val) == 1):
             numb = val[0]
             if(numb < -128 or numb > 255):
                 error("Argument must be >= -128 and <= 255",line)
                 return er
             else:
-                if(numb >= 0):
-                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
-                else:
-                    numb = 255 - abs(numb) + 1
-                    instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
                 code.write_code(line,instruction,code_string,0)
         else:
             code.write_code(line,instruction,code_string,[inst_tkn,val])
@@ -720,9 +723,6 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing comma and register!",line)
             return er
         if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<reg>"):
-                error("Instruction has a bad register!",line)
-                return er
             error("Instruction missing comma!",line)
             return er
         data.append(tokens.pop(0))
@@ -730,7 +730,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg2 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -742,6 +742,156 @@ def parse_code(tokens, symbols, code, line):
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
+    # [mnm_r_p]
+    if(tokens[0][0] == "<mnm_r_p>"):
+        inst_str = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg>"):
+            error("Instruction has bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and register!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r_p[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
+        code_string = inst_str + " " + reg1 + ", " + reg2
+        code.write_code(line,instruction,code_string,0)
+        return data
+    ##################################################
+    # [mnm_r_p_k]
+    if(tokens[0][0] == "<mnm_r_p_k>"):
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing register!",line)
+            return er
+        if(tokens[0][0] != "<reg>"):
+            error("Instruction has bad register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma rp register comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and offset!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing offset!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad offset!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_r_p_k[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b')[0:3] + instruction[7:]
+        code_string = inst_str + " " + reg1 + ", " + reg2 + ", " + expr_to_str(expr[1:])
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
+        if(len(val) == 1):
+            numb = val[0]
+            if(numb < -16 or numb > 15):
+                error("Offset must be >= -16 and <= 15.",line)
+                return er
+            else:
+                numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
+                instruction = instruction[0:7] + format(numb,'05b') + instruction[12:]
+                code.write_code(line,instruction,code_string,0)
+        else:
+            code.write_code(line,instruction,code_string,[inst_tkn,val])
+
+        return data
+    ##################################################
+    # [mnm_p_i]
+    if(tokens[0][0] == "<mnm_p_i>"):
+        inst_str = tokens[0][1]
+        inst_tkn = tokens[0][0]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and data!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing data!",line)
+            return er
+        expr = parse_expr(*args)
+        if(not expr):
+            error("Instruction has bad data!",line)
+            return er
+        elif(expr == er):
+            return er
+        data.append(expr)
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_p_i[inst_str]
+        instruction = instruction[:4] + format(int(reg1[1:]),'04b')[:-1] + instruction[7:]
+        code_string = inst_str + " " + reg1 + ", " + expr_to_str(expr[1:])
+        val = evaluate(expr[1:],symbols,code.code_address,"abs")
+        if(len(val) == 1):
+            numb = val[0]
+            if(numb < -256 or numb > 511):
+                error("Data must be >= -256 and <= 511.",line)
+                return er
+            else:
+                numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                instruction = format(numb,'09b')[:4] + instruction[4:7] + format(numb,'09b')[4:] + instruction[12:]
+                code.write_code(line,instruction,code_string,0)
+        else:
+            code.write_code(line,instruction,code_string,[inst_tkn,val])
+
+        return data
+    ##################################################
     # [mnm_r]
     if(tokens[0][0] == "<mnm_r>"):
         inst_str = tokens[0][1]
@@ -750,7 +900,7 @@ def parse_code(tokens, symbols, code, line):
             error("Instruction missing register!",line)
             return er
         if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
+            error("Instruction has bad register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
@@ -762,75 +912,38 @@ def parse_code(tokens, symbols, code, line):
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
-    # [mnm_r_rp]
-    if(tokens[0][0] == "<mnm_r_rp>"):
-        inst_str = tokens[0][1]
-        data.append(tokens.pop(0))
-        if(not tokens):
-            error("Instruction missing register!",line)
-            return er
-        if(tokens[0][0] != "<reg>"):
-            error("Instruction has a bad register!",line)
-            return er
-        reg1 = tokens[0][1]
-        data.append(tokens.pop(0))
-        if(not tokens):
-            error("Instruction missing comma and register!",line)
-            return er
-        if(tokens[0][0] != "<comma>"):
-            if(tokens[0][0] != "<pair>"):
-                error("Instruction has a bad rp register!",line)
-                return er
-            error("Instruction missing comma!",line)
-            return er
-        data.append(tokens.pop(0))
-        if(not tokens):
-            error("Instruction missing rp register!",line)
-            return er
-        if(tokens[0][0] != "<pair>"):
-            error("Instruction has a bad rp register!",line)
-            return er
-        reg2 = tokens[0][1]
-        data.append(tokens.pop(0))
-        ##################################################
-        # Code Generation
-        instruction = table.mnm_r_rp[inst_str]
-        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
-        code_string = inst_str + " " + reg1 + ", " + reg2
-        code.write_code(line,instruction,code_string,0)
-        return data
-    ##################################################
-    # [mnm_rp]
-    if(tokens[0][0] == "<mnm_rp>"):
+    # [mnm_p]
+    if(tokens[0][0] == "<mnm_p>"):
         inst_str = tokens[0][1]
         data.append(tokens.pop(0))
         if(not tokens):
             error("Instruction missing rp register!",line)
             return er
         if(tokens[0][0] != "<pair>"):
-            error("Instruction has a bad rp register!",line)
+            error("Instruction has bad rp register!",line)
             return er
         reg1 = tokens[0][1]
         data.append(tokens.pop(0))
         ##################################################
         # Code Generation
-        instruction = table.mnm_rp[inst_str]
+        instruction = table.mnm_p[inst_str]
         instruction = instruction[:4] + format(int(reg1[1:]),'04b') + instruction[8:]
         code_string = inst_str + " " + reg1
         code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
-    # [mnm_a] or [mnm_m]
-    if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_m>"):
+    # [mnm_a] or [mnm_m] or [mnm_br]
+    if(tokens[0][0] == "<mnm_a>" or tokens[0][0] == "<mnm_br>") or tokens[0][0] == "<mnm_m>":
         inst_str = tokens[0][1]
         inst_tkn = tokens[0][0]
+        arg_name = "address" if (inst_tkn == "<mnm_a>") else ("offset" if (inst_tkn == "<mnm_br>") else "mask")
         data.append(tokens.pop(0))
         if(not tokens):
-            error("Instruction missing argument!",line)
+            error("Instruction missing " + arg_name + "!",line)
             return er
         expr = parse_expr(*args)
         if(not expr):
-            error("Instruction has bad argument!",line)
+            error("Instruction has bad " + arg_name + "!",line)
             return er
         elif(expr == er):
             return er
@@ -843,24 +956,44 @@ def parse_code(tokens, symbols, code, line):
             instruction = table.mnm_a[inst_str]
             address = ""
             code.write_code(line,instruction,code_string,0)
-            val = evaluate(expr[1:],symbols,code.code_address)
+            val = evaluate(expr[1:],symbols,code.code_address,"abs")
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > preferences.i_ram_len):
-                    error("Address must be >= 0 and <= "+str(preferences.i_ram_len),line)
+                    error("Address must be >= 0 and <= "+str(preferences.i_ram_len)+".",line)
                     return er
                 else:
                     address = format(numb,'016b')
                 code.write_code(line,address,"",0)
             else:
                 code.write_code(line,"AAAAAAAAAAAAAAAA","",[inst_tkn,val])
+        elif(inst_tkn == "<mnm_br>"):
+            instruction = table.mnm_br[inst_str]
+            val = evaluate(expr[1:],symbols,code.code_address,"diff")
+            if(len(val) == 1):
+                numb = val[0]
+                if(numb < -256 or numb > 255):
+                    error("Offset must be >= -256 and <= 255.",line)
+                    return er
+                else:
+                    if(numb + code.code_address < 0):
+                        error("Instruction branches below address 0",line)
+                        return er
+                    if(numb + code.code_address > preferences.i_ram_len):
+                        error("Instruction branches above address asdf " + str(preferences.i_ram_len),line)
+                        return er
+                    numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                    instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
+                    code.write_code(line,instruction,code_string,0)
+            else:
+                code.write_code(line,instruction,code_string,[inst_tkn,val])
         else:
             instruction = table.mnm_m[inst_str]
-            val = evaluate(expr[1:],symbols,code.code_address)
+            val = evaluate(expr[1:],symbols,code.code_address,"abs")
             if(len(val) == 1):
                 numb = val[0]
                 if(numb < 0 or numb > 16):
-                    error("Mask must be >= 0 and <= 16",line)
+                    error("Mask must be >= 0 and <= 15.",line)
                     return er
                 else:
                     instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
@@ -868,6 +1001,41 @@ def parse_code(tokens, symbols, code, line):
             else:
                 code.write_code(line,instruction,code_string,[inst_tkn,val])
 
+        return data
+    ##################################################
+    # [mnm_p_p]
+    if(tokens[0][0] == "<mnm_p_p>"):
+        inst_str = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has a bad rp register!",line)
+            return er
+        reg1 = tokens[0][1]
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing comma and rp register!",line)
+            return er
+        if(tokens[0][0] != "<comma>"):
+            error("Instruction missing comma!",line)
+            return er
+        data.append(tokens.pop(0))
+        if(not tokens):
+            error("Instruction missing rp register!",line)
+            return er
+        if(tokens[0][0] != "<pair>"):
+            error("Instruction has bad rp register!",line)
+            return er
+        reg2 = tokens[0][1]
+        data.append(tokens.pop(0))
+        ##################################################
+        # Code Generation
+        instruction = table.mnm_p_p[inst_str]
+        instruction = format(int(reg1[1:]),'04b') + format(int(reg2[1:]),'04b') + instruction[8:]
+        code_string = inst_str + " " + reg1 + ", " + reg2
+        code.write_code(line,instruction,code_string,0)
         return data
     ##################################################
     # [mnm_n]
@@ -889,14 +1057,18 @@ def parse_code(tokens, symbols, code, line):
 #          | <code>
 #
 # <code> ::= <mnm_r_i> <reg> <comma> <expr>
-#          | <mnm_r_l> <reg> <comma> <expr>
+#          | <mnm_r_io> <reg> <comma> <expr>
 #          | <mnm_r_r> <reg> <comma> <reg>
+#          | <mnm_r_p> <reg> <comma> <pair>
+#          | <mnm_r_p_k> <reg> <comma> <pair> <comma> <expr>
+#          | <mnm_p_i> <pair> <comma> <expr>
+#          | <mnm_br> <expr>
 #          | <mnm_r> <reg>
-#          | <mnm_r_rp> <reg> <comma> <pair>
-#          | <mnm_rp> <pair>
+#          | <mnm_p> <pair>
 #          | <mnm_a> <expr>
 #          | <mnm_n>
 #          | <mnm_m> <expr>
+#          | <mnm_p_p> <pair> <comma> <pair>
 #
 # <expr> ::= [ (<plus> | <minus>) ] <numb> [ <selector> ] { (<plus> | <minus>) <numb> [ <selector> ]}
 #
@@ -960,22 +1132,45 @@ def second_pass(symbols, code):
         code_line = code.code_data[i]
         line = code_line[0]
         if(code_line[-1]):
-            val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16))
+            mode = "diff" if(code_line[-1][0] == "<mnm_br>") else "abs"
+            val = evaluate(code_line[-1][1],symbols,int(code_line[2],base=16),mode)
             if(len(val) == 1):
                 numb = val[0]
                 ##################################################
-                # [mnm_r_i] or [mnm_r_l]
-                if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_l>"):
+                # [mnm_r_i] or [mnm_r_io]
+                if(code_line[-1][0] == "<mnm_r_i>" or code_line[-1][0] == "<mnm_r_io>"):
                     instruction = code_line[4]
+                    arg_name = "Data" if (code_line[-1][0] == "<mnm_r_i>") else "Port address"
                     if(numb < -128 or numb > 255):
                         error("Argument must be >= -128 and <= 255",line)
                         return 0
                     else:
-                        if(numb >= 0):
-                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
-                        else:
-                            numb = 255 - abs(numb) + 1
-                            instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        numb = numb if (numb >= 0) else (255 - abs(numb) + 1)
+                        instruction = instruction[0:4] + format(numb,'08b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
+                ##################################################
+                # [mnm_r_p_k]
+                elif(code_line[-1][0] == "<mnm_r_p_k>"):
+                    instruction = code_line[4]
+                    if(numb < -16 or numb > 15):
+                        error(arg_name + " must be >= -16 and <= 15.",line)
+                        return 0
+                    else:
+                        numb = numb if (numb >= 0) else (31 - abs(numb) + 1)
+                        instruction = instruction[0:7] + format(numb,'05b') + instruction[12:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
+                 ##################################################
+                # [mnm_p_i]
+                elif(code_line[-1][0] == "<mnm_p_i>"):
+                    instruction = code_line[4]
+                    if(numb < -256 or numb > 511):
+                        error("Data must be >= -256 and <= 511.",line)
+                        return 0
+                    else:
+                        numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                        instruction = format(numb,'09b')[:4] + instruction[4:7] + format(numb,'09b')[4:] + instruction[12:]
                         code_line[4] = instruction
                         code_line[-1] = 0
                 ##################################################
@@ -986,6 +1181,24 @@ def second_pass(symbols, code):
                         return 0
                     else:
                         code_line[4] = format(numb,'016b')
+                        code_line[-1] = 0
+                ##################################################
+                # [mnm_br]
+                elif(code_line[-1][0] == "<mnm_br>"):
+                    instruction = code_line[4]
+                    if(numb < -256 or numb > 255):
+                        error("Offset must be >= -256 and <= 255.",line)
+                        return er
+                    else:
+                        if((numb + int(code_line[2], 16)) < 0):
+                            error("Instruction branches below address 0", line)
+                            return 0
+                        if((numb + int(code_line[2], 16)) > preferences.i_ram_len):
+                            error("Instruction branches above address " + str(preferences.i_ram_len),line)
+                            return 0
+                        numb = numb if (numb >= 0) else (511 - abs(numb) + 1)
+                        instruction = instruction[:3] + format(numb,'09b') + instruction[12:]
+                        code_line[4] = instruction
                         code_line[-1] = 0
                 ##################################################
                 # [mnm_m]

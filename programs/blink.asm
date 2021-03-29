@@ -10,8 +10,8 @@
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
 
-        .define gpu_isr_vector, 0x0020
-        .define top_isr_vector, 0x0030
+        .define gpu_isr_vector, 0x0014
+        .define top_isr_vector, 0x001E
 ;******************************************************************************         
         .code
                 
@@ -20,22 +20,25 @@
         ldi r0, 1
         out r0, dir_reg                 ; set pin 1 to output
 
-        ldi r0, 36
+        ldi r0, 25
         out r0, prescaler_l             ; set LSBs of prescaler
 
-        ldi r0, 244
+        ldi r0, 245
         out r0, prescaler_h             ; set MSPs of prescaler
 
         ldi r0, 0b00010010
         out r0, count_ctrl              ; set pwm mode, set top interrupt
 
+        csr 0
         ssr 8                           ; enable interrupts
-loop:   jmp loop                        ; loop and wait for interrupt
+loop:   br -1                           ; loop and wait for interrupt
+        hlt
 
         .org top_isr_vector
 isr:    in r0, port_reg                 ; read pin register
         xoi r0, 1                       ; toggle the led bit
         out r0, port_reg                ; write to the port register
+        csr 0
         ssr 8                           ; enable interrupts
         ret
 ;******************************************************************************

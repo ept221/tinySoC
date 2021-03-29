@@ -10,8 +10,8 @@ The CPU is an 8-bit RISC core, with a Harvard architecture. It has a 16-bit wide
 The GPU operates in a monochrome 80 column text mode, and outputs a VGA signal at a resolution of 640 by 480 at 60 frames per second. The GPU contains an ASCII buffer which the user can write to in order to display messages on the screen. A control register allows the user to set the text to one of 7 colors, and to enable an interrupt to the CPU which fires every time a frame finishes and enters the blanking period.
 
 ## The Instruction Set
-![instruction set part 1](resources/instruction_set_part_1.jpg)
-![instruction set part 2](resources/instruction_set_part_2.jpg)
+![instruction set part 1](resources/ISA_Part_1.png)
+![instruction set part 2](resources/ISA_Part_2.png)
 
 ## The Assembler
 

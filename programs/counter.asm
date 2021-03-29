@@ -10,8 +10,8 @@
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
 
-        .define gpu_isr_vector, 0x0020
-        .define top_isr_vector, 0x0030
+        .define gpu_isr_vector, 0x0014
+        .define top_isr_vector, 0x001E
 ;******************************************************************************         
         .code
                 
@@ -38,7 +38,7 @@
         ldi r5, 0
 
         ssr 8                           ; enable interrupts
-loop:   jmp loop                        ; loop and wait for interrupt
+loop:   br loop                         ; loop and wait for interrupt
 ;******************************************************************************
         .org top_isr_vector
 isr:    
@@ -58,16 +58,16 @@ numToStr:
         srl r13
         srl r13
         cpi r13, 0x09
-        jn alpha1
+        bn alpha1
         adi r13, 48
-        jmp print1
+        br print1
 alpha1: adi r13, 55
 print1: sri r13, p2
         ani r12, 0x0f
         cpi r12, 0x09
-        jn alpha2
+        bn alpha2
         adi r12, 48
-        jmp print2
+        br print2
 alpha2: adi r12, 55
 print2: sri r12, p2
         ret

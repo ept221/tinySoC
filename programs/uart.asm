@@ -13,14 +13,14 @@ start:  ldi r2, text[l]
 
 loop:   in r1, uart_ctrl
         ani r1, 2
-        jz loop                 ; poll for empty buffer
+        bz loop                  ; poll for empty buffer
 
         lri r0, p2              ; check for end of string
         cpi r0, 0
-        jz start
+        bz start
 
-        out r0, uart_buffer     ; print the char
-        jnz loop
+        out r0, uart_buffer      ; print the char
+        br loop
 ;******************************************************************************
         .data
 text:   .string "GitHub repo at: https://github.com/ept221/tinySoC\n"

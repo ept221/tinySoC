@@ -4,7 +4,7 @@
         .define pin_reg, 0x02
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
-        .define gpu_isr_vector, 0x0020
+        .define gpu_isr_vector, 0x0014
 ;******************************************************************************
         .code
         ldi r0, 1               ; set pin 1 to output
@@ -19,7 +19,7 @@
         ldi r3, gpu_addr[h]
 
         ssr 8                   ; enable interrupts
-loop:   jmp loop                ; do nothing and wait for an interrupt
+loop:   br loop                 ; do nothing and wait for an interrupt
 
         .org gpu_isr_vector
 isr:    in r0, pin_reg          ; read pin 1
@@ -29,11 +29,11 @@ isr:    in r0, pin_reg          ; read pin 1
         ldi r0, 32              ; load a space
         sri r0, p2              ; write the space to the screen and move to the right
         cpi r2, 80
-        jnz j
+        bnz j
         ldi r2, 0
 
 j:      ldi r0, 65              ; load "A"
-        str r0, p2              ; write A to the screen
+        str r0, p2, 0           ; write A to the screen
 
 end:    ssr 8                   ; enable interrupts
         ret                     ; return

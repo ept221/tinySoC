@@ -14,7 +14,7 @@ synth: soc/src/soc/top.v
 
 pnr: build/synth/hardware.json
 	mkdir -p build/pnr
-	nextpnr-ice40 --lp8k --package cm81 --json build/synth/hardware.json --pcf soc/src/soc/pins.pcf --asc build/pnr/hardware.asc  --pcf-allow-unconstrained --freq 16
+	nextpnr-ice40 --hx8k --package bg121 --json build/synth/hardware.json --pcf soc/src/soc/pins.pcf --asc build/pnr/hardware.asc  --pcf-allow-unconstrained --freq 16 -r
 
 refresh:
 	find build/pnr -type f -not -name "hardware.asc" -delete

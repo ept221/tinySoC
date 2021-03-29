@@ -14,8 +14,8 @@
         .define gpu_addr, 0x2000
         .define gpu_ctrl_reg, 0x80
 
-        .define gpu_isr_vector, 0x0020
-        .define top_isr_vector, 0x0030
+        .define gpu_isr_vector, 0x0014
+        .define top_isr_vector, 0x001E
 ;******************************************************************************         
         .code
 
@@ -27,10 +27,10 @@
 
 poll:   in r0, uart_ctrl
         ani r0, 1
-        jz poll                 ; poll for full rx buffer
+        bz poll                 ; poll for full rx buffer
 
         in r0, uart_buffer      ; read the rx buffer
         out r0, port_reg        ; write the captured data to the i/o port
 
-        jmp poll                ; look for more data
+        br  poll                ; look for more data
 ;******************************************************************************

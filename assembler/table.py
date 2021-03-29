@@ -1,92 +1,115 @@
 mnm_r_i = {
 	'LDI': "DDDDIIIIIIII0001",
-	'ANI': "DDDDIIIIIIII0011",
-	'ORI': "DDDDIIIIIIII0101",
-	'XOI': "DDDDIIIIIIII0111",
-	'ADI': "DDDDIIIIIIII1001",
-	'ACI': "DDDDIIIIIIII1011",
-	'CPI': "DDDDIIIIIIII1101",
+	'ANI': "DDDDIIIIIIII0010",
+	'ORI': "DDDDIIIIIIII0011",
+	'XOI': "DDDDIIIIIIII0100",
+	'ADI': "DDDDIIIIIIII0101",
+	'ACI': "DDDDIIIIIIII0110",
+	'CPI': "DDDDIIIIIIII0111",  
 }
 
-mnm_r_l = {
-	'IN':  "DDDDLLLLLLLL0010",
-	'OUT': "SSSSLLLLLLLL0100",
+mnm_r_io = {
+	'IN':  "DDDDIIIIIIII1000",
+	'OUT': "SSSSIIIIIIII1001",
 }
 
 mnm_r_r = {
-	'AND': "DDDDSSSS00001000",
-	'OR':  "DDDDSSSS00010000",
-	'XOR': "DDDDSSSS00011000",
-	'ADD': "DDDDSSSS00100000",
-	'ADC': "DDDDSSSS00101000",
-	'CMP': "DDDDSSSS00110000",
-	'SUB': "DDDDSSSS00111000",
-	'SBB': "DDDDSSSS01000000",
-	'MOV': "DDDDSSSS01001000",
+	'MOV': "DDDDSSSS00011010",
+	'AND': "DDDDSSSS00101010",
+	'OR':  "DDDDSSSS00111010",
+	'XOR': "DDDDSSSS01001010",
+	'ADD': "DDDDSSSS01011010",
+	'ADC': "DDDDSSSS01101010",
+	'CMP': "DDDDSSSS01111010",
+	'SUB': "DDDDSSSS10001010",
+	'SBB': "DDDDSSSS10011010",
+}
+
+mnm_r_p = {
+	'SRI': "SSSSPPP011001010",
+	'SRD': "SSSSPPP011011010",
+	'LRI': "SSSSPPP011101010",
+	'LRD': "SSSSPPP011111010",
+}
+
+mnm_r_p_k = {
+	'STR': "SSSSPPPKKKKK1011",
+	'LDR': "DDDDPPPKKKKK1100",
+}
+
+mnm_p_i = {
+	'API': "IIIIPPPIIIII1101",
+}
+
+mnm_br = {
+	'BR':  "000AAAAAAAAA1110",
+	'BC':  "001AAAAAAAAA1110",
+	'BNC': "010AAAAAAAAA1110",
+	'BZ':  "011AAAAAAAAA1110",
+	'BNZ': "100AAAAAAAAA1110",
+	'BN':  "101AAAAAAAAA1110",
+	'BNN': "110AAAAAAAAA1110",
 }
 
 mnm_r = {
-	'NOT': "DDDD000001010000",
-	'SLL': "DDDD000001011000",
-	'SRL': "DDDD000001100000",
-	'SRA': "DDDD000001101000",
+	'SLL': "DDDD000010101111",
+	'SRL': "DDDD000010111111",
+	'SRA': "DDDD000011001111",
+	'RLC': "DDDD000011011111",
+	'RRC': "DDDD000011101111",
+	'NOT': "DDDD000011111111",
+	'POP': "DDDD111000100000",
+	'PUSH': "SSSS111011011010",
 }
 
-mnm_r_rp = {
-	'STR': "SSSSPPPP01110000",
-	'SRI': "SSSSPPPP01111000",
-	'SRD': "SSSSPPPP10000000",
-	'LDR': "DDDDPPPP10001000",
-	'LRI': "DDDDPPPP10010000",
-	'LRD': "DDDDPPPP10011000",
-}
-
-mnm_rp = {
-	'IRP':  "0000PPPP10100000",
-	'DRP':  "0000PPPP10101000",
-	'JMPI': "0000PPPP10110000",
-	'JCI':  "0010PPPP10110000",
-	'JNCI': "0100PPPP10110000",
-	'JZI':  "0110PPPP10110000",
-	'JNZI': "1000PPPP10110000",
-	'JNI':  "1010PPPP10110000",
-	'JNZI': "1100PPPP10110000",
+mnm_p = {
+	'JMPI': "0000PPP000011111",
+	'JCI':  "0010PPP000011111",
+	'JNCI': "0100PPP000011111",
+	'JZI':  "0110PPP000011111",
+	'JNZI': "1000PPP000011111",
+	'JNI':  "1010PPP000011111",
+	'JNNI': "1100PPP000011111",
 }
 
 mnm_a = {
-	'JMP':  "0000000010111000",
-	'JC':   "0010000010111000",
-	'JNC':  "0100000010111000",
-	'JZ':   "0110000010111000",
-	'JNZ':  "1000000010111000",
-	'JN':   "1010000010111000",
-	'JNN':  "1100000010111000",
-	'CALL': "0000000011000000",
-	'CC':   "0010000011000000",
-	'CNC':  "0100000011000000",
-	'CZ':   "0110000011000000",
-	'CNZ':  "1000000011000000",
-	'CN':   "1010000011000000",
-	'CNN':  "1100000011000000",
+	'JMP':  "0000111000101111",
+	'JC':   "0010111000101111",
+	'JNC':  "0100111000101111",
+	'JZ':   "0110111000101111",
+	'JNZ':  "1000111000101111",
+	'JN':   "1010111000101111",
+	'JNN':  "1100111000101111",
+	'CALL': "0000111000111111",
+	'CC':   "0010111000111111",
+	'CNC':  "0100111000111111",
+	'CZ':   "0110111000111111",
+	'CNZ':  "1000111000111111",
+	'CN':   "1010111000111111",
+	'CNN':  "1100111000111111",
 }
 
 mnm_n = {
-	'RET': "0000000011001000",
-	'RC':  "0010000011001000",
-	'RNC': "0100000011001000",
-	'RZ':  "0110000011001000",
-	'RNZ': "1000000011001000",
-	'RN':  "1010000011001000",
-	'RNN': "1100000011001000",
-	'PUS': "0000000011010000",
-	'POS': "0000000011011000",
-	'HLT': "0000000011110000",
+	'RET': "0000111001001111",
+	'RC':  "0010111001001111",
+	'RNC': "0100111001001111",
+	'RZ':  "0110111001001111",
+	'RNZ': "1000111001001111",
+	'RN':  "1010111001001111",
+	'RNN': "1100111001001111",
+	'PUS': "0000111001011111",
+	'POS': "0000111001101111",
 	'NOP': "0000000000000000",
+	'HLT': "1111111111111111",
 }
 
 mnm_m = {
-	'SSR': "0000MMMM11100000",
-	'CSR': "0000MMMM11101000",
+	'SSR': "0000MMMM01111111",
+	'CSR': "0000MMMM10001111",
+}
+
+mnm_p_p = {
+	'MVP': "PPP0PPP010011111",
 }
 
 drct_0 = {
@@ -141,16 +164,21 @@ pairs = {
 }
 
 reserved_mnm_r_i = {key for key in mnm_r_i}
-reserved_mnm_r_l = {key for key in mnm_r_l}
+reserved_mnm_io = {key for key in mnm_r_io}
 reserved_mnm_r_r = {key for key in mnm_r_r}
-reserved_mnm_r_rp = {key for key in mnm_r_rp}
-reserved_mnm_rp = {key for key in mnm_rp}
+reserved_mnm_r_p = {key for key in mnm_r_p}
+reserved_mnm_r_p_k = {key for key in mnm_r_p_k}
+reserved_mnm_p_i = {key for key in mnm_p_i}
+reserved_mnm_br = {key for key in mnm_br}
+reserved_mnm_r = {key for key in mnm_r}
+reserved_mnm_p = {key for key in mnm_p}
 reserved_mnm_a = {key for key in mnm_a}
 reserved_mnm_n = {key for key in mnm_n}
 reserved_mnm_m = {key for key in mnm_m}
+reserved_mnm_p_p = {key for key in mnm_p_p}
 
-reserved = (reserved_mnm_r_i | reserved_mnm_r_l | reserved_mnm_r_r |
-            reserved_mnm_r_rp | reserved_mnm_rp | reserved_mnm_a |
-            reserved_mnm_n | reserved_mnm_m | drct_0 | drct_0 |
-            drct_1 | drct_2 | drct_m | drct_s | registers | pairs
-            )
+reserved = (reserved_mnm_r_i | reserved_mnm_io | reserved_mnm_r_r | reserved_mnm_r_p |
+			reserved_mnm_r_p_k | reserved_mnm_p_i | reserved_mnm_br | reserved_mnm_r |
+			reserved_mnm_p | reserved_mnm_a | reserved_mnm_n | reserved_mnm_m | 
+			reserved_mnm_p_p | drct_0 | drct_0 | drct_1 | drct_2 | drct_m | drct_s |
+			registers | pairs)
