@@ -47,6 +47,12 @@ loop:   adi r0, -1
 
 ### Directives
 
+#### .code
+Specifies that the following lines are code to be assembled and placed in instruction memory.
+
+#### .data
+Specifies that the following lines are data to be placed in data memory.
+
 #### .org
 Sets the origin to the given address. Only forward movement of the origin is permitted.
 ```assembly
@@ -137,7 +143,7 @@ Equates a symbol with a number.
 ```
 
 ### Expressions
-Anytime an instruction or directive requires a numerical argument, an expression can be used.
+Any time an instruction or directive requires a numerical argument, an expression can be used.
 Supported operations inside expressions include addition and subtraction. The location counter $ is also made available. If an instruction is two bytes long then $ refers to the address of the second byte. Expressions may contain symbols, but must resolve within two passes of the assembler, and if used for directive arguments, must resolve in a single pass.
 
 ```assembly
