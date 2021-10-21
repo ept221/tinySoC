@@ -119,6 +119,7 @@ drct_0 = {
 
 drct_1 = {
 	'.ORG',
+	'.DS',
 }
 
 drct_2 = {
@@ -131,6 +132,7 @@ drct_m = {
 
 drct_s = {
 	'.STRING',
+	'.OSTRING',
 }
 
 registers = {
