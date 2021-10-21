@@ -401,14 +401,14 @@ def org(arg, symbols, code, line):
                 return 0
             code.code_address = arg
             if(code.code_label):
-                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
+                symbols.labelDefs[code.code_label[:-1]] = '{0:0{1}X}'.format(address,4)
         else:
             if(arg > preferences.d_ram_len):
                 error("Cannot set data origin past " + format(preferences.d_ram_len, '02X') + ".",line)
                 return 0
             code.data_address = arg
             if(code.data_label):
-                symbols.labelDefs[lbl[:-1]] = '{0:0{1}X}'.format(address,4)
+                symbols.labelDefs[code.data_label[:-1]] = '{0:0{1}X}'.format(address,4)
     return 1
 ##############################################################################################################
 def define(args, symbols, code, line):
@@ -453,6 +453,22 @@ def store_string(arg, symbols, code, line):
         code.write_data(line,format(ord(char),'02X'))
     code.write_data(line,format(0,'02X'))
     return 1
+
+def store_open_string(arg, symbols, code, line):
+    if(code.segment != "data"):
+        error("Directive must be within data segment!",line)
+        return 0
+
+    for char in arg:
+        if(int(ord(char)) > 128):
+            error("Unsupported character in string: " + str(char),line)
+            return 0
+
+    new_str = bytes(arg,"utf-8").decode("unicode_escape")
+
+    for char in new_str:
+        code.write_data(line,format(ord(char),'02X'))
+    return 1
 ##############################################################################################################
 directives = {
     ".CODE": setCodeSegment,
@@ -460,7 +476,8 @@ directives = {
     ".ORG":  org,
     ".DEFINE": define,
     ".DB":  db,
-    ".STRING": store_string
+    ".STRING": store_string,
+    ".OSTRING": store_open_string,
 }
 ##############################################################################################################
 def parse_drct(tokens, symbols, code, line):
@@ -1115,7 +1132,7 @@ def parse_line(tokens, symbols, code, line):
     # check to see if we have any
     # tokens left
     if(len(tokens)):   
-        error("Bad Final Identifier(s)! " + str(tokens),line)
+        error("Bad Final Identifier(s)!",line)
         return er
     ###############################
     # everything's good
@@ -1184,7 +1201,7 @@ def second_pass(symbols, code):
                     instruction = code_line[4]
                     if(numb < -256 or numb > 255):
                         error("Offset must be >= -256 and <= 255.",line)
-                        return er
+                        return 0
                     else:
                         if((numb + int(code_line[2], 16)) < 0):
                             error("Instruction branches below address 0", line)
