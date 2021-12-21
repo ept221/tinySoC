@@ -9,17 +9,14 @@ module d_ram_and_io(input wire clk,
                     // For gpio
                     inout wire [7:0] gpio_pins,
 
-                    // For counter_timer
-                    output wire top_flag,
-                    output wire match0_flag,
-                    output wire match1_flag,
-                    input wire top_flag_clr,
-                    input wire match0_flag_clr,
-                    input wire match1_flag_clr,
-
                     // For uart
                     input wire rx,
                     output wire tx,
+
+                    // For pic
+                    output wire interrupt,
+                    output wire [15:0] intVect,
+                    input wire intAck,
 
                     // For gpu
                     output wire h_sync,
@@ -27,8 +24,6 @@ module d_ram_and_io(input wire clk,
                     output wire R,
                     output wire G,
                     output wire B,
-                    output wire blanking_start_interrupt_flag,
-                    input wire blanking_start_interrupt_flag_clr
 );
     //***********************************************************************************
     // Memory control
@@ -49,7 +44,7 @@ module d_ram_and_io(input wire clk,
             d_ram_r_en = 0;
             io_w_en = w_en;
             io_r_en = r_en;
-            dout = gpio_dout | counter_timer_dout | uart_dout | gpu_dout;
+            dout = gpio_dout | counter_timer_dout | uart_dout | gpu_dout | pic_dout;
         end
         else begin
             d_ram_w_en = 0;
@@ -111,6 +106,9 @@ module d_ram_and_io(input wire clk,
     wire out1;
     wire out0_en;
     wire out1_en;
+    wire top_flag;
+    wire match0_flag;
+    wire match1_flag;
     wire [7:0] counter_timer_dout;
 
     counter_timer #(.COUNTER_TIMER_ADDRESS(8'h03))
@@ -127,10 +125,7 @@ module d_ram_and_io(input wire clk,
                            .out1_en(out1_en),
                            .top_flag(top_flag),
                            .match0_flag(match0_flag),
-                           .match1_flag(match1_flag),
-                           .top_flag_clr(top_flag_clr),
-                           .match0_flag_clr(match0_flag_clr),
-                           .match1_flag_clr(match1_flag_clr)
+                           .match1_flag(match1_flag)
     );
     //***********************************************************************************
     // uart from: 0x100A - 0x100C
@@ -148,9 +143,27 @@ module d_ram_and_io(input wire clk,
                   .tx(tx)
     );
     //***********************************************************************************
+    // pic at 0x100D - 0x1017
+    wire [7:0] pic_dout;
+    pic #(.PIC_ADDRESS(8'h0D))
+        pic_inst(.clk(clk),
+                 .din(din),
+                 .address(address[7:0]),
+                 .w_en(io_w_en),
+                 .r_en(io_r_en),
+                 .dout(pic_dout),
+                 .interrupt(interrupt),
+                 .intVect(intVect),
+                 .intAck(intAck),
+                 .irq_0(blanking_start_interrupt_flag),
+                 .irq_1(top_flag),
+                 .irq_2(match0_flag),
+                 .irq_3(match1_flag),
+    );
+    //***********************************************************************************
     // gpu from: 0x1080, 0x2000-0x2960
     wire [7:0] gpu_dout;
-
+    wire blanking_start_interrupt_flag;
     gpu #(.GPU_IO_ADDRESS(8'h80),
           .GPU_VRAM_ADDRESS(16'h2000))
         gpu_inst(.clk(clk),
@@ -166,8 +179,7 @@ module d_ram_and_io(input wire clk,
                  .R(R),
                  .G(G),
                  .B(B),
-                 .blanking_start_interrupt_flag(blanking_start_interrupt_flag),
-                 .blanking_start_interrupt_flag_clr(blanking_start_interrupt_flag_clr)
+                 .blanking_start_interrupt_flag(blanking_start_interrupt_flag)
     );
     //***********************************************************************************
 endmodule
