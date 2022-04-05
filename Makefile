@@ -14,7 +14,7 @@ synth: soc/src/soc/top.v
 
 pnr: build/synth/hardware.json
 	mkdir -p build/pnr
-	nextpnr-ice40 --hx8k --package bg121 --json build/synth/hardware.json --pcf soc/src/soc/pins.pcf --pre-pack soc/src/soc/clocks.py --asc build/pnr/hardware.asc  --pcf-allow-unconstrained --freq 16 -r
+	nextpnr-ice40 --hx8k --package bg121 --json build/synth/hardware.json --pcf soc/src/soc/pins.pcf --pre-pack soc/src/soc/clocks.py --asc build/pnr/hardware.asc  --pcf-allow-unconstrained -r
 
 refresh:
 	find build/pnr -type f -not -name "hardware.asc" -delete
