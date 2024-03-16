@@ -9,11 +9,6 @@
 
                 .define gpu_addr, 0x2000
                 .define gpu_ctrl_reg, 0x80
-
-                .define newline, 10
-                .define backspace, 8
-                .define underscore, 95
-                .define space, 32
 ;******************************************************************************
                 .code
 ;##############################################################################
@@ -131,7 +126,7 @@ peek:           push r0
                 call print_str          ; print the register's contents
                 call paint_str
 
-                ldi r0, newline
+                ldi r0, '\n'
                 call print_char
                 call paint_char
 
@@ -203,7 +198,7 @@ clear:          push r0
 
                 ldi r12, gpu_addr[l]    ; setup the pointer to the v-ram
                 ldi r13, gpu_addr[h]
-                ldi r11, 0               ; the col counter
+                ldi r11, 0              ; the col counter
                 ldi r0, 32              ; This clears the screen by filling
                 ldi r2, 0x60            ; it up with spaces
                 ldi r3, 0x09
@@ -269,9 +264,9 @@ print_char_ret: pop r1
 ; It takes care of newlines and backspaces, and scrolling at the end of
 ; the screen. The char must be placed in r0.
 paint_char:     push r5
-                cpi r0, newline         ; check to see if the char is a newline
+                cpi r0, '\n'            ; check to see if the char is a newline
                 bz paint_char_nl
-                cpi r0, backspace
+                cpi r0, '\b'
                 bz paint_char_bs
                 
                 cpi r13, 41             ; (gpu_addr + 80*30 - 1)[h]
@@ -370,7 +365,7 @@ get_str:        push r0
                 push r6
                 push r7
 
-                ldi r5, underscore      ; print the cursor         
+                ldi r5, '_'             ; print the cursor         
                 str r5, p12, 0
 
                 api p0, -2              ; subtract off one for the null char, and one for the nl
@@ -383,7 +378,7 @@ get_str_rx:     in r5, uart_ctrl        ; poll for full rx buffer
 
                 in r4, uart_buffer      ; read the char
 
-                cpi r4, backspace       ; check if the char was backspace
+                cpi r4, '\b'            ; check if the char was backspace
                 bnz get_str_not_bs      ; if it is wasn't, go do not_bs
                 cmp r0, r6              ; and if p0 != p6 (part1)
                 bnz get_str_bs          ; then go do backspace
@@ -392,13 +387,13 @@ get_str_rx:     in r5, uart_ctrl        ; poll for full rx buffer
 
 get_str_bs:     api p2, -1              ; else, decriment the buffer pointer
                 api p0, 1               ; incriment the length
-                ldi r5, space           ; overwrite the cursor with a space   
+                ldi r5, ' '             ; overwrite the cursor with a space   
                 str r5, p12, 0
                 br get_str_tx           ; and echo the backspace
 
-get_str_not_bs: cpi r4, newline
+get_str_not_bs: cpi r4, '\n'
                 bnz get_str_not_nl
-                ldi r5, space           ; overwrite the cursor with a space   
+                ldi r5, ' '             ; overwrite the cursor with a space   
                 str r5, p12, 0
                 br get_str_store
 
@@ -415,9 +410,9 @@ get_str_tx:     push r0
                 call paint_char
                 pop r0
 
-                cpi r4, newline         ; return if the char was a newline
+                cpi r4, '\n'            ; return if the char was a newline
                 bz get_str_ret
-                ldi r5, underscore      ; print the cursor           
+                ldi r5, '_'             ; print the cursor           
                 str r5, p12, 0
                 br get_str_rx
 
@@ -441,7 +436,7 @@ strip_str:      push r0
                 push r3
 
 strip_str_p:    lri r0, p2              ; look for the newline
-                cpi r0, newline
+                cpi r0, '\n'
                 bnz strip_str_p
 
                 api p2, -1              ; point to the newline
