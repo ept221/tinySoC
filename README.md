@@ -32,8 +32,9 @@ Constants are in decimal by default, but hexadecimal and binary are also support
         ldi r0, 0x0A   ; Hexadecimal constant
         ldi r0, 0b1010 ; Binary constant
         ldi r0, -10    ; A negative constant
+        ldi r0, 'a'    ; A char constant
+        ldi r0, '\n'   ; An escaped char constant
 ```
-
 ### Label Definitions
 Label definitions may be any string ending with a colon, as long as the string is not in the form of a constant or is one of the reserved keywords
 
