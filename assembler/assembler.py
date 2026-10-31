@@ -29,7 +29,7 @@ class Code:
 
     def write_code(self, line, data, code_string, status):
 
-        if(self.code_address > preferences.i_ram_len):
+        if(self.code_address >= preferences.i_ram_len):
             error("Cannot write past " + format(preferences.i_ram_len, '04X') + ". Out of program memory!",line)
             sys.exit(2)
 
@@ -39,7 +39,7 @@ class Code:
 
     def write_data(self, line, data):
 
-        if(self.data_address > preferences.d_ram_len):
+        if(self.data_address >= preferences.d_ram_len):
             error("Cannot write past 0x" + format(preferences.d_ram_len, '02X') + ". Out of data memory!",line)
             sys.exit(2)
 
@@ -1073,7 +1073,7 @@ def parse_code(tokens, symbols, code, line):
             val = evaluate(expr[1:],symbols,code.code_address,"abs")
             if(len(val) == 1):
                 numb = val[0]
-                if(numb < 0 or numb > 16):
+                if(numb < 0 or numb > 15):
                     error("Mask must be >= 0 and <= 15.",line)
                     return er
                 else:
@@ -1285,11 +1285,13 @@ def second_pass(symbols, code):
                 # [mnm_m]
                 elif(code_line[-1][0] == "<mnm_m>"):
                     instruction = code_line[4]
-                    if(numb < 0 or numb > 16):
+                    if(numb < 0 or numb > 15):
                         error("Mask must be >= 0 and <= 15",line)
                         return 0
                     else:
                         instruction = instruction[0:4] + format(numb,'04b') + instruction[8:]
+                        code_line[4] = instruction
+                        code_line[-1] = 0
             else:
                 error("Expression relies on unresolved symbol!",line)
                 return 0
